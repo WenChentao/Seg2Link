@@ -16,6 +16,10 @@ from misc import add_blank_lines, TinyCells, make_folder
 from single_cell_division import DivideMode
 from watersheds import labels_with_boundary, remove_boundary_scipy
 
+if config.debug:
+    from config import qprofile, lprofile
+    from memory_profiler import profile as mprofile
+
 
 class WidgetsA:
     def __init__(self, vis, img_shape: Tuple):
@@ -254,7 +258,7 @@ class WidgetsB:
                 export_result.value = "Removing tiny cells ..."
                 tc = TinyCells(self.emseg2.labels)
                 self.emseg2.labels = tc.remove_and_relabel(self.emseg2.labels, max_cell_num.value)
-                self.emseg2._show_segmentation()
+                self.emseg2._update_segmentation()
                 export_result.value = "Saving .npy after removing ..."
                 np.save(self.emseg2.labels_path.parent / "seg-modified_after_removing_tiny_cells.npy",
                         self.viewer.layers["segmentation"].data)
@@ -284,14 +288,14 @@ class WidgetsB:
                     np.save(self.emseg2.labels_path.parent / "seg-modified_before_adding_boundary.npy",
                             self.viewer.layers["segmentation"].data)
                     self.emseg2.labels = labels_with_boundary(self.emseg2.labels)
-                    self.emseg2._show_segmentation()
+                    self.emseg2._update_segmentation()
                     np.save(self.emseg2.labels_path.parent / "seg-modified_after_adding_boundary.npy",
                             self.viewer.layers["segmentation"].data)
                 elif boundary_action.value == Boundary.Remove:
                     np.save(self.emseg2.labels_path.parent / "seg-modified_before_removing_boundary.npy",
                             self.viewer.layers["segmentation"].data)
                     self.emseg2.labels = remove_boundary_scipy(self.emseg2.labels)
-                    self.emseg2._show_segmentation()
+                    self.emseg2._update_segmentation()
                     np.save(self.emseg2.labels_path.parent / "seg-modified_after_removing_boundary.npy",
                             self.viewer.layers["segmentation"].data)
                 else:

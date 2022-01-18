@@ -27,7 +27,7 @@ class Seg2LinkR2:
         self.s = slice(0, self.labels.shape[2])
         self.labels_path = labels_path.parent / "seg-modified.npy"
         self.vis = VisualizeAll(self, raw, cell_region, mask)
-        self._show_segmentation()
+        self.vis.show_segmentation_r2()
         self.cache = CacheSubArray()
         self.update_info()
         self.keys_binding()
@@ -35,15 +35,15 @@ class Seg2LinkR2:
         self.update_cmap()
         self.layer_selected = 0
 
-    def _show_segmentation(self):
-        self.vis.show_segmentation_r2()
+    def _update_segmentation(self):
+        self.vis.update_segmentation_r2()
 
     def reset_labels(self, labels):
         self.labels = labels
         self.divide_list.clear()
         self.label_list.clear()
         self.s = slice(0, self.labels.shape[2])
-        self._show_segmentation()
+        self._update_segmentation()
         self.cache = CacheSubArray()
         self.update_info()
 
@@ -85,10 +85,9 @@ class Seg2LinkR2:
     def update_info(self, label_pre_division: Optional[int] = None):
         self.vis.update_widgets(label_pre_division)
 
-    @qprofile
     def update(self, subarray_old: ndarray, subarray_new:ndarray, slice_: Tuple[slice, slice, slice], action: str):
         self.labels[slice_] = subarray_new
-        self._show_segmentation()
+        self._update_segmentation()
         self.cache.cache_state(subarray_old, subarray_new, slice_, action)
         self.update_info()
 
@@ -98,7 +97,6 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_add)
         @print_information("Add a label to be processed")
-        @qprofile
         def append_label_list(viewer_seg):
             """Add label to be merged into a list"""
             if viewer_seg.mode != "pick":
@@ -112,7 +110,6 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_clean)
         @print_information("Clean the label list")
-        @qprofile
         def clear_label_list(viewer_seg):
             """Clear labels in the merged list"""
             self.label_list.clear()
@@ -121,7 +118,6 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_merge)
         @print_information("Merge labels")
-        @qprofile
         def _merge(viewer_seg):
             if not self.label_list:
                 print("No labels were merged")
@@ -173,7 +169,7 @@ class Seg2LinkR2:
 
                     self.labels[slice_] = subarray_new
                     self.update_cmap()
-                    self._show_segmentation()
+                    self._update_segmentation()
                     self.cache.cache_state(subarray_old, subarray_new, slice_, "Divide")
                     self.update_info(label_before_division)
 
@@ -182,7 +178,7 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_undo)
         @print_information("Undo")
-        def redo(viewer_seg):
+        def undo(viewer_seg):
             """Undo one keyboard command"""
             history = self.cache.load_cache(method="undo")
             if history is None:
@@ -190,7 +186,7 @@ class Seg2LinkR2:
             subarray_old, slice_, action = history
             self.labels[slice_] = subarray_old
             self.reset_division_list()
-            self._show_segmentation()
+            self._update_segmentation()
             self.update_info()
 
         @viewer_seg.bind_key(config.key_redo)
@@ -203,7 +199,7 @@ class Seg2LinkR2:
             subarray_new, slice_, action = future
             self.labels[slice_] = subarray_new
             self.reset_division_list()
-            self._show_segmentation()
+            self._update_segmentation()
             self.update_info()
 
         @viewer_seg.bind_key(config.key_switch_one_label_all_labels)
@@ -234,11 +230,15 @@ class VisualizeAll(VisualizeBase):
         self.viewer.dims.set_axis_label(axis=2, label=f"Slice ({self.emseg2.s.start + 1}-{self.emseg2.s.stop})")
 
     def show_segmentation_r2(self):
-        """Update the segmentation results and other images/label"""
+        """show the segmentation results and other images/label"""
         if self.cell_mask is not None:
             self.viewer.layers['mask_cells'].data = self.cell_mask[..., self.emseg2.s]
         self.viewer.layers['raw_image'].data = self.raw[..., self.emseg2.s]
         self.viewer.layers['cell_region'].data = self.cell_region[..., self.emseg2.s]
+        self.viewer.layers['segmentation'].data = self.emseg2.labels
+
+    def update_segmentation_r2(self):
+        """Update the segmentation results and other images/label"""
         self.viewer.layers['segmentation'].data = self.emseg2.labels
 
 
