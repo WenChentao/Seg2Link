@@ -13,6 +13,9 @@ from misc import print_information, replace
 from single_cell_division import separate_one_label, get_subregion, NoLabelError, NoDivisionError
 from widgets import WidgetsB
 
+if config.debug:
+    from config import qprofile, lprofile
+    from memory_profiler import profile as mprofile
 
 class Seg2LinkR2:
     """Segment the cells in 3D EM images"""
@@ -82,6 +85,7 @@ class Seg2LinkR2:
     def update_info(self, label_pre_division: Optional[int] = None):
         self.vis.update_widgets(label_pre_division)
 
+    @qprofile
     def update(self, subarray_old: ndarray, subarray_new:ndarray, slice_: Tuple[slice, slice, slice], action: str):
         self.labels[slice_] = subarray_new
         self._show_segmentation()
@@ -94,6 +98,7 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_add)
         @print_information("Add a label to be processed")
+        @qprofile
         def append_label_list(viewer_seg):
             """Add label to be merged into a list"""
             if viewer_seg.mode != "pick":
@@ -107,6 +112,7 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_clean)
         @print_information("Clean the label list")
+        @qprofile
         def clear_label_list(viewer_seg):
             """Clear labels in the merged list"""
             self.label_list.clear()
@@ -115,6 +121,7 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_merge)
         @print_information("Merge labels")
+        @qprofile
         def _merge(viewer_seg):
             if not self.label_list:
                 print("No labels were merged")

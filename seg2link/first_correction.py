@@ -18,10 +18,13 @@ from skimage.segmentation import relabel_sequential
 
 import config
 from emseg_core import Labels, Segmentation, Alignment, Archive
-from misc import print_information, qprofile, TinyCells
+from misc import print_information, TinyCells
+
 from single_cell_division import separate_one_slice_one_label
 from widgets import WidgetsA
 
+if config.debug:
+    from config import qprofile, lprofile
 
 class Seg2LinkR1:
     """Segment the cells in 3D EM images"""
@@ -129,7 +132,6 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.key_r1_reseg_link)
         @print_information("Re-segmentation and link")
-        @qprofile
         def re_seg_link(viewer_seg):
             """Re-segment current slice"""
             print(f"Resegment slice {self.current_slice}")
@@ -139,7 +141,6 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.key_separate)
         @print_information("Divide a label")
-        @qprofile
         def re_divide_2d(viewer_seg):
             """Re-segment current slice"""
             if viewer_seg.selected_label == 0:
@@ -175,7 +176,6 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.key_merge)
         @print_information("Merge labels")
-        @qprofile
         def _merge(viewer_seg):
             if not self.label_list:
                 print("No labels were merged")
@@ -186,7 +186,6 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.key_delete)
         @print_information("Delete the selected label(s)")
-        @qprofile
         def del_label(viewer_seg):
             """Delete the selected label"""
             if viewer_seg.mode != "pick":
@@ -202,7 +201,6 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.key_r1_next)
         @print_information("\nTo next slice")
-        @qprofile
         def _next_slice(viewer_seg):
             """To the next slice"""
             self.next_slice()
@@ -211,7 +209,6 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.key_undo)
         @print_information("Undo")
-        @qprofile
         def undo(viewer_seg):
             """Undo one keyboard command"""
             labels, current_seg, cells_aligned, action = self.cache.load_cache("undo")
@@ -221,7 +218,6 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.key_redo)
         @print_information("Redo")
-        @qprofile
         def redo(viewer_seg):
             """Undo one keyboard command"""
             labels, current_seg, cells_aligned, action = self.cache.load_cache("redo")

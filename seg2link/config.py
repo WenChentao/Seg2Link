@@ -1,4 +1,8 @@
 # Cache length
+import cProfile
+import pstats
+from inspect import signature
+from io import StringIO
 from typing import Optional, Tuple
 
 debug = True
@@ -46,3 +50,37 @@ labels_expand_kernel = (3, 3, 1)
 mask_dilate_kernel: Optional[Tuple[int, int, int]] = (25, 25, 7)
 
 
+def qprofile(func):
+    """Print runtime information in a function
+
+    References
+    ----------
+    Modified from the code here: https://stackoverflow.com/questions/40132630/python-cprofiler-a-function
+    Author: Sanket Sudake
+    """
+
+    def profiled_func(*args, **kwargs):
+        para_num = len(signature(func).parameters)
+
+        if not debug:
+            return func() if para_num == 0 else func(*args, **kwargs)
+
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func() if para_num == 0 else func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            s = StringIO()
+            ps = pstats.Stats(profile, stream=s).strip_dirs().sort_stats('cumulative')
+            ps.print_stats(15)
+            print(s.getvalue())
+
+    return profiled_func
+
+if debug:
+    import atexit
+    import line_profiler
+    lprofile = line_profiler.LineProfiler()
+    atexit.register(lprofile.print_stats)

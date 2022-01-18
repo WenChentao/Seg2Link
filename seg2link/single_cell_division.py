@@ -9,7 +9,7 @@ from skimage.measure import regionprops
 from sklearn.neighbors import NearestNeighbors
 
 from link_by_overlap import link2slices_return_seg
-from misc import qprofile
+from config import qprofile
 
 
 class DivideMode(Enum):

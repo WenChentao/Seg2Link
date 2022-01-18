@@ -10,7 +10,9 @@ from skimage.morphology import h_maxima, local_maxima
 from skimage.segmentation import expand_labels, watershed, find_boundaries
 
 import config
-from misc import dilation_scipy, lprofile
+from misc import dilation_scipy
+if config.debug:
+    from config import lprofile, qprofile
 
 
 def _dist_watershed(cell_img2d: ndarray) -> ndarray:
