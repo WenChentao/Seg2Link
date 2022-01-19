@@ -146,6 +146,7 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.key_separate)
         @print_information("Separate")
+        @lprofile
         def separate_label(viewer_seg):
             if viewer_seg.selected_label == 0:
                 print("\nLabel 0 should not be separated!")

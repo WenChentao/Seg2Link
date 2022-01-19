@@ -8,9 +8,13 @@ from numpy import ndarray
 from skimage.measure import regionprops
 from sklearn.neighbors import NearestNeighbors
 
+import config
 from link_by_overlap import link2slices_return_seg
 from config import qprofile
 
+if config.debug:
+    from config import qprofile, lprofile
+    from memory_profiler import profile as mprofile
 
 class DivideMode(Enum):
     _2D: str = "2D 1slice"
@@ -202,10 +206,9 @@ def get_subregion(labels_img3d: ndarray, label: Union[int, Set[int]], layer_from
     else:
         return get_subregion_2d(labels_img3d, label, layer_from0)
 
-
 def get_subregion_2d(labels_img3d: ndarray, label: Union[int, List[int]], layer_from0: int) \
         -> Tuple[ndarray, Tuple[slice, slice, slice], Optional[ndarray]]:
-    subregion = np.isin(labels_img3d[..., layer_from0], label).astype(np.int8)
+    subregion = array_isin_labels_quick(label, labels_img3d[..., layer_from0])
     x_max, x_min, y_max, y_min = bbox_2D_quick_v2(subregion)
     z_min = z_max = layer_from0
     slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1, z_min:z_max + 1]
@@ -220,10 +223,26 @@ def get_subregion_2d(labels_img3d: ndarray, label: Union[int, List[int]], layer_
 def get_subregion_3d(labels_img3d: ndarray, label: Union[int, Set[int]]) \
         -> Optional[Tuple[ndarray, Tuple[slice, slice, slice], None]]:
     labels = list(label) if isinstance(label, set) else label
-    subregion = np.isin(labels_img3d, labels).astype(np.int8)
+    subregion = array_isin_labels_quick(labels, labels_img3d)
     x_max, x_min, y_max, y_min, z_max, z_min = bbox_3D_quick_v2(subregion)
     slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1, z_min:z_max + 1]
     return subregion[slice_subregion], slice_subregion, None
+
+
+def array_isin_labels(labels: Union[int, List[int]], labels_img: ndarray):
+    """Deprecated as slow"""
+    # find the label 4582 (for delete): 3.4s (uniem_test1_600)
+    # find the label 2864, 4785, 5184, 4582 (for merge): 6.4s (uniem_test1_600)
+    return np.isin(labels_img, labels).astype(np.int8)
+
+
+def array_isin_labels_quick(labels: Union[int, List[int]], labels_img: ndarray):
+    # find the label 4582 (for delete): 0.7s (uniem_test1_600)
+    # find the label 2864, 4785, 5184, 4582 (for merge): 5.1s (uniem_test1_600)
+    if isinstance(labels, list):
+        return np.isin(labels_img, labels).view(np.int8)
+    else:
+        return (labels_img == labels).view(np.int8)
 
 
 def bbox_2D_quick_v2(img):
@@ -237,7 +256,7 @@ def bbox_2D_quick_v2(img):
 
     return rmax, rmin, cmax, cmin
 
-
+@lprofile
 def bbox_3D_quick_v2(img):
     """More efficient when the target cell is small"""
     r = np.any(img, axis=(1, 2))
