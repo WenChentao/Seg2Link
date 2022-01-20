@@ -146,7 +146,6 @@ class WidgetsB:
         self.cached_action.value = "".join(self.emseg2.cache.cached_actions)
         return None
 
-    @lprofile
     def locate_cell(self, label, dmode=DivideMode._3D):
         if dmode == DivideMode._3D:
             return self.locate_cell_3d(label)
@@ -163,14 +162,16 @@ class WidgetsB:
             x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
             self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
+    @lprofile
     def locate_cell_3d(self, label):
-        locs = np.where(self.emseg2.labels == label)
-        if locs[0].size == 0:
+        label_projected_along_z = np.any(self.emseg2.labels == label, axis=(0, 1))
+        if not np.any(label_projected_along_z):
             self.locate_cell_button.location.value = f"Not found"
         else:
-            current_layer = mode(locs[2])[0][0]
-            self.emseg2.vis.viewer.dims.set_current_step(axis=2, value=current_layer)
-            locs_current_layer = np.where(self.emseg2.labels[..., current_layer] == label)
+            layers_with_label = np.flatnonzero(label_projected_along_z)
+            center_layer = layers_with_label[len(layers_with_label)//2]
+            self.emseg2.vis.viewer.dims.set_current_step(axis=2, value=center_layer)
+            locs_current_layer = np.where(self.emseg2.labels[..., center_layer] == label)
             x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
             self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
