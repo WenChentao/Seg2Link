@@ -174,8 +174,9 @@ class Seg2LinkR2:
                     self.cache.cache_state(subarray_old, subarray_new, slice_, "Divide")
                     self.update_info(label_before_division)
 
-                    self.vis.widgets.choose_box.value = 2
-                    self.vis.widgets.choose_box.value = 1
+                    self.vis.widgets.locate_label_divided()
+
+
 
         @viewer_seg.bind_key(config.key_undo)
         @print_information("Undo")

@@ -113,6 +113,7 @@ class WidgetsB:
                                                     orientation="horizontal")
 
         self.add_widgets()
+        self.choose_box.changed.connect(self.locate_label_divided)
 
     def add_widgets(self):
         container_save_states = Container(widgets=[self.max_label, self.cached_action, self.locate_cell_button,
@@ -159,11 +160,16 @@ class WidgetsB:
             x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
             self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
+    @lprofile
+    def locate_label_divided(self):
+        if self.emseg2.divide_list:
+            label = self.emseg2.divide_list[self.choose_box.value - 1]
+            self.locate_cell_button.selected_label_.value = label
+            self.locate_cell(label, dmode=self.divide_mode.value)
 
     def widget_binding(self):
         search_button = self.locate_cell_button.locate_btn
         choose_cell_all = self.locate_cell_button.selected_label_
-        choose_cell_divided = self.choose_box
         save_button = self.save_button.save_btn
         save_as_button = self.save_button.save_as_btn
         load_dialog = self.load_dialog
@@ -182,13 +188,6 @@ class WidgetsB:
         def search_label():
             label = self.viewer.layers["segmentation"].selected_label
             self.locate_cell(label)
-
-        @choose_cell_divided.changed.connect
-        def choose_label_divided_():
-            if self.emseg2.divide_list:
-                label = self.emseg2.divide_list[choose_cell_divided.value - 1]
-                self.locate_cell_button.selected_label_.value = label
-                self.locate_cell(label, dmode=self.divide_mode.value)
 
         @save_button.changed.connect
         def save_overwrite():
