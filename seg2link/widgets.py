@@ -146,21 +146,34 @@ class WidgetsB:
         self.cached_action.value = "".join(self.emseg2.cache.cached_actions)
         return None
 
+    @lprofile
     def locate_cell(self, label, dmode=DivideMode._3D):
+        if dmode == DivideMode._3D:
+            return self.locate_cell_3d(label)
+        else:
+            return self.locate_cell_2d(label)
+
+    def locate_cell_2d(self, label):
+        current_layer = self.emseg2.layer_selected
+        locs_current_layer = np.where(self.emseg2.labels[..., current_layer] == label)
+        if locs_current_layer[0].size == 0:
+            self.locate_cell_button.location.value = f"Not found in current slice"
+        else:
+            self.emseg2.vis.viewer.dims.set_current_step(axis=2, value=current_layer)
+            x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
+            self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
+
+    def locate_cell_3d(self, label):
         locs = np.where(self.emseg2.labels == label)
         if locs[0].size == 0:
             self.locate_cell_button.location.value = f"Not found"
         else:
-            if dmode == DivideMode._3D:
-                current_layer = mode(locs[2])[0][0]
-            else:
-                current_layer = self.emseg2.layer_selected
+            current_layer = mode(locs[2])[0][0]
             self.emseg2.vis.viewer.dims.set_current_step(axis=2, value=current_layer)
             locs_current_layer = np.where(self.emseg2.labels[..., current_layer] == label)
             x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
             self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
-    @lprofile
     def locate_label_divided(self):
         if self.emseg2.divide_list:
             label = self.emseg2.divide_list[self.choose_box.value - 1]

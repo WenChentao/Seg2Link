@@ -256,7 +256,6 @@ def bbox_2D_quick_v2(img):
 
     return rmax, rmin, cmax, cmin
 
-@lprofile
 def bbox_3D_quick_v2(img):
     """More efficient when the target cell is small"""
     r = np.any(img, axis=(1, 2))

@@ -176,8 +176,6 @@ class Seg2LinkR2:
 
                     self.vis.widgets.locate_label_divided()
 
-
-
         @viewer_seg.bind_key(config.key_undo)
         @print_information("Undo")
         def undo(viewer_seg):
