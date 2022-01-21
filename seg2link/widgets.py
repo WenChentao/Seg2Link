@@ -14,7 +14,7 @@ import config
 from misc import add_blank_lines, TinyCells, make_folder
 from single_cell_division import DivideMode
 from watersheds import labels_with_boundary, remove_boundary_scipy
-from remove_sort import remove_sort_window
+from sort_remove_widget import sort_remove_window
 
 if config.debug:
     from config import qprofile, lprofile
@@ -112,7 +112,7 @@ class WidgetsB:
         self.boundary_action = widgets.RadioButtons(choices=Boundary, value=Boundary.Default, label='Boundary',
                                                     orientation="horizontal")
 
-        self.remove_sort_window = remove_sort_window
+        self.remove_sort_window = sort_remove_window
 
         self.add_widgets()
         self.choose_box.changed.connect(self.locate_label_divided)
