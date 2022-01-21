@@ -8,6 +8,11 @@ import numpy as np
 from numpy import ndarray
 from scipy.ndimage import grey_dilation
 
+import config
+
+if config.debug:
+    from config import qprofile, lprofile
+    from memory_profiler import profile as mprofile
 
 def load_image(path: Path) -> ndarray:
     img_file_path = get_files(path)
@@ -67,21 +72,25 @@ def make_folder(path_i: Path) -> Path:
 
 
 class TinyCells:
+
     def __init__(self, image3d: ndarray):
-        labels, areas = np.unique(image3d, return_counts=True)
+        self.label_image = image3d
+
+    def sort_by_areas(self):
+        labels, areas = np.unique(self.label_image, return_counts=True)
         idxes_sorted = sorted(range(1, len(labels)), key=lambda i: areas[i], reverse=True)
         self.sorted_labels = labels[idxes_sorted]
         self.sorted_areas = areas[idxes_sorted]
 
     def min_area(self, max_cell_num: int = 65535) -> Tuple[int, int]:
         """Return the minimum areas and the number of labels to be deleted"""
-        if max_cell_num > len(self.sorted_labels):
-            min_area_ = self.sorted_areas[-1]
-            del_num = 0
+        if max_cell_num >= len(self.sorted_labels):
+            max_area_delete = 0
+            num_delete = 0
         else:
-            min_area_ = self.sorted_areas[max_cell_num - 1]
-            del_num = len(self.sorted_labels) - max_cell_num
-        return min_area_, del_num
+            max_area_delete = self.sorted_areas[max_cell_num]
+            num_delete = len(self.sorted_labels) - max_cell_num
+        return max_area_delete, num_delete
 
     def remove_tiny_cells(self, image3d: ndarray, max_cell_num: int):
         """Deprecated as slow"""
@@ -94,7 +103,7 @@ class TinyCells:
         return maps[image3d]
 
     def remove_and_relabel(self, image3d: ndarray, max_cell_num: Optional[int] = None) -> ndarray:
-        maps = np.arange(0, np.max(self.sorted_labels) + 1)
+        maps = np.arange(0, np.max(self.sorted_labels) + 1, dtype=image3d.dtype)
         if max_cell_num is None:
             self.relabel_sorted_labels(maps, self.sorted_labels)
         else:

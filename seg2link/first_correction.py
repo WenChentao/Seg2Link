@@ -256,7 +256,9 @@ class Seg2LinkR1:
                 export_result.value = "Transform segmentation to array ..."
                 seg_array = self.labels.to_multiple_labels(slice(0, self.current_slice), self.seg, self.seg_img_cache)
                 export_result.value = "Sorting labels according to the sizes ..."
-                sorted_labels = TinyCells(seg_array).remove_and_relabel(seg_array)
+                tc = TinyCells(seg_array)
+                tc.sort_by_areas()
+                sorted_labels = tc.remove_and_relabel(seg_array)
                 export_result.value = "Export segmentation as .npy file ..."
                 np.save(path, sorted_labels)
                 export_result.value = "Segementation was exported"
