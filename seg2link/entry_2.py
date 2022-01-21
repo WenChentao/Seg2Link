@@ -23,11 +23,13 @@ from second_correction import Seg2LinkR2
     path_mask={"label": "Folder for the mask images (*.tiff):", "mode": "d", "visible": False},
     file_seg={"label": "Segmentation file (*.npy):", "mode": "r", "filter": '*.npy'},
     enable_mask={"label": "Use the mask image"},
+    enable_cell={"label": "Use the cell/noncell image"},
 )
 def widget_entry2(
         load_para,
         save_para,
         enable_mask=False,
+        enable_cell=False,
         path_cells=Path.cwd(),
         path_raw=Path.cwd(),
         path_mask=Path.cwd(),
@@ -39,12 +41,9 @@ def widget_entry2(
         mask_value=2,
 ):
     """Run some computation."""
-    cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells))
+    cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells)) if enable_cell else None
     images = load_raw(path_raw, file_cached=_npy_name(path_raw))
-    if enable_mask:
-        mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask))
-    else:
-        mask_dilated = None
+    mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
     segmentation = np.load(str(file_seg))
     label_shape = segmentation.shape
     widget_entry2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"

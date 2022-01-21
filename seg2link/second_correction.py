@@ -233,7 +233,8 @@ class VisualizeAll(VisualizeBase):
         if self.cell_mask is not None:
             self.viewer.layers['mask_cells'].data = self.cell_mask[..., self.emseg2.s]
         self.viewer.layers['raw_image'].data = self.raw[..., self.emseg2.s]
-        self.viewer.layers['cell_region'].data = self.cell_region[..., self.emseg2.s]
+        if self.cell_region is not None:
+            self.viewer.layers['cell_region'].data = self.cell_region[..., self.emseg2.s]
         self.viewer.layers['segmentation'].data = self.emseg2.labels
 
     def update_segmentation_r2(self):

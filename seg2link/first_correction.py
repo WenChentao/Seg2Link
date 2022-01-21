@@ -280,12 +280,13 @@ class VisualizeBase:
         """Initialize the napari viewer"""
         viewer = napari.Viewer()
 
-        putative_data32bit = np.zeros((*self.cell_region.shape[:2], 2), dtype=np.uint32)
-        putative_data = np.zeros((*self.cell_region.shape[:2], 2), dtype=np.uint8)
+        putative_data32bit = np.zeros((*self.raw.shape[:2], 2), dtype=np.uint32)
+        putative_data = np.zeros((*self.raw.shape[:2], 2), dtype=np.uint8)
         if self.cell_mask is not None:
             viewer.add_labels(putative_data, name='mask_cells', color={0: "k", 1: "w"}, visible=False, scale=self.scale)
         viewer.add_image(putative_data, name='raw_image', contrast_limits=[0, 256 ** self.raw.itemsize - 1], scale=self.scale)
-        viewer.add_labels(putative_data, name='cell_region', color={0: "k", 1: "w"}, opacity=0.4, scale=self.scale)
+        if self.cell_region is not None:
+            viewer.add_labels(putative_data, name='cell_region', color={0: "k", 1: "w"}, opacity=0.4, scale=self.scale)
         viewer.add_labels(putative_data32bit, name='segmentation', num_colors=100, scale=self.scale)
         viewer.dims.set_axis_label(axis=2, label="Slice (0-0)")
         viewer.dims.order = (2, 0, 1)
@@ -297,7 +298,8 @@ class VisualizeBase:
         if self.cell_mask is not None:
             self.viewer.layers['mask_cells'].data = self.cell_mask[..., slices]
         self.viewer.layers['raw_image'].data = self.raw[..., slices]
-        self.viewer.layers['cell_region'].data = self.cell_region[..., slices]
+        if self.cell_region is not None:
+            self.viewer.layers['cell_region'].data = self.cell_region[..., slices]
         self.viewer.layers['segmentation'].data = labels
 
 
