@@ -2,7 +2,7 @@ import datetime
 import textwrap
 from enum import Enum
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 from PIL import Image
@@ -12,7 +12,7 @@ from magicgui.widgets import Container
 
 import config
 from misc import add_blank_lines, TinyCells, make_folder
-from single_cell_division import DivideMode
+from single_cell_division import DivideMode, NoLabelError
 from watersheds import labels_with_boundary, remove_boundary_scipy
 from sort_remove_widget import sort_remove_window
 
@@ -149,9 +149,20 @@ class WidgetsB:
         self.cached_action.value = "".join(self.emseg2.cache.cached_actions)
         return None
 
-    def locate_cell(self, label, dmode=DivideMode._3D):
+    def locate_label_divided(self):
+        if self.emseg2.divide_list:
+            target_label = self.emseg2.divide_list[self.choose_box.value - 1]
+            self.locate_cell_button.selected_label_.value = target_label
+            try:
+                self.locate_cell(target_label,
+                                 dmode=self.divide_mode.value,
+                                 subregion_slice=self.emseg2.divide_subregion_slice)
+            except NoLabelError:
+                self.locate_cell_button.location.value = "Not found"
+
+    def locate_cell(self, label, dmode=DivideMode._3D, subregion_slice=None):
         if dmode == DivideMode._3D:
-            return self.locate_cell_3d(label)
+            return self.locate_cell_3d(label, subregion_slice)
         else:
             return self.locate_cell_2d(label)
 
@@ -165,23 +176,27 @@ class WidgetsB:
             x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
             self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
-    def locate_cell_3d(self, label):
-        label_projected_along_z = np.any(self.emseg2.labels == label, axis=(0, 1))
-        if not np.any(label_projected_along_z):
-            self.locate_cell_button.location.value = f"Not found"
-        else:
-            layers_with_label = np.flatnonzero(label_projected_along_z)
-            center_layer = layers_with_label[len(layers_with_label)//2]
-            self.emseg2.vis.viewer.dims.set_current_step(axis=2, value=center_layer)
-            locs_current_layer = np.where(self.emseg2.labels[..., center_layer] == label)
-            x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
-            self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
+    def locate_cell_3d(self, label, subregion_slice=None):
+        center_layer, x_loc, y_loc = self.locate_cell_3d_subregion(self.emseg2.labels, label, subregion_slice)
+        self.emseg2.vis.viewer.dims.set_current_step(axis=2, value=center_layer)
+        self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
-    def locate_label_divided(self):
-        if self.emseg2.divide_list:
-            label = self.emseg2.divide_list[self.choose_box.value - 1]
-            self.locate_cell_button.selected_label_.value = label
-            self.locate_cell(label, dmode=self.divide_mode.value)
+    @staticmethod
+    def locate_cell_3d_subregion(label_img, label, subregion_slice=None):
+        label_subimg = label_img.view() if subregion_slice is None else label_img[subregion_slice]
+        label_projected_along_z = np.any(label_subimg == label, axis=(0, 1))
+        if not np.any(label_projected_along_z):
+            raise NoLabelError
+        layers_with_label = np.flatnonzero(label_projected_along_z)
+        center_layer = layers_with_label[len(layers_with_label) // 2]
+        locs_current_layer = np.where(label_subimg[..., center_layer] == label)
+        x_loc, y_loc = np.mean(locs_current_layer[0], dtype=int), np.mean(locs_current_layer[1], dtype=int)
+        if subregion_slice is None:
+            return center_layer, x_loc, y_loc
+        else:
+            return center_layer + subregion_slice[2].start, \
+                   x_loc + subregion_slice[0].start, \
+                   y_loc + subregion_slice[1].start
 
     def widget_binding(self):
         search_button = self.locate_cell_button.locate_btn
@@ -190,8 +205,6 @@ class WidgetsB:
         save_as_button = self.save_button.save_as_btn
         load_dialog = self.load_dialog
         remove_and_save = self.remove_and_save
-        # max_cell_num = self.max_cell_num.spin_box
-        # remove_and_save = self.remove_and_save
         boundary_action = self.boundary_action
         export_button = self.export_button
         state_info = self.state_info
@@ -203,7 +216,10 @@ class WidgetsB:
         @search_button.changed.connect
         def search_label():
             label = self.viewer.layers["segmentation"].selected_label
-            self.locate_cell(label)
+            try:
+                self.locate_cell(label)
+            except NoLabelError:
+                self.locate_cell_button.location.value = f"Not found"
 
         @save_button.changed.connect
         def save_overwrite():
@@ -271,7 +287,6 @@ class WidgetsB:
             remove_save(self.remove_sort_window.max_cell_num.value)
             self.remove_sort_window.hide()
 
-        @lprofile
         def remove_save(max_cell_num):
             if self.emseg2.labels_path.parent.exists():
                 print("Saving .npy before removing ...")
@@ -312,10 +327,13 @@ class WidgetsB:
             )
             if path:
                 state_info.value = "Exporting segmentation as .tiff files ..."
-                if np.max(self.emseg2.labels) <= 65535:
-                    dtype = np.uint16
+                if self.emseg2.labels.dtype == np.uint16 or np.max(self.emseg2.labels) > 65535:
+                    transformed_img = self.emseg2.labels.transpose((2, 0, 1))
+                elif self.emseg2.labels.dtype == np.uint32 or self.emseg2.labels.dtype == np.int32:
+                    transformed_img = self.emseg2.labels.view(np.uint16)[:,:,::2].transpose((2, 0, 1))
                 else:
-                    dtype = np.uint32
+                    raise ValueError(f"emseg2.labels.dtype is {self.emseg2.labels.dtype} "
+                                     f"but should be np.uint32 or np.uint16")
 
                 if boundary_action.value == Boundary.Add:
                     np.save(self.emseg2.labels_path.parent / "seg-modified_before_adding_boundary.npy",
@@ -334,11 +352,10 @@ class WidgetsB:
                 else:
                     pass
 
-                path_ = make_folder(Path(path) / "seg_tiff")
-                for z in range(self.emseg2.labels.shape[2]):
-                    modified_seg = self.emseg2.labels[..., z].astype(dtype)
-                    Image.fromarray(modified_seg).save(str(path_ / "seg_slice%04i.tiff") % z)
-                state_info.value = "Segementation was exported as tiff images"
+                # path_ = make_folder(Path(path) / "seg_tiff")
+                # for z, img_z in enumerate(transformed_img):
+                #     Image.fromarray(img_z).save(str(path_ / "seg_slice%04i.tiff") % z)
+                # state_info.value = "Segementation was exported as tiff images"
             else:
                 state_info.value = "Warning: Folder doesn't exist!"
 
@@ -347,19 +364,6 @@ class Boundary(Enum):
     Default: str = "None"
     Add: str = "add"
     Remove: str = "remove"
-
-
-class SpinBoxWithButton(Container):
-    def __init__(self, **kwargs):
-        self.spin_box = widgets.SpinBox(min=1, max=10 ** 8, value=65535)
-        self.estimate_btn = widgets.PushButton(text="Estimate")
-        kwargs["widgets"] = [self.spin_box, self.estimate_btn]
-        kwargs["labels"] = False
-        kwargs["layout"] = "horizontal"
-        super().__init__(**kwargs)
-        self.margins = (0, 0, 0, 0)
-        self.estimate_btn.changed.disconnect()
-        self.spin_box.changed.disconnect()
 
 
 class LocateSelectedCellButton(Container):

@@ -25,6 +25,7 @@ class Seg2LinkR2:
         self.divide_list = []
         self.label_list: Set[int] = set()
         self.s = slice(0, self.labels.shape[2])
+        self.divide_subregion_slice = None
         self.labels_path = labels_path.parent / "seg-modified.npy"
         self.vis = VisualizeAll(self, raw, cell_region, mask)
         self.vis.show_segmentation_r2()
@@ -172,6 +173,7 @@ class Seg2LinkR2:
                     self._update_segmentation()
                     self.cache.cache_state(subarray_old, subarray_new, slice_, "Divide")
                     self.update_info(label_before_division)
+                    self.divide_subregion_slice = slice_
 
                     self.vis.widgets.locate_label_divided()
 

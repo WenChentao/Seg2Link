@@ -30,7 +30,7 @@ class NoLabelError(Exception):
     pass
 
 
-@qprofile
+@lprofile
 def separate_one_label(seg_img3d: ndarray, label: int, threshold_area: int, mode: str, layer_from0: int) \
         -> Tuple[ndarray, ndarray, Tuple[slice, slice, slice], List[int]]:
     layer_num = layer_from0 if mode != DivideMode._3D else None
@@ -130,7 +130,6 @@ def separate_one_slice_one_label(seg_img2d: ndarray, label: int, max_label: int)
 def separate_subregion_3d(sub_region: ndarray) -> ndarray:
     return ski.measure.label(sub_region, connectivity=3)
 
-
 def _suppress_largest_label(seg: ndarray) -> Tuple[ndarray, List[int]]:
     """Revise the _labels: largest label (of area) -> 0; _labels>larest label: -= 1
 
@@ -178,7 +177,6 @@ class SortedRegion():
         return neigh.kneighbors(X=coord1, return_distance=True)[0].min()
 
 
-@qprofile
 def suppress_small_regions(seg2d: ndarray, threshold_area_percentile: int) -> ndarray:
     """Merge regions with area < threshold with other regions
     """

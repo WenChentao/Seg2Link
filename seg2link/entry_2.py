@@ -45,6 +45,7 @@ def widget_entry2(
     images = load_raw(path_raw, file_cached=_npy_name(path_raw))
     mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
     segmentation = np.load(str(file_seg))
+    print("segmentation dtype", segmentation.dtype)
     label_shape = segmentation.shape
     widget_entry2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
     Seg2LinkR2(images, cells, mask_dilated, segmentation, file_seg)
