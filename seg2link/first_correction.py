@@ -256,14 +256,24 @@ class Seg2LinkR1:
                 export_result.value = "Transform segmentation to array ..."
                 seg_array = self.labels.to_multiple_labels(slice(0, self.current_slice), self.seg, self.seg_img_cache)
                 export_result.value = "Sorting labels according to the sizes ..."
-                tc = TinyCells(seg_array)
-                tc.sort_by_areas()
-                sorted_labels = tc.remove_and_relabel(seg_array)
+                sorted_labels = self.sort_remove_tiny(seg_array)
                 export_result.value = "Export segmentation as .npy file ..."
                 np.save(path, sorted_labels)
                 export_result.value = "Segementation was exported"
             else:
                 export_result.value = "Warning: Folder doesn't exist!"
+
+    @staticmethod
+    def sort_remove_tiny(seg_array):
+        tc = TinyCells(seg_array)
+        tc.sort_by_areas()
+        if config.dtype_r2 == np.uint16 and seg_array.dtype == np.uint32:
+            sorted_labels = tc.remove_and_relabel(seg_array, config.upper_limit_r1_export).astype(np.uint16)
+        elif config.dtype_r2 == np.uint32:
+            sorted_labels = tc.remove_and_relabel(seg_array)
+        else:
+            raise ValueError("config.dtype_r2 should be np.uint32 or np.uint16")
+        return sorted_labels
 
 
 class VisualizeBase:
@@ -276,6 +286,7 @@ class VisualizeBase:
         self.scale = config.scale_xyz
         self.viewer = self.initialize_viewer()
 
+    @lprofile
     def initialize_viewer(self):
         """Initialize the napari viewer"""
         viewer = napari.Viewer()

@@ -14,7 +14,7 @@ import config
 from misc import add_blank_lines, TinyCells, make_folder
 from single_cell_division import DivideMode, NoLabelError
 from watersheds import labels_with_boundary, remove_boundary_scipy
-from sort_remove_widget import sort_remove_window
+from new_windows_r2 import sort_remove_window
 
 if config.debug:
     from config import qprofile, lprofile
@@ -73,6 +73,7 @@ class WidgetsB:
         self.viewer = visualizeall.viewer
         self.emseg2 = visualizeall.emseg2
         self.tiny_cells = TinyCells(self.emseg2.labels)
+        self.label_max = 0
 
         # Hotkeys panel
         self.hotkeys_info_value = '[K]:  Divide one cell' \
@@ -87,7 +88,7 @@ class WidgetsB:
         self.hotkeys_info = widgets.Label(value=self.hotkeys_info_value)
 
         # Label/cache panel
-        self.max_label = widgets.LineEdit(label="Largest label", enabled=False)
+        self.max_label_info = widgets.LineEdit(label="Largest label", enabled=False)
         self.cached_action = widgets.TextEdit(label="Cached actions",
                                               tooltip=(f"Less than {config.cache_length_second} action can be cached"),
                                               value="", enabled=False)
@@ -118,7 +119,7 @@ class WidgetsB:
         self.choose_box.changed.connect(self.locate_label_divided)
 
     def add_widgets(self):
-        container_save_states = Container(widgets=[self.max_label, self.cached_action, self.locate_cell_button,
+        container_save_states = Container(widgets=[self.max_label_info, self.cached_action, self.locate_cell_button,
                                                    self.label_list_msg])
         container_divide_cell = Container(widgets=[
             self.divide_mode, self.threshold_area, self.divide_msg, self.choose_box])
@@ -133,7 +134,7 @@ class WidgetsB:
         self.viewer.window.add_dock_widget([self.hotkeys_info], name="HotKeys", area="left")
 
     def update_info(self, label_pre_division: int):
-        label_max = np.max(self.emseg2.labels)
+        self.label_max = np.max(self.emseg2.labels)
         labels_post_division = self.emseg2.divide_list
         if len(labels_post_division) != 0:
             self.choose_box.max = len(labels_post_division)
@@ -142,9 +143,9 @@ class WidgetsB:
             self.choose_box.max = 1
             self.divide_msg.value = ""
         self.label_list_msg.value = tuple(self.emseg2.label_list)
-        if label_max is not None:
-            self.max_label.value = str(label_max)
-            self.locate_cell_button.selected_label_.max = label_max
+        if self.label_max is not None:
+            self.max_label_info.value = str(self.label_max)
+            self.locate_cell_button.selected_label_.max = self.label_max
 
         self.cached_action.value = "".join(self.emseg2.cache.cached_actions)
         return None
@@ -352,10 +353,10 @@ class WidgetsB:
                 else:
                     pass
 
-                # path_ = make_folder(Path(path) / "seg_tiff")
-                # for z, img_z in enumerate(transformed_img):
-                #     Image.fromarray(img_z).save(str(path_ / "seg_slice%04i.tiff") % z)
-                # state_info.value = "Segementation was exported as tiff images"
+                path_ = make_folder(Path(path) / "seg_tiff")
+                for z, img_z in enumerate(transformed_img):
+                    Image.fromarray(img_z).save(str(path_ / "seg_slice%04i.tiff") % z)
+                state_info.value = "Segementation was exported as tiff images"
             else:
                 state_info.value = "Warning: Folder doesn't exist!"
 

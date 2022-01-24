@@ -10,6 +10,7 @@ from numpy import ndarray
 import config
 from first_correction import Cache, VisualizeBase
 from misc import print_information, replace
+from new_windows_r2 import message_delete_labels
 from single_cell_division import separate_one_label, get_subregion, NoLabelError, NoDivisionError
 from widgets import WidgetsB
 
@@ -19,7 +20,7 @@ if config.debug:
 
 class Seg2LinkR2:
     """Segment the cells in 3D EM images"""
-
+    @qprofile
     def __init__(self, raw: ndarray, cell_region: ndarray, mask: ndarray, labels: ndarray, labels_path: Path):
         self.labels = labels
         self.divide_list = []
@@ -35,6 +36,7 @@ class Seg2LinkR2:
         self.vis.widgets.widget_binding()
         self.update_cmap()
         self.layer_selected = 0
+        self.message_delete_labels = message_delete_labels
 
     def _update_segmentation(self):
         self.vis.update_segmentation_r2()
@@ -92,6 +94,19 @@ class Seg2LinkR2:
         self.cache.cache_state(subarray_old, subarray_new, slice_, action)
         self.update_info()
 
+    def show_warning_delete_cells(self):
+        self.message_delete_labels.width = 500
+        self.message_delete_labels.height = 80
+        self.message_delete_labels.show(run=True)
+        self.message_delete_labels.info.value = \
+            f"Please reduce cell number! (Current: {self.vis.widgets.label_max}, " \
+            f"Limitation: {config.upper_limit_labels_r2})\n" \
+            f"Do it by pressing [Sort labels and remove tiny cells] button"
+        self.message_delete_labels.ok_button.changed.connect(self.hide_warning_delete_cells)
+
+    def hide_warning_delete_cells(self):
+        self.message_delete_labels.hide()
+
     def keys_binding(self):
         """Set the hotkeys for user's operations"""
         viewer_seg = self.vis.viewer.layers['segmentation']
@@ -148,6 +163,9 @@ class Seg2LinkR2:
         @viewer_seg.bind_key(config.key_separate)
         @print_information("Separate")
         def separate_label(viewer_seg):
+            if config.dtype_r2==np.uint16 and self.vis.widgets.label_max >= config.upper_limit_labels_r2:
+                self.show_warning_delete_cells()
+                return
             if viewer_seg.selected_label == 0:
                 print("\nLabel 0 should not be separated!")
             else:

@@ -4,8 +4,15 @@ import pstats
 from inspect import signature
 from io import StringIO
 from typing import Optional, Tuple
+import numpy as np
 
 debug = True
+
+if debug:
+    import atexit
+    import line_profiler
+    lprofile = line_profiler.LineProfiler()
+    atexit.register(lprofile.print_stats)
 
 label_filename_v1 = 'label%04i.pickle' # Deprecated. Will be removed in future
 label_filename_v2 = 'labels_list_%04i.pickle'
@@ -16,6 +23,10 @@ cache_length_first = 10
 cache_length_second = 5
 
 raw_bit = 8
+
+dtype_r2 = np.uint16
+upper_limit_labels_r2 = 64000
+upper_limit_r1_export = upper_limit_labels_r2 - 10
 
 # Visualization
 max_draw_layers = 100
@@ -79,8 +90,3 @@ def qprofile(func):
 
     return profiled_func
 
-if debug:
-    import atexit
-    import line_profiler
-    lprofile = line_profiler.LineProfiler()
-    atexit.register(lprofile.print_stats)

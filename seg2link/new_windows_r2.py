@@ -1,5 +1,7 @@
 from magicgui import magicgui
 
+import config
+
 
 @magicgui(
     call_button=False,
@@ -16,6 +18,20 @@ def sort_remove_window(
         removed_cell_size="",
         save_button=False,
         cancel_button=False
+):
+    """Run some computation."""
+    return None
+
+
+@magicgui(
+    call_button=False,
+    layout="vertical",
+    info={"widget_type": "Label", "label": "Warning"},
+    ok_button={"widget_type": "PushButton", "text": "OK"},
+)
+def message_delete_labels(
+        info="",
+        ok_button=False,
 ):
     """Run some computation."""
     return None

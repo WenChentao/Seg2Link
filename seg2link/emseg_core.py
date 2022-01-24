@@ -134,7 +134,7 @@ class Labels:
         """Get segmentation results (images) around current slice"""
         layer_num = layers.stop - layers.start
         h, w = initial_seg.current_seg.shape
-        labels_img = np.zeros((layer_num, h, w), dtype=initial_seg.current_seg.dtype)
+        labels_img = np.zeros((layer_num, h, w), dtype=np.uint32)
         for i, z in enumerate(range(layers.start, layers.stop)):
             if (z + 1) <= self.current_slice:
                 labels_img[i, ...] = self.to_labels_img(z + 1, seg_img_cache)
