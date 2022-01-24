@@ -6,6 +6,7 @@ from typing import Tuple, Optional
 
 import numpy as np
 from PIL import Image
+from PyQt5.QtWidgets import QApplication
 from magicgui import widgets, use_app
 from magicgui.types import FileDialogMode
 from magicgui.widgets import Container
@@ -317,8 +318,12 @@ class WidgetsB:
                     f"Cells < {self.tiny_cells.min_area(self.remove_sort_window.max_cell_num.value)[0]} " \
                     f"voxels will be removed"
 
+        def show_state_info(info: str):
+            state_info.value = info
+            QApplication.processEvents()
+
         @export_button.changed.connect
-        def export():
+        def boundary_process_export():
             mode_ = FileDialogMode.EXISTING_DIRECTORY
             path = use_app().get_obj("show_file_dialog")(
                 mode_,
@@ -327,38 +332,45 @@ class WidgetsB:
                 filter=None
             )
             if path:
-                state_info.value = "Exporting segmentation as .tiff files ..."
-                if self.emseg2.labels.dtype == np.uint16 or np.max(self.emseg2.labels) > 65535:
-                    transformed_img = self.emseg2.labels.transpose((2, 0, 1))
-                elif self.emseg2.labels.dtype == np.uint32 or self.emseg2.labels.dtype == np.int32:
-                    transformed_img = self.emseg2.labels.view(np.uint16)[:,:,::2].transpose((2, 0, 1))
-                else:
-                    raise ValueError(f"emseg2.labels.dtype is {self.emseg2.labels.dtype} "
-                                     f"but should be np.uint32 or np.uint16")
+                show_state_info("Processing boundary...")
+                modify_boundary()
+                transformed_labels = transform_dtype(self.emseg2.labels)
 
-                if boundary_action.value == Boundary.Add:
-                    np.save(self.emseg2.labels_path.parent / "seg-modified_before_adding_boundary.npy",
-                            self.viewer.layers["segmentation"].data)
-                    self.emseg2.labels = labels_with_boundary(self.emseg2.labels)
-                    self.emseg2._update_segmentation()
-                    np.save(self.emseg2.labels_path.parent / "seg-modified_after_adding_boundary.npy",
-                            self.viewer.layers["segmentation"].data)
-                elif boundary_action.value == Boundary.Remove:
-                    np.save(self.emseg2.labels_path.parent / "seg-modified_before_removing_boundary.npy",
-                            self.viewer.layers["segmentation"].data)
-                    self.emseg2.labels = remove_boundary_scipy(self.emseg2.labels)
-                    self.emseg2._update_segmentation()
-                    np.save(self.emseg2.labels_path.parent / "seg-modified_after_removing_boundary.npy",
-                            self.viewer.layers["segmentation"].data)
-                else:
-                    pass
-
+                show_state_info("Boundary was modified. Saving images...")
                 path_ = make_folder(Path(path) / "seg_tiff")
-                for z, img_z in enumerate(transformed_img):
+                for z, img_z in enumerate(transformed_labels):
                     Image.fromarray(img_z).save(str(path_ / "seg_slice%04i.tiff") % z)
-                state_info.value = "Segementation was exported as tiff images"
+                show_state_info("Segementation was exported as tiff images")
             else:
                 state_info.value = "Warning: Folder doesn't exist!"
+
+        def modify_boundary():
+            if boundary_action.value == Boundary.Add:
+                np.save(self.emseg2.labels_path.parent / "seg-modified_before_adding_boundary.npy",
+                        self.viewer.layers["segmentation"].data)
+                self.emseg2.labels = labels_with_boundary(self.emseg2.labels)
+                self.emseg2._update_segmentation()
+                np.save(self.emseg2.labels_path.parent / "seg-modified_after_adding_boundary.npy",
+                        self.viewer.layers["segmentation"].data)
+            elif boundary_action.value == Boundary.Remove:
+                np.save(self.emseg2.labels_path.parent / "seg-modified_before_removing_boundary.npy",
+                        self.viewer.layers["segmentation"].data)
+                self.emseg2.labels = remove_boundary_scipy(self.emseg2.labels)
+                self.emseg2._update_segmentation()
+                np.save(self.emseg2.labels_path.parent / "seg-modified_after_removing_boundary.npy",
+                        self.viewer.layers["segmentation"].data)
+            else:
+                pass
+
+        def transform_dtype(labels):
+            if labels.dtype == np.uint16 or np.max(labels) > 65535:
+                transformed_labels = labels.transpose((2, 0, 1))
+            elif labels.dtype == np.uint32 or labels.dtype == np.int32:
+                transformed_labels = labels.view(np.uint16)[:, :, ::2].transpose((2, 0, 1))
+            else:
+                raise ValueError(f"emseg2.labels.dtype is {labels.dtype} "
+                                 f"but should be np.uint32 or np.uint16")
+            return transformed_labels
 
 
 class Boundary(Enum):
