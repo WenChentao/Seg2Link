@@ -4,6 +4,7 @@ import numpy as np
 from magicgui import magicgui, use_app
 from magicgui.types import FileDialogMode
 
+import config
 from entry_1 import load_cells, load_raw, load_mask, read_ini, save_ini, _npy_name, update_error_info
 from second_correction import Seg2LinkR2
 
@@ -45,9 +46,11 @@ def widget_entry2(
     images = load_raw(path_raw, file_cached=_npy_name(path_raw))
     mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
     segmentation = np.load(str(file_seg))
-    print("segmentation dtype", segmentation.dtype)
+    if segmentation.dtype != config.dtype_r2:
+        raise TypeError(f"segmentation should has dtype {config.dtype_r2}",)
     label_shape = segmentation.shape
     widget_entry2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
+    print("Segmentation shape:", label_shape)
     Seg2LinkR2(images, cells, mask_dilated, segmentation, file_seg)
     return None
 
