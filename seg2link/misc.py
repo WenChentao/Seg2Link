@@ -6,7 +6,9 @@ from typing import List, Tuple, Optional, Callable, Union, Set
 import cv2
 import numpy as np
 from numpy import ndarray
+from scipy import ndimage as ndi
 from scipy.ndimage import grey_dilation
+from skimage.segmentation import relabel_sequential
 
 import config
 
@@ -137,3 +139,15 @@ def replace(labels_old: Union[int, Set[int]], label_new: int, array: ndarray) ->
     else:
         array[array == labels_old] = label_new
     return array
+
+
+def mask_cells(label_img: ndarray, mask: ndarray, ratio_mask: float) -> ndarray:
+    index = np.unique(label_img)
+    index = index[index != 0]
+    ratio = np.array(ndi.mean(mask, labels=label_img, index=index))
+
+    mask_idx = np.arange(index[-1]+1, dtype=label_img.dtype)
+    idx_mask = list(np.where(ratio <= ratio_mask)[0])
+    for idx in idx_mask:
+        mask_idx[index[idx]] = 0
+    return relabel_sequential(mask_idx[label_img])[0]

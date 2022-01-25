@@ -11,12 +11,11 @@ from typing import List, Tuple, Optional, Union, Set
 import numpy as np
 import skimage as ski
 from numpy import ndarray
-from scipy import ndimage as ndi
 from skimage.segmentation import relabel_sequential
 
 import config
 from link_by_overlap import link2slices
-from misc import make_folder, replace
+from misc import make_folder, replace, mask_cells
 from watersheds import _dist_watershed
 
 
@@ -218,26 +217,18 @@ class Segmentation:
     def watershed(self, layer_idx: int):
         """Segment a 2D label regions and save the result"""
         current_seg = _dist_watershed(self.cell_region[..., layer_idx - 1])
-        self.current_seg = self._mask_cells(current_seg, self.mask, layer_idx, self.ratio_mask)
+        if self.mask is None:
+            self.current_seg = current_seg
+        else:
+            self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx-1], self.ratio_mask)
 
     def reseg(self, label_img: ndarray, layer_idx: int):
         """Resegment based on the modified segmentation"""
         current_seg = ski.measure.label(label_img, connectivity=1)
-        self.current_seg = self._mask_cells(current_seg, self.mask, layer_idx, self.ratio_mask)
-
-    @staticmethod
-    def _mask_cells(label_img: ndarray, mask: Optional[ndarray], layer_idx: int, ratio_mask: float) -> ndarray:
-        if mask is None:
-            return label_img
-
-        index = np.unique(label_img)
-        ratio = np.array(ndi.mean(mask[..., layer_idx - 1], labels=label_img, index=index[1:]))
-
-        mask_idx = np.zeros_like(index)
-        idx_mask = list(np.where(ratio > ratio_mask)[0] + 1)
-        for idx in idx_mask:
-            mask_idx[idx] = idx
-        return relabel_sequential(mask_idx[label_img])[0]
+        if self.mask is None:
+            self.current_seg = current_seg
+        else:
+            self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx-1], self.ratio_mask)
 
 
 class Alignment:
