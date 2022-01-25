@@ -52,6 +52,7 @@ class WidgetsA:
         self.export_result = widgets.Label(value="")
 
         self.add_widgets()
+        QApplication.processEvents()
 
     def add_widgets(self):
         container_states = Container(widgets=[self.image_size, self.max_label, self.cached_action, self.label_list_msg])
@@ -85,7 +86,8 @@ class WidgetsB:
                                   '\n[D]: Delete labels in label list or the label selected\n---------------' \
                                   '\n[Q]: Switch (selected | all labels)' \
                                   '\n[U]: Undo     [F]: Redo' \
-                                  '\n[L]: Picker    [E]: Eraser'
+                                  '\n[L]: Picker    [E]: Eraser' \
+                                  '\n[H]: Online Help'
         self.hotkeys_info = widgets.Label(value=self.hotkeys_info_value)
 
         # Label/cache panel
@@ -118,6 +120,7 @@ class WidgetsB:
 
         self.add_widgets()
         self.choose_box.changed.connect(self.locate_label_divided)
+        QApplication.processEvents()
 
     def add_widgets(self):
         container_save_states = Container(widgets=[self.max_label_info, self.cached_action, self.locate_cell_button,
@@ -200,6 +203,11 @@ class WidgetsB:
                    x_loc + subregion_slice[0].start, \
                    y_loc + subregion_slice[1].start
 
+    def show_state_info(self, info: str):
+        self.state_info.value = info
+        print(info)
+        QApplication.processEvents()
+
     def widget_binding(self):
         search_button = self.locate_cell_button.locate_btn
         choose_cell_all = self.locate_cell_button.selected_label_
@@ -209,7 +217,6 @@ class WidgetsB:
         remove_and_save = self.remove_and_save
         boundary_action = self.boundary_action
         export_button = self.export_button
-        state_info = self.state_info
 
         @choose_cell_all.changed.connect
         def choose_label_all_():
@@ -225,28 +232,28 @@ class WidgetsB:
 
         @save_button.changed.connect
         def save_overwrite():
-            if self.emseg2.labels_path.parent.exists():
-                print("pressed save button")
-                print(self.viewer.layers["segmentation"].data.dtype)
-                state_info.value = "Saving segmentation as .npy file ..."
+            if self.viewer.layers["segmentation"].data.dtype != config.dtype_r2:
+                self.show_state_info(f"Warning: dtype should be {config.dtype_r2}!")
+            elif self.emseg2.labels_path.parent.exists():
+                self.show_state_info("Saving segmentation as .npy file... Please wait")
                 np.save(self.emseg2.labels_path, self.viewer.layers["segmentation"].data)
-                state_info.value = f"{self.emseg2.labels_path.name} was saved at: " \
-                                      f"{datetime.datetime.now().strftime('%H:%M:%S')}"
+                self.show_state_info(f"{self.emseg2.labels_path.name} was saved at: "
+                                     f"{datetime.datetime.now().strftime('%H:%M:%S')}")
             else:
-                state_info.value = "Warning: Folder doesn't exist!"
+                self.show_state_info("Warning: Folder doesn't exist!")
 
         @save_as_button.changed.connect
         def save_as():
-            if self.emseg2.labels_path.parent.exists():
-                print("pressed save as button")
-                print(self.viewer.layers["segmentation"].data.dtype)
+            if self.viewer.layers["segmentation"].data.dtype != config.dtype_r2:
+                self.show_state_info(f"Warning: dtype should be {config.dtype_r2}!")
+            elif self.emseg2.labels_path.parent.exists():
                 path = select_file()
                 if path:
-                    state_info.value = "Saving segmentation as .npy file ..."
+                    self.show_state_info("Saving segmentation as .npy file... Please wait")
                     np.save(path, self.viewer.layers["segmentation"].data)
-                    state_info.value = f"{Path(path).name} was saved"
+                    self.show_state_info(f"{Path(path).name} was saved")
             else:
-                state_info.value = "Warning: Folder doesn't exist!"
+                self.show_state_info("Warning: Folder doesn't exist!")
 
         def select_file():
             seg_filename = "seg-modified-" + datetime.datetime.now().strftime("%Y-%h-%d-%p%I") + ".npy"
@@ -271,13 +278,14 @@ class WidgetsB:
 
         @remove_and_save.changed.connect
         def show_info_remove_cells():
-            self.state_info.value="Sorting cells..."
+            self.show_state_info("Sorting cells... Please wait")
             self.tiny_cells.sort_by_areas()
             self.remove_sort_window.width = 400
             self.remove_sort_window.height = 200
             self.remove_sort_window.show(run=True)
             cell_num = self.tiny_cells.sorted_labels.size
-            self.remove_sort_window.info.value = f"{cell_num} cells were found..."
+            self.show_state_info(f"Found {cell_num} cells")
+            self.remove_sort_window.info.value = f"Found {cell_num} cells"
             self.remove_sort_window.max_cell_num.max = cell_num
             self.remove_sort_window.max_cell_num.value = cell_num if cell_num < 65535 else 65535
             self.remove_sort_window.save_button.changed.connect(save_sorted_labels)
@@ -291,20 +299,20 @@ class WidgetsB:
 
         def remove_save(max_cell_num):
             if self.emseg2.labels_path.parent.exists():
-                print("Saving .npy before removing ...")
+                self.show_state_info("Saving segmentation before relabeling... Please wait")
                 np.save(self.emseg2.labels_path.parent / "seg-modified_before_sort_remove.npy",
                         self.viewer.layers["segmentation"].data)
-                print("Removing tiny cells ...")
+                self.show_state_info("Relabeling/Removing tiny cells... Please wait")
                 self.emseg2.labels = self.tiny_cells.remove_and_relabel(self.emseg2.labels, max_cell_num)
                 self.emseg2._update_segmentation()
-                print("Saving .npy after removing ...")
+                self.show_state_info("Saving segmentation after relabeling... Please wait")
                 np.save(self.emseg2.labels_path.parent / "seg-modified_after_sort_remove.npy",
                         self.viewer.layers["segmentation"].data)
-                state_info.value = f"Segementation were saved as: seg-modified_after_sort_remove.npy"
+                self.show_state_info(f"Segmentation was saved as: seg-modified_after_sort_remove.npy")
                 self.emseg2.cache.cache.reset_cache_b()
                 self.emseg2.update_info()
             else:
-                state_info.value = "Warning: Folder doesn't exist!"
+                self.show_state_info("Warning: Folder doesn't exist!")
 
         def cancel():
             self.remove_sort_window.hide()
@@ -318,10 +326,6 @@ class WidgetsB:
                     f"Cells < {self.tiny_cells.min_area(self.remove_sort_window.max_cell_num.value)[0]} " \
                     f"voxels will be removed"
 
-        def show_state_info(info: str):
-            state_info.value = info
-            QApplication.processEvents()
-
         @export_button.changed.connect
         def boundary_process_export():
             mode_ = FileDialogMode.EXISTING_DIRECTORY
@@ -332,17 +336,17 @@ class WidgetsB:
                 filter=None
             )
             if path:
-                show_state_info("Processing boundary...")
+                self.show_state_info("Modifying boundary... Please wait")
                 modify_boundary()
                 transformed_labels = transform_dtype(self.emseg2.labels)
 
-                show_state_info("Boundary was modified. Saving images...")
+                self.show_state_info("Saving images... Please wait")
                 path_ = make_folder(Path(path) / "seg_tiff")
                 for z, img_z in enumerate(transformed_labels):
                     Image.fromarray(img_z).save(str(path_ / "seg_slice%04i.tiff") % z)
-                show_state_info("Segementation was exported as tiff images")
+                self.show_state_info("Segementation was exported as tiff images")
             else:
-                state_info.value = "Warning: Folder doesn't exist!"
+                self.show_state_info("Warning: Folder doesn't exist!")
 
         def modify_boundary():
             if boundary_action.value == Boundary.Add:

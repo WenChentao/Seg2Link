@@ -75,7 +75,6 @@ def remove_boundary_skimage(labels: ndarray) -> ndarray:
     return expand_labels(labels, distance=1)
 
 
-@lprofile
 def remove_boundary_scipy(labels: ndarray) -> ndarray:
     """Faster than using skimage"""
     labels_dilate = dilation_scipy(labels, config.labels_expand_kernel)

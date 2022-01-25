@@ -10,6 +10,7 @@ from typing import Tuple, Optional, List, Union, Set
 
 import napari
 import numpy as np
+from PyQt5.QtWidgets import QApplication
 from magicgui import use_app
 from magicgui.types import FileDialogMode
 from napari.utils.colormaps import low_discrepancy_image
@@ -24,7 +25,7 @@ from single_cell_division import separate_one_slice_one_label
 from widgets import WidgetsA
 
 if config.debug:
-    from config import qprofile, lprofile
+    pass
 
 class Seg2LinkR1:
     """Segment the cells in 3D EM images"""
@@ -52,15 +53,12 @@ class Seg2LinkR1:
     def initialize(self):
         self.next_slice()
         self.archive_state()
-        self.show_segmentation()
+        self.vis.show_segmentation_r1()
         self.cache.cache_state(f"Next slice ({self.current_slice})")
         self.update_info()
 
     def update_info(self):
         self.vis.update_info()
-
-    def show_segmentation(self):
-        self.vis.show_segmentation_r1()
 
     def archive_state(self):
         self.archive.archive_state()
@@ -87,7 +85,7 @@ class Seg2LinkR1:
             self._set_labels(labels)
             self._update_state(seg_img, self.seg.cell_region[..., self.labels.current_slice - 1])
             print(f"Retrieved the slice {self.labels.current_slice}")
-            self.show_segmentation()
+            self.vis.show_segmentation_r1()
             self.cache.cache_state(f"Retrieve ({self.current_slice})")
             self.update_info()
 
@@ -121,7 +119,7 @@ class Seg2LinkR1:
 
     def update(self, cache_action: Optional[str] = None):
         self.archive_state()
-        self.show_segmentation()
+        self.vis.show_segmentation_r1()
         if cache_action:
             self.cache.cache_state(cache_action)
         self.update_info()
@@ -286,10 +284,10 @@ class VisualizeBase:
         self.scale = config.scale_xyz
         self.viewer = self.initialize_viewer()
 
-    @lprofile
     def initialize_viewer(self):
         """Initialize the napari viewer"""
         viewer = napari.Viewer()
+        QApplication.processEvents()
 
         putative_data32bit = np.zeros((*self.raw.shape[:2], 2), dtype=np.uint32)
         putative_data = np.zeros((*self.raw.shape[:2], 2), dtype=np.uint8)
@@ -303,15 +301,6 @@ class VisualizeBase:
         viewer.dims.order = (2, 0, 1)
         viewer.layers["segmentation"].mode = "pick"
         return viewer
-
-    def show_segmentation(self, labels: ndarray, slices: slice):
-        """Update the segmentation results and other images/label"""
-        if self.cell_mask is not None:
-            self.viewer.layers['mask_cells'].data = self.cell_mask[..., slices]
-        self.viewer.layers['raw_image'].data = self.raw[..., slices]
-        if self.cell_region is not None:
-            self.viewer.layers['cell_region'].data = self.cell_region[..., slices]
-        self.viewer.layers['segmentation'].data = labels
 
 
 class VisualizePartial(VisualizeBase):
@@ -355,12 +344,18 @@ class VisualizePartial(VisualizeBase):
         """Update the segmentation results and other images/label"""
         current_slice = self.emseg.current_slice
         slice_layers = self.get_slice(current_slice)
-        super().show_segmentation(self.emseg.labels.to_multiple_labels(slice_layers, self.emseg.seg,
-                                                                       self.emseg.seg_img_cache), slice_layers)
+        labels = self.emseg.labels.to_multiple_labels(slice_layers, self.emseg.seg, self.emseg.seg_img_cache)
 
+        if self.cell_mask is not None:
+            self.viewer.layers['mask_cells'].data = self.cell_mask[..., slice_layers]
+        self.viewer.layers['raw_image'].data = self.raw[..., slice_layers]
+        if self.cell_region is not None:
+            self.viewer.layers['cell_region'].data = self.cell_region[..., slice_layers]
+        self.viewer.layers['segmentation'].data = labels
         if self.enable_align:
             self.viewer.layers['cell_region_aligned'].data = \
                 self._expand_2d_to_3d(self.emseg.cell_region_aligned, slice_layers, current_slice)
+        QApplication.processEvents()
 
         current_layer_relative = current_slice - slice_layers.start - 1
         if reset_focus:

@@ -100,9 +100,12 @@ class Labels:
         self.current_slice += 1
 
     def to_labels_img(self, layer: int, seg_img_cache: OrderedDict) -> ndarray:
-        _labels = np.asarray([0] + self._labels[layer - 1])
-        seg_img = self.archive.read_seg_img(seg_img_cache, layer)
-        return _labels[seg_img]
+        try:
+            _labels = np.asarray([0] + self._labels[layer - 1])
+            seg_img = self.archive.read_seg_img(seg_img_cache, layer)
+            return _labels[seg_img]
+        except IndexError:
+            raise IndexError(f"{_labels.max()=}, {seg_img.max()=}, {layer=}")
 
     def _get_images_tolink(self, initial_seg: Segmentation, seg_img_cache: OrderedDict) \
             -> Tuple[ndarray, ndarray, ndarray, ndarray]:

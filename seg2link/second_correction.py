@@ -1,9 +1,10 @@
 import os
 import webbrowser
 from pathlib import Path
-from typing import Tuple, List, Optional, Set, Union, Sequence
+from typing import Tuple, List, Optional, Set, Union
 
 import numpy as np
+from PyQt5.QtWidgets import QApplication
 from napari.utils.colormaps import low_discrepancy_image
 from numpy import ndarray
 
@@ -20,7 +21,7 @@ if config.debug:
 
 class Seg2LinkR2:
     """Segment the cells in 3D EM images"""
-    @qprofile
+
     def __init__(self, raw: ndarray, cell_region: ndarray, mask: ndarray, labels: ndarray, labels_path: Path):
         self.labels = labels
         self.divide_list = []
@@ -29,7 +30,6 @@ class Seg2LinkR2:
         self.divide_subregion_slice = None
         self.labels_path = labels_path.parent / "seg-modified.npy"
         self.vis = VisualizeAll(self, raw, cell_region, mask)
-        self.vis.show_segmentation_r2()
         self.cache = CacheSubArray()
         self.update_info()
         self.keys_binding()
@@ -243,6 +243,7 @@ class VisualizeAll(VisualizeBase):
         self.emseg2 = emseg2
         self.viewer.title = "Seg2link 2nd round"
         self.widgets = WidgetsB(self)
+        self.show_segmentation_r2()
 
     def update_widgets(self, label_pre_division: int):
         self.widgets.update_info(label_pre_division)
@@ -256,6 +257,7 @@ class VisualizeAll(VisualizeBase):
         if self.cell_region is not None:
             self.viewer.layers['cell_region'].data = self.cell_region[..., self.emseg2.s]
         self.viewer.layers['segmentation'].data = self.emseg2.labels
+        QApplication.processEvents()
 
     def update_segmentation_r2(self):
         """Update the segmentation results and other images/label"""

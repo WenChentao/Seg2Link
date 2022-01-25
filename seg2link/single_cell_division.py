@@ -10,7 +10,6 @@ from sklearn.neighbors import NearestNeighbors
 
 import config
 from link_by_overlap import link2slices_return_seg
-from config import qprofile
 
 if config.debug:
     from config import qprofile, lprofile
@@ -30,7 +29,6 @@ class NoLabelError(Exception):
     pass
 
 
-@lprofile
 def separate_one_label(seg_img3d: ndarray, label: int, threshold_area: int, mode: str, layer_from0: int) \
         -> Tuple[ndarray, ndarray, Tuple[slice, slice, slice], List[int]]:
     layer_num = layer_from0 if mode != DivideMode._3D else None
