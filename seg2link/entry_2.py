@@ -1,4 +1,5 @@
 from pathlib import Path
+import warnings
 
 import numpy as np
 from magicgui import magicgui, use_app
@@ -45,14 +46,20 @@ def widget_entry2(
     cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells)) if enable_cell else None
     images = load_raw(path_raw, file_cached=_npy_name(path_raw))
     mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
-    segmentation = np.load(str(file_seg))
-    if segmentation.dtype != config.dtype_r2:
-        raise TypeError(f"segmentation should has dtype {config.dtype_r2}",)
-    label_shape = segmentation.shape
-    widget_entry2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
-    print("Segmentation shape:", label_shape)
+    segmentation = load_segmentation(file_seg)
     Seg2LinkR2(images, cells, mask_dilated, segmentation, file_seg)
     return None
+
+
+def load_segmentation(file_seg):
+    segmentation = np.load(str(file_seg))
+    if segmentation.dtype != config.dtype_r2:
+        warnings.warn(f"segmentation should has dtype {config.dtype_r2}. Transforming...")
+        segmentation = segmentation.astype(config.dtype_r2, copy=False)
+    label_shape = segmentation.shape
+    widget_entry2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
+    print("Segmentation shape:", label_shape, "dtype:", segmentation.dtype)
+    return segmentation
 
 
 @widget_entry2.enable_mask.changed.connect
