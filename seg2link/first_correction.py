@@ -17,12 +17,11 @@ from napari.utils.colormaps import low_discrepancy_image
 from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
-import config
-from emseg_core import Labels, Segmentation, Alignment, Archive
-from misc import print_information, TinyCells
-
-from single_cell_division import separate_one_slice_one_label
-from widgets import WidgetsA
+from seg2link import config
+from seg2link.emseg_core import Labels, Segmentation, Alignment, Archive
+from seg2link.misc import print_information, TinyCells
+from seg2link.single_cell_division import separate_one_slice_one_label
+from seg2link.widgets import WidgetsA
 
 if config.debug:
     pass

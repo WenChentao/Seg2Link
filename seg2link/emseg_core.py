@@ -13,10 +13,10 @@ import skimage as ski
 from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
-import config
-from link_by_overlap import link2slices
-from misc import make_folder, replace, mask_cells
-from watersheds import _dist_watershed
+from seg2link import config
+from seg2link.link_by_overlap import link2slices
+from seg2link.misc import make_folder, replace, mask_cells
+from seg2link.watersheds import _dist_watershed
 
 
 class Labels:

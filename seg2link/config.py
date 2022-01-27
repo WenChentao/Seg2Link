@@ -6,7 +6,7 @@ from io import StringIO
 from typing import Optional, Tuple
 import numpy as np
 
-debug = True
+debug = False
 
 if debug:
     import atexit

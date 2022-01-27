@@ -1,7 +1,0 @@
-opencv-python~=4.5.1.48
-numpy~=1.19.5
-magicgui~=0.3.3
-scipy~=1.5.2
-scikit-image~=0.18.3
-napari[pyqt5]~=0.4.10
-pillow~=8.0.1

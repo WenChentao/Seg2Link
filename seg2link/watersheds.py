@@ -9,8 +9,8 @@ from skimage.filters import gaussian
 from skimage.morphology import h_maxima, local_maxima
 from skimage.segmentation import expand_labels, watershed, find_boundaries
 
-import config
-from misc import dilation_scipy
+from seg2link import config
+from seg2link.misc import dilation_scipy
 if config.debug:
     from config import lprofile, qprofile
 
@@ -84,10 +84,10 @@ def remove_boundary_scipy(labels: ndarray) -> ndarray:
 
 
 if __name__ == "__main__":
-    from misc import load_image
+    from misc import load_image_pil
     from pathlib import Path
     import numpy as np
 
-    array = load_image(Path("../Data/cells_unet2"))
+    array = load_image_pil(Path("../Data/cells_unet2"))
     print(array.shape)
     _dist_watershed_3d(array[..., :5] == 0)

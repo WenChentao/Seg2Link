@@ -8,12 +8,12 @@ from PyQt5.QtWidgets import QApplication
 from napari.utils.colormaps import low_discrepancy_image
 from numpy import ndarray
 
-import config
-from first_correction import Cache, VisualizeBase
-from misc import print_information, replace
-from new_windows_r2 import message_delete_labels
-from single_cell_division import separate_one_label, get_subregion, NoLabelError, NoDivisionError
-from widgets import WidgetsB
+from seg2link import config
+from seg2link.first_correction import Cache, VisualizeBase
+from seg2link.misc import print_information, replace
+from seg2link.new_windows_r2 import message_delete_labels
+from seg2link.single_cell_division import separate_one_label, get_subregion, NoLabelError, NoDivisionError
+from seg2link.widgets import WidgetsB
 
 if config.debug:
     from config import qprofile, lprofile

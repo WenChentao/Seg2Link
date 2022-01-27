@@ -5,9 +5,9 @@ import numpy as np
 from magicgui import magicgui, use_app
 from magicgui.types import FileDialogMode
 
-import config
-from entry_1 import load_cells, load_raw, load_mask, read_ini, save_ini, _npy_name, update_error_info
-from second_correction import Seg2LinkR2
+from seg2link import config
+from seg2link.entry_1 import load_cells, load_raw, load_mask, read_ini, save_ini, _npy_name, update_error_info
+from seg2link.second_correction import Seg2LinkR2
 
 
 @magicgui(

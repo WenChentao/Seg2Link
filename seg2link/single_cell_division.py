@@ -8,8 +8,8 @@ from numpy import ndarray
 from skimage.measure import regionprops
 from sklearn.neighbors import NearestNeighbors
 
-import config
-from link_by_overlap import link2slices_return_seg
+from seg2link import config
+from seg2link.link_by_overlap import link2slices_return_seg
 
 if config.debug:
     from config import qprofile, lprofile

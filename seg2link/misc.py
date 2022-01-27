@@ -3,24 +3,24 @@ import traceback
 from pathlib import Path
 from typing import List, Tuple, Optional, Callable, Union, Set
 
-import cv2
+from PIL import Image
 import numpy as np
 from numpy import ndarray
 from scipy import ndimage as ndi
 from scipy.ndimage import grey_dilation
 from skimage.segmentation import relabel_sequential
 
-import config
+from seg2link import config
 
 if config.debug:
-    from config import qprofile, lprofile
-    from memory_profiler import profile as mprofile
+    pass
 
-def load_image(path: Path) -> ndarray:
+
+def load_image_pil(path: Path) -> ndarray:
     img_file_path = get_files(path)
     img = []
     for img_path in img_file_path:
-        img.append(cv2.imread(img_path, -1))
+        img.append(np.array(Image.open(img_path)))
     img_array = np.array(img).transpose((1, 2, 0))
     return img_array
 

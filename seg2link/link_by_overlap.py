@@ -3,7 +3,7 @@ from typing import Tuple, List, Optional, Dict
 import numpy as np
 from numpy import ndarray
 
-from config import qprofile
+from seg2link.config import qprofile
 
 
 def link2slices(seg_s1: ndarray, seg_s2: ndarray, labels_pre: ndarray, labels_post: ndarray,

@@ -1,7 +1,7 @@
 from magicgui import magicgui
 
-from entry_1 import widget_entry1
-from entry_2 import widget_entry2
+from seg2link.entry_1 import widget_entry1
+from seg2link.entry_2 import widget_entry2
 
 
 @magicgui(
@@ -25,6 +25,10 @@ def r2_changed():
     widget_entry2.show(run=True)
 
 
-if __name__ == "__main__":
+def main():
     widget_entry.show(run=True)
+
+
+if __name__ == "__main__":
+    main()
 

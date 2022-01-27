@@ -11,11 +11,11 @@ from magicgui import widgets, use_app
 from magicgui.types import FileDialogMode
 from magicgui.widgets import Container
 
-import config
-from misc import add_blank_lines, TinyCells, make_folder
-from single_cell_division import DivideMode, NoLabelError
-from watersheds import labels_with_boundary, remove_boundary_scipy
-from new_windows_r2 import sort_remove_window
+from seg2link import config
+from seg2link.misc import add_blank_lines, TinyCells, make_folder
+from seg2link.single_cell_division import DivideMode, NoLabelError
+from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
+from seg2link.new_windows_r2 import sort_remove_window
 
 if config.debug:
     from config import qprofile, lprofile

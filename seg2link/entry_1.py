@@ -7,10 +7,10 @@ from magicgui import magicgui, use_app
 from magicgui.types import FileDialogMode
 from numpy import ndarray
 
-import config
-from emseg_core import Archive
-from first_correction import Seg2LinkR1
-from misc import load_image, dilation_scipy
+from seg2link import config
+from seg2link.emseg_core import Archive
+from seg2link.first_correction import Seg2LinkR1
+from seg2link.misc import load_image_pil, dilation_scipy
 
 
 def cache_images(func) -> Callable:
@@ -33,17 +33,17 @@ def cache_images(func) -> Callable:
 
 @cache_images
 def load_raw(path_raw):
-    return load_image(path_raw)
+    return load_image_pil(path_raw)
 
 
 @cache_images
 def load_cells(cell_value, path_cells):
-    return load_image(path_cells) == cell_value
+    return load_image_pil(path_cells) == cell_value
 
 
 @cache_images
 def load_mask(mask_value: int, path_mask: Path) -> ndarray:
-    mask_images = load_image(path_mask) == mask_value
+    mask_images = load_image_pil(path_mask) == mask_value
     if config.mask_dilate_kernel is None:
         return mask_images
     else:
