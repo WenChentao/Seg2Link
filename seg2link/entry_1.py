@@ -63,7 +63,7 @@ def load_mask(mask_value: int, path_mask: Path) -> ndarray:
     threshold_link={"widget_type": "FloatSlider", "label": "Min_Overlap (linking)", "min": 0.05, "max": 0.95},
     threshold_mask={"widget_type": "FloatSlider", "label": "Min_Overlap (masking)", "min": 0.05, "max": 0.95,
                     "visible": False},
-    retrieve_slice={"widget_type": "Slider", "readout": False, "max": 1, "visible": False},
+    retrieve_slice={"widget_type": "Slider", "max": 1, "visible": False},
     path_cells={"label": "Folder for cell images (*.tiff):", "mode": "d"},
     path_raw={"label": "Folder for raw images (*.tiff):", "mode": "d"},
     path_mask={"label": "Folder for mask images (*.tiff):", "mode": "d", "visible": False},
