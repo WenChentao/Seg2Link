@@ -50,13 +50,12 @@ class Seg2LinkR1:
         self.retrieve_history(target_slice)
 
     def initialize(self):
+        print(self.labels)
         self.next_slice()
+        print(self.labels)
         self.archive_state()
         self.vis.show_segmentation_r1()
         self.cache.cache_state(f"Next slice ({self.current_slice})")
-        self.update_info()
-
-    def update_info(self):
         self.vis.update_info()
 
     def archive_state(self):
@@ -86,7 +85,7 @@ class Seg2LinkR1:
             print(f"Retrieved the slice {self.labels.current_slice}")
             self.vis.show_segmentation_r1()
             self.cache.cache_state(f"Retrieve ({self.current_slice})")
-            self.update_info()
+            self.vis.update_info()
 
     def _link_and_relabel(self, reset_align: bool):
         self.cells_aligned = self.labels.link_next_slice(
@@ -121,7 +120,7 @@ class Seg2LinkR1:
         self.vis.show_segmentation_r1()
         if cache_action:
             self.cache.cache_state(cache_action)
-        self.update_info()
+        self.vis.update_info()
 
     def keys_binding(self):
         """Set the hotkeys for user's operations"""
@@ -161,7 +160,7 @@ class Seg2LinkR1:
             else:
                 self.label_list.add(viewer_seg.selected_label)
                 print("Labels to be processed: ", self.label_list)
-                self.update_info()
+                self.vis.update_info()
 
         @viewer_seg.bind_key(config.key_clean)
         @print_information("Clean the label list")
@@ -169,7 +168,7 @@ class Seg2LinkR1:
             """Clear labels in the merged list"""
             self.label_list.clear()
             print(f"Cleaned the label list: {self.label_list}")
-            self.update_info()
+            self.vis.update_info()
 
         @viewer_seg.bind_key(config.key_merge)
         @print_information("Merge labels")

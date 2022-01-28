@@ -28,8 +28,6 @@ def _dist_watershed(cell_img2d: ndarray) -> ndarray:
     markers: ndarray = ndi.label(maxima_final)[0]
     return watershed(-distance, markers=markers, mask=cell_img2d)
 
-# from memory_profiler import profile
-
 
 def _dist_watershed_3d(cell_img3d: ndarray):
     distance: ndarray = ndi.distance_transform_edt(cell_img3d, sampling = config.scale_xyz)

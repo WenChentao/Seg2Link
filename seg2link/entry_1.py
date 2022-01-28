@@ -12,6 +12,7 @@ from seg2link.emseg_core import Archive
 from seg2link.first_correction import Seg2LinkR1
 from seg2link.misc import load_image_pil, dilation_scipy
 
+CURRENT_DIR = Path.home()
 
 def cache_images(func) -> Callable:
     def wrapper(*args, file_cached: Path, **kwargs) -> ndarray:
@@ -76,10 +77,10 @@ def widget_entry1(
         save_para,
         enable_mask=False,
         enable_align=False,
-        path_cells=Path.cwd(),
-        path_raw=Path.cwd(),
-        path_mask=Path.cwd(),
-        path_cache=Path.cwd(),
+        path_cells=CURRENT_DIR,
+        path_raw=CURRENT_DIR,
+        path_mask=CURRENT_DIR,
+        path_cache=CURRENT_DIR,
         paths_exist=["", "", "", ""],
         error_info="",
         historical_info="",
@@ -116,12 +117,12 @@ def use_mask():
 
 @widget_entry1.save_para.changed.connect
 def _on_save_para_changed():
-    seg_filename = "para_data_xx.r1.ini"
+    seg_filename = "config.r1.ini"
     mode_ = FileDialogMode.OPTIONAL_FILE
     path = use_app().get_obj("show_file_dialog")(
         mode_,
         caption="Save ini",
-        start_path=str(Path.cwd() / seg_filename),
+        start_path=str(CURRENT_DIR / seg_filename),
         filter='*.r1.ini'
     )
     if path:
@@ -142,7 +143,7 @@ def _on_load_para_changed():
     path = use_app().get_obj("show_file_dialog")(
         mode_,
         caption="Load ini",
-        start_path=str(Path.cwd()),
+        start_path=str(CURRENT_DIR),
         filter='*.r1.ini'
     )
     if path:

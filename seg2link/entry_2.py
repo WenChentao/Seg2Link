@@ -9,6 +9,7 @@ from seg2link import config
 from seg2link.entry_1 import load_cells, load_raw, load_mask, read_ini, save_ini, _npy_name, update_error_info
 from seg2link.second_correction import Seg2LinkR2
 
+CURRENT_DIR = Path.home()
 
 @magicgui(
     call_button="Start Seg2Link (2nd round)",
@@ -32,10 +33,10 @@ def widget_entry2(
         save_para,
         enable_mask=False,
         enable_cell=False,
-        path_cells=Path.cwd(),
-        path_raw=Path.cwd(),
-        path_mask=Path.cwd(),
-        file_seg=Path.cwd() / "Seg.npy",
+        path_cells=CURRENT_DIR,
+        path_raw=CURRENT_DIR,
+        path_mask=CURRENT_DIR,
+        file_seg=CURRENT_DIR / "Seg.npy",
         paths_exist=["", "", "", ""],
         error_info="",
         image_size="",
@@ -71,12 +72,12 @@ def use_mask():
 
 @widget_entry2.save_para.changed.connect
 def _on_save_para_changed():
-    seg_filename = "para_data_xx.r2.ini"
+    seg_filename = "config.r2.ini"
     mode_ = FileDialogMode.OPTIONAL_FILE
     path = use_app().get_obj("show_file_dialog")(
         mode_,
         caption="Save ini",
-        start_path=str(Path.cwd() / seg_filename),
+        start_path=str(CURRENT_DIR / seg_filename),
         filter='*.r2.ini'
     )
     if path:
@@ -95,7 +96,7 @@ def _on_load_para_changed():
     path = use_app().get_obj("show_file_dialog")(
         mode_,
         caption="Load ini",
-        start_path=str(Path.cwd()),
+        start_path=str(CURRENT_DIR),
         filter='*.r2.ini'
     )
     if path:
