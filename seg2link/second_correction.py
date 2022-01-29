@@ -16,7 +16,8 @@ from seg2link.single_cell_division import separate_one_label, get_subregion, NoL
 from seg2link.widgets import WidgetsB
 
 if config.debug:
-    from config import qprofile, lprofile
+    from config import lprofile
+    from misc import qprofile
     from memory_profiler import profile as mprofile
 
 class Seg2LinkR2:
@@ -100,7 +101,7 @@ class Seg2LinkR2:
         self.message_delete_labels.show(run=True)
         self.message_delete_labels.info.value = \
             f"Please reduce cell number! (Current: {self.vis.widgets.label_max}, " \
-            f"Limitation: {config.upper_limit_labels_r2})\n" \
+            f"Limitation: {config.pars.upper_limit_labels_r2})\n" \
             f"Do it by pressing [Sort labels and remove tiny cells] button"
         self.message_delete_labels.ok_button.changed.connect(self.hide_warning_delete_cells)
 
@@ -111,7 +112,7 @@ class Seg2LinkR2:
         """Set the hotkeys for user's operations"""
         viewer_seg = self.vis.viewer.layers['segmentation']
 
-        @viewer_seg.bind_key(config.key_add)
+        @viewer_seg.bind_key(config.pars.key_add)
         @print_information("Add a label to be processed")
         def append_label_list(viewer_seg):
             """Add label to be merged into a list"""
@@ -124,7 +125,7 @@ class Seg2LinkR2:
                 print("Labels to be processed: ", self.label_list)
                 self.update_info()
 
-        @viewer_seg.bind_key(config.key_clean)
+        @viewer_seg.bind_key(config.pars.key_clean)
         @print_information("Clean the label list")
         def clear_label_list(viewer_seg):
             """Clear labels in the merged list"""
@@ -132,45 +133,49 @@ class Seg2LinkR2:
             print(f"Cleaned the label list: {self.label_list}")
             self.update_info()
 
-        @viewer_seg.bind_key(config.key_merge)
+        @viewer_seg.bind_key(config.pars.key_merge)
         @print_information("Merge labels")
         def _merge(viewer_seg):
             if not self.label_list:
-                print("No labels were merged")
+                self.vis.widgets.show_state_info("No label was merged")
             else:
+                self.vis.widgets.show_state_info("Merging... Please wait")
                 subarray_old, subarray_new, slice_ = self.merge(self.label_list)
                 self.label_list.clear()
                 self.update(subarray_old, subarray_new, slice_, "Merge labels")
+                self.vis.widgets.show_state_info("Multiple labels were merged")
 
-        @viewer_seg.bind_key(config.key_delete)
+        @viewer_seg.bind_key(config.pars.key_delete)
         @print_information("Delete the selected label(s)")
         def del_label(viewer_seg):
             """Delete the selected label"""
             if viewer_seg.mode != "pick":
-                print("\nPlease switch to pick mode in segmentation layer")
+                self.vis.widgets.show_state_info("Warning: Switch to pick mode in segmentation layer!")
             elif viewer_seg.selected_label == 0:
-                print("\nLabel 0 cannot be deleted!")
+                self.vis.widgets.show_state_info("Label 0 cannot be deleted!")
             else:
                 try:
+                    self.vis.widgets.show_state_info("Deleting... Please wait")
                     delete_list = self.label_list if self.label_list else viewer_seg.selected_label
                     subarray_old, subarray_new, slice_ = self.delete(delete_list)
                     self.label_list.clear()
                     self.update(subarray_old, subarray_new, slice_, "Delete label(s)")
-                    print(f"Label(s) {delete_list} were deleted")
+                    self.vis.widgets.show_state_info(f"Label(s) {delete_list} were deleted")
                 except NoLabelError:
-                    print(f"Tried to delete label(s) but not found")
+                    self.vis.widgets.show_state_info(f"Tried to delete label(s) but not found")
 
-        @viewer_seg.bind_key(config.key_separate)
+        @viewer_seg.bind_key(config.pars.key_separate)
         @print_information("Separate")
         def separate_label(viewer_seg):
-            if config.dtype_r2==np.uint16 and self.vis.widgets.label_max >= config.upper_limit_labels_r2:
+            if config.pars.dtype_r2==np.uint16 and self.vis.widgets.label_max >= config.pars.upper_limit_labels_r2:
                 self.show_warning_delete_cells()
                 return
             if viewer_seg.selected_label == 0:
-                print("\nLabel 0 should not be separated!")
+                self.vis.widgets.show_state_info("Label 0 should not be separated!")
             else:
                 self.layer_selected = self.vis.viewer.dims.current_step[-1]
                 try:
+                    self.vis.widgets.show_state_info("Separating... Please wait")
                     subarray_old, subarray_new, slice_, divide_list = \
                         separate_one_label(self.labels,
                                            viewer_seg.selected_label,
@@ -178,12 +183,15 @@ class Seg2LinkR2:
                                            mode=self.vis.widgets.divide_mode.value,
                                            layer_from0=self.layer_selected)
                 except NoDivisionError:
+                    self.vis.widgets.show_state_info("")
                     self.vis.widgets.divide_msg.value = f"Label {viewer_seg.selected_label} was not separated"
                 except NoLabelError:
+                    self.vis.widgets.show_state_info("")
                     self.vis.widgets.divide_msg.value = f"Label {viewer_seg.selected_label} was not found"
                 else:
                     label_before_division = viewer_seg.selected_label
-                    print(f"Label {label_before_division} was separated into {divide_list}")
+                    self.vis.widgets.show_state_info(
+                        f"Label {label_before_division} was separated into {short_str(divide_list)}")
                     self.divide_list = divide_list
 
                     self.labels[slice_] = subarray_new
@@ -195,10 +203,17 @@ class Seg2LinkR2:
 
                     self.vis.widgets.locate_label_divided()
 
-        @viewer_seg.bind_key(config.key_undo)
-        @print_information("Undo")
+        def short_str(list_: list):
+            if len(list_)>3:
+                return "[" + str(list_[0]) + ", " + str(list_[1]) + ", ..., " +str(list_[-1]) + "]"
+            else:
+                return str(list_)
+
+        @viewer_seg.bind_key(config.pars.key_undo)
+        @print_information()
         def undo(viewer_seg):
             """Undo one keyboard command"""
+            self.vis.widgets.show_state_info("Undo")
             history = self.cache.load_cache(method="undo")
             if history is None:
                 return None
@@ -208,10 +223,11 @@ class Seg2LinkR2:
             self._update_segmentation()
             self.update_info()
 
-        @viewer_seg.bind_key(config.key_redo)
-        @print_information("Redo")
+        @viewer_seg.bind_key(config.pars.key_redo)
+        @print_information()
         def redo(viewer_seg):
-            """Undo one keyboard command"""
+            """Redo one keyboard command"""
+            self.vis.widgets.show_state_info("Redo")
             future = self.cache.load_cache(method="redo")
             if future is None:
                 return None
@@ -221,14 +237,14 @@ class Seg2LinkR2:
             self._update_segmentation()
             self.update_info()
 
-        @viewer_seg.bind_key(config.key_switch_one_label_all_labels)
+        @viewer_seg.bind_key(config.pars.key_switch_one_label_all_labels)
         @print_information("Switch showing one label/all labels")
         def switch_showing_one_or_all_labels(viewer_seg):
             """Show the selected label"""
             self.vis.viewer.layers["segmentation"].show_selected_label = \
                 not self.vis.viewer.layers["segmentation"].show_selected_label
 
-        @viewer_seg.bind_key(config.key_online_help)
+        @viewer_seg.bind_key(config.pars.key_online_help)
         def help(viewer_seg):
             html_path = "file://" + os.path.abspath("../Help/help2.html")
             print(html_path)
@@ -288,7 +304,7 @@ class CacheR2(Cache):
 
 class CacheSubArray:
     def __init__(self):
-        self.cache = CacheR2(maxlen=config.cache_length_second)
+        self.cache = CacheR2(maxlen=config.pars.cache_length_r2)
 
     def cache_state(self, subarray_old: ndarray, subarray_new: ndarray, slice_: Tuple[slice, slice, slice],
                     action: str):

@@ -18,7 +18,8 @@ from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
 from seg2link.new_windows_r2 import sort_remove_window
 
 if config.debug:
-    from config import qprofile, lprofile
+    from config import lprofile
+    from misc import qprofile
     from memory_profiler import profile as mprofile
 
 
@@ -31,7 +32,7 @@ class WidgetsA:
         self.image_size = widgets.LineEdit(label="Image shape", value=shape_str, enabled=False)
         self.max_label = widgets.LineEdit(label="Largest label", enabled=False)
         self.cached_action = widgets.TextEdit(label="Cached actions",
-                                              tooltip=(f"Less than {config.cache_length_first} action can be cached"),
+                                              tooltip=(f"Less than {config.pars.cache_length_r1} action can be cached"),
                                               enabled=False)
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
 
@@ -65,7 +66,7 @@ class WidgetsA:
     def update_info(self):
         self.max_label.value = str(self.emseg.labels.max_label)
         self.cached_action.value = add_blank_lines("".join(self.emseg.cache.cached_actions),
-                                                   config.cache_length_first + 1)
+                                                   config.pars.cache_length_r1 + 1)
         self.label_list_msg.value = tuple(self.emseg.label_list)
         return None
 
@@ -93,7 +94,7 @@ class WidgetsB:
         # Label/cache panel
         self.max_label_info = widgets.LineEdit(label="Largest label", enabled=False)
         self.cached_action = widgets.TextEdit(label="Cached actions",
-                                              tooltip=(f"Less than {config.cache_length_second} action can be cached"),
+                                              tooltip=(f"Less than {config.pars.cache_length_r2} action can be cached"),
                                               value="", enabled=False)
         self.locate_cell_button = LocateSelectedCellButton(label="Select label")
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
@@ -226,14 +227,16 @@ class WidgetsB:
         def search_label():
             label = self.viewer.layers["segmentation"].selected_label
             try:
+                self.show_state_info("Searching... Please wait")
                 self.locate_cell(label)
+                self.show_state_info(f"Label {label} was found")
             except NoLabelError:
-                self.locate_cell_button.location.value = f"Not found"
+                self.show_state_info(f"Label {label} was Not found")
 
         @save_button.changed.connect
         def save_overwrite():
-            if self.viewer.layers["segmentation"].data.dtype != config.dtype_r2:
-                self.show_state_info(f"Warning: dtype should be {config.dtype_r2}!")
+            if self.viewer.layers["segmentation"].data.dtype != config.pars.dtype_r2:
+                self.show_state_info(f"Warning: dtype should be {config.pars.dtype_r2}!")
             elif self.emseg2.labels_path.parent.exists():
                 self.show_state_info("Saving segmentation as .npy file... Please wait")
                 np.save(self.emseg2.labels_path, self.viewer.layers["segmentation"].data)
@@ -244,8 +247,8 @@ class WidgetsB:
 
         @save_as_button.changed.connect
         def save_as():
-            if self.viewer.layers["segmentation"].data.dtype != config.dtype_r2:
-                self.show_state_info(f"Warning: dtype should be {config.dtype_r2}!")
+            if self.viewer.layers["segmentation"].data.dtype != config.pars.dtype_r2:
+                self.show_state_info(f"Warning: dtype should be {config.pars.dtype_r2}!")
             elif self.emseg2.labels_path.parent.exists():
                 path = select_file()
                 if path:

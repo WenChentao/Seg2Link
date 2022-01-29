@@ -330,7 +330,7 @@ class Archive:
     @staticmethod
     def append_seg(seg_img_cache: OrderedDict, seg: ndarray, z: int):
         seg_img_cache[z] = seg
-        if len(seg_img_cache) > config.max_draw_layers // 2:
+        if len(seg_img_cache) > config.pars.max_draw_layers_r1 // 2:
             print(f"pop {seg_img_cache.popitem(last=False)[0]}")
             print(f"len: {len(seg_img_cache)}")
 

@@ -1,21 +1,23 @@
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 import numpy as np
-from magicgui import magicgui, use_app
-from magicgui.types import FileDialogMode
+from magicgui import magicgui
 
 from seg2link import config
-from seg2link.entry_1 import load_cells, load_raw, load_mask, read_ini, save_ini, _npy_name, update_error_info
+from seg2link.entry_1 import load_cells, load_raw, load_mask, _npy_name, update_error_info
 from seg2link.second_correction import Seg2LinkR2
+from seg2link.userconfig import UserConfig
 
 CURRENT_DIR = Path.home()
+USR_CONFIG = UserConfig()
+
 
 @magicgui(
     call_button="Start Seg2Link (2nd round)",
     layout="vertical",
-    load_para={"widget_type": "PushButton", "text": "Load parameters (*.r2.ini)"},
-    save_para={"widget_type": "PushButton", "text": "Save parameters (*.r2.ini)"},
+    load_para={"widget_type": "PushButton", "text": "Load parameters (*.ini)"},
+    save_para={"widget_type": "PushButton", "text": "Save parameters (*.ini)"},
     cell_value={"label": "Value of the cell region"},
     mask_value={"label": "Value of the mask region", "visible": False},
     paths_exist={"visible": False, "enabled": False},
@@ -54,9 +56,9 @@ def widget_entry2(
 
 def load_segmentation(file_seg):
     segmentation = np.load(str(file_seg))
-    if segmentation.dtype != config.dtype_r2:
-        warnings.warn(f"segmentation should has dtype {config.dtype_r2}. Transforming...")
-        segmentation = segmentation.astype(config.dtype_r2, copy=False)
+    if segmentation.dtype != config.pars.dtype_r2:
+        warnings.warn(f"segmentation should has dtype {config.pars.dtype_r2}. Transforming...")
+        segmentation = segmentation.astype(config.pars.dtype_r2, copy=False)
     label_shape = segmentation.shape
     widget_entry2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
     print("Segmentation shape:", label_shape, "dtype:", segmentation.dtype)
@@ -72,41 +74,34 @@ def use_mask():
 
 @widget_entry2.save_para.changed.connect
 def _on_save_para_changed():
-    seg_filename = "config.r2.ini"
-    mode_ = FileDialogMode.OPTIONAL_FILE
-    path = use_app().get_obj("show_file_dialog")(
-        mode_,
-        caption="Save ini",
-        start_path=str(CURRENT_DIR / seg_filename),
-        filter='*.r2.ini'
-    )
-    if path:
-        save_ini({"path_cells": widget_entry2.path_cells.value,
-                  "path_raw": widget_entry2.path_raw.value,
-                  "path_mask": widget_entry2.path_mask.value,
-                  "file_seg": widget_entry2.file_seg.value,
-                  "cell_value": widget_entry2.cell_value.value,
-                  "mask_value": widget_entry2.mask_value.value},
-                 Path(path))
+    parameters_r2 = {"path_cells": widget_entry2.path_cells.value,
+                     "path_raw": widget_entry2.path_raw.value,
+                     "path_mask": widget_entry2.path_mask.value,
+                     "file_seg": widget_entry2.file_seg.value,
+                     "cell_value": widget_entry2.cell_value.value,
+                     "mask_value": widget_entry2.mask_value.value}
+    USR_CONFIG.save_ini_r2(parameters_r2)
 
 
 @widget_entry2.load_para.changed.connect
 def _on_load_para_changed():
-    mode_ = FileDialogMode.EXISTING_FILE
-    path = use_app().get_obj("show_file_dialog")(
-        mode_,
-        caption="Load ini",
-        start_path=str(CURRENT_DIR),
-        filter='*.r2.ini'
-    )
-    if path:
-        parameters = read_ini(Path(path))
-        widget_entry2.path_cells.value = parameters["path_cells"]
-        widget_entry2.path_raw.value = parameters["path_raw"]
-        widget_entry2.path_mask.value = parameters["path_mask"]
+    USR_CONFIG.load_ini()
+    config.pars.set_from_dict(USR_CONFIG.pars.advanced)
+
+    if USR_CONFIG.pars.r2:
+        set_pars_r2(USR_CONFIG.pars.r2)
+    else:
+        set_pars_r2(USR_CONFIG.pars.r1)
+
+
+def set_pars_r2(parameters: dict):
+    widget_entry2.path_cells.value = parameters["path_cells"]
+    widget_entry2.path_raw.value = parameters["path_raw"]
+    widget_entry2.path_mask.value = parameters["path_mask"]
+    if parameters.get("file_seg"):
         widget_entry2.file_seg.value = parameters["file_seg"]
-        widget_entry2.cell_value.value = int(parameters["cell_value"])
-        widget_entry2.mask_value.value = int(parameters["mask_value"])
+    widget_entry2.cell_value.value = int(parameters["cell_value"])
+    widget_entry2.mask_value.value = int(parameters["mask_value"])
 
 
 def set_path_error_info(widget_entry2_, num: int, error: bool):
@@ -148,7 +143,3 @@ def _on_path_mask_changed():
         set_path_error_info(widget_entry2, 3, False)
     else:
         set_path_error_info(widget_entry2, 3, True)
-
-
-if __name__ == "__main__":
-    widget_entry2.show(run=True)

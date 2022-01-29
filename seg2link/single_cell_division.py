@@ -12,7 +12,8 @@ from seg2link import config
 from seg2link.link_by_overlap import link2slices_return_seg
 
 if config.debug:
-    from config import qprofile, lprofile
+    from config import lprofile
+    from misc import qprofile
     from memory_profiler import profile as mprofile
 
 class DivideMode(Enum):

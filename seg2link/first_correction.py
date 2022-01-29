@@ -126,7 +126,7 @@ class Seg2LinkR1:
         """Set the hotkeys for user's operations"""
         viewer_seg = self.vis.viewer.layers["segmentation"]
 
-        @viewer_seg.bind_key(config.key_r1_reseg_link)
+        @viewer_seg.bind_key(config.pars.key_reseg_link_r1)
         @print_information("Re-segmentation and link")
         def re_seg_link(viewer_seg):
             """Re-segment current slice"""
@@ -135,7 +135,7 @@ class Seg2LinkR1:
             self.update("Re-segment")
 
 
-        @viewer_seg.bind_key(config.key_separate)
+        @viewer_seg.bind_key(config.pars.key_separate)
         @print_information("Divide a label")
         def re_divide_2d(viewer_seg):
             """Re-segment current slice"""
@@ -149,7 +149,7 @@ class Seg2LinkR1:
                 viewer_seg._all_vals[0] = 0
                 self.update("Divide")
 
-        @viewer_seg.bind_key(config.key_add)
+        @viewer_seg.bind_key(config.pars.key_add)
         @print_information("Add labels to be processed")
         def append_label_list(viewer_seg):
             """Add label to be merged into a list"""
@@ -162,7 +162,7 @@ class Seg2LinkR1:
                 print("Labels to be processed: ", self.label_list)
                 self.vis.update_info()
 
-        @viewer_seg.bind_key(config.key_clean)
+        @viewer_seg.bind_key(config.pars.key_clean)
         @print_information("Clean the label list")
         def clear_label_list(viewer_seg):
             """Clear labels in the merged list"""
@@ -170,7 +170,7 @@ class Seg2LinkR1:
             print(f"Cleaned the label list: {self.label_list}")
             self.vis.update_info()
 
-        @viewer_seg.bind_key(config.key_merge)
+        @viewer_seg.bind_key(config.pars.key_merge)
         @print_information("Merge labels")
         def _merge(viewer_seg):
             if not self.label_list:
@@ -180,7 +180,7 @@ class Seg2LinkR1:
                 self.label_list.clear()
                 self.update("Merge labels")
 
-        @viewer_seg.bind_key(config.key_delete)
+        @viewer_seg.bind_key(config.pars.key_delete)
         @print_information("Delete the selected label(s)")
         def del_label(viewer_seg):
             """Delete the selected label"""
@@ -195,7 +195,7 @@ class Seg2LinkR1:
                 self.update("Delete label(s)")
                 print(f"Label(s) {delete_list} were deleted")
 
-        @viewer_seg.bind_key(config.key_r1_next)
+        @viewer_seg.bind_key(config.pars.key_next_r1)
         @print_information("\nTo next slice")
         def _next_slice(viewer_seg):
             """To the next slice"""
@@ -203,7 +203,7 @@ class Seg2LinkR1:
             self.update(f"Next slice ({self.current_slice})")
 
 
-        @viewer_seg.bind_key(config.key_undo)
+        @viewer_seg.bind_key(config.pars.key_undo)
         @print_information("Undo")
         def undo(viewer_seg):
             """Undo one keyboard command"""
@@ -212,7 +212,7 @@ class Seg2LinkR1:
             self._update_state(current_seg, cells_aligned)
             self.update()
 
-        @viewer_seg.bind_key(config.key_redo)
+        @viewer_seg.bind_key(config.pars.key_redo)
         @print_information("Redo")
         def redo(viewer_seg):
             """Undo one keyboard command"""
@@ -221,14 +221,14 @@ class Seg2LinkR1:
             self._update_state(current_seg, cells_aligned)
             self.update()
 
-        @viewer_seg.bind_key(config.key_switch_one_label_all_labels)
+        @viewer_seg.bind_key(config.pars.key_switch_one_label_all_labels)
         @print_information("Switch showing one label/all labels")
         def switch_showing_one_or_all_labels(viewer_seg):
             """Show the selected label"""
             self.vis.viewer.layers["segmentation"].show_selected_label = \
                 not self.vis.viewer.layers["segmentation"].show_selected_label
 
-        @viewer_seg.bind_key(config.key_online_help)
+        @viewer_seg.bind_key(config.pars.key_online_help)
         def help(viewer_seg):
             html_path = "file://" + os.path.abspath("../Help/help1.html")
             print(html_path)
@@ -263,12 +263,12 @@ class Seg2LinkR1:
     def sort_remove_tiny(seg_array):
         tc = TinyCells(seg_array)
         tc.sort_by_areas()
-        if config.dtype_r2 == np.uint16 and seg_array.dtype == np.uint32:
-            sorted_labels = tc.remove_and_relabel(seg_array, config.upper_limit_r1_export).astype(np.uint16)
-        elif config.dtype_r2 == np.uint32:
+        if config.pars.dtype_r2 == np.uint16 and seg_array.dtype == np.uint32:
+            sorted_labels = tc.remove_and_relabel(seg_array, config.pars.upper_limit_export_r1).astype(np.uint16)
+        elif config.pars.dtype_r2 == np.uint32:
             sorted_labels = tc.remove_and_relabel(seg_array)
         else:
-            raise ValueError("config.dtype_r2 should be np.uint32 or np.uint16")
+            raise ValueError("config.pars.dtype_r2 should be np.uint32 or np.uint16")
         return sorted_labels
 
 
@@ -279,7 +279,7 @@ class VisualizeBase:
         self.raw = raw
         self.cell_region = cell_region
         self.cell_mask = cell_mask
-        self.scale = config.scale_xyz
+        self.scale = config.pars.scale_xyz
         self.viewer = self.initialize_viewer()
 
     def initialize_viewer(self):
@@ -320,8 +320,8 @@ class VisualizePartial(VisualizeBase):
     def get_slice(self, current_layer: int) -> slice:
         if current_layer == 0:
             return slice(-1, 0)
-        start = max(current_layer - config.max_draw_layers // 2, 0)
-        stop = min(start + config.max_draw_layers, self.layer_num)
+        start = max(current_layer - config.pars.max_draw_layers_r1 // 2, 0)
+        stop = min(start + config.pars.max_draw_layers_r1, self.layer_num)
         return slice(start, stop)
 
     @staticmethod
@@ -397,7 +397,7 @@ class CacheR1(Cache):
 
 class CacheState:
     def __init__(self, emseg):
-        self.cache = CacheR1(maxlen=config.cache_length_first)
+        self.cache = CacheR1(maxlen=config.pars.cache_length_r1)
         self.emseg = emseg
 
     def cache_state(self, action: str):

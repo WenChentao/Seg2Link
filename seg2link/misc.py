@@ -1,5 +1,9 @@
+import cProfile
 import os
+import pstats
 import traceback
+from inspect import signature
+from io import StringIO
 from pathlib import Path
 from typing import List, Tuple, Optional, Callable, Union, Set
 
@@ -10,6 +14,7 @@ from scipy import ndimage as ndi
 from scipy.ndimage import grey_dilation
 from skimage.segmentation import relabel_sequential
 
+from seg2link.config import debug
 from seg2link import config
 
 if config.debug:
@@ -151,3 +156,33 @@ def mask_cells(label_img: ndarray, mask: ndarray, ratio_mask: float) -> ndarray:
     for idx in idx_mask:
         mask_idx[index[idx]] = 0
     return relabel_sequential(mask_idx[label_img])[0]
+
+
+def qprofile(func):
+    """Print runtime information in a function
+
+    References
+    ----------
+    Modified from the code here: https://stackoverflow.com/questions/40132630/python-cprofiler-a-function
+    Author: Sanket Sudake
+    """
+
+    def profiled_func(*args, **kwargs):
+        para_num = len(signature(func).parameters)
+
+        if not debug:
+            return func() if para_num == 0 else func(*args, **kwargs)
+
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func() if para_num == 0 else func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            s = StringIO()
+            ps = pstats.Stats(profile, stream=s).strip_dirs().sort_stats('cumulative')
+            ps.print_stats(15)
+            print(s.getvalue())
+
+    return profiled_func

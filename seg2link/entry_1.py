@@ -1,18 +1,20 @@
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Tuple
 
 import numpy as np
-from magicgui import magicgui, use_app
-from magicgui.types import FileDialogMode
+from magicgui import magicgui
 from numpy import ndarray
 
 from seg2link import config
 from seg2link.emseg_core import Archive
 from seg2link.first_correction import Seg2LinkR1
 from seg2link.misc import load_image_pil, dilation_scipy
+from seg2link.userconfig import UserConfig
 
 CURRENT_DIR = Path.home()
+USR_CONFIG = UserConfig()
+
 
 def cache_images(func) -> Callable:
     def wrapper(*args, file_cached: Path, **kwargs) -> ndarray:
@@ -45,17 +47,17 @@ def load_cells(cell_value, path_cells):
 @cache_images
 def load_mask(mask_value: int, path_mask: Path) -> ndarray:
     mask_images = load_image_pil(path_mask) == mask_value
-    if config.mask_dilate_kernel is None:
+    if config.pars.mask_dilate_kernel is None:
         return mask_images
     else:
-        return dilation_scipy(mask_images, filter_size=config.mask_dilate_kernel)
+        return dilation_scipy(mask_images, filter_size=config.pars.mask_dilate_kernel)
 
 
 @magicgui(
     call_button="Start Seg2Link (1st round)",
     layout="vertical",
-    load_para={"widget_type": "PushButton", "text": "Load parameters (*.r1.ini)"},
-    save_para={"widget_type": "PushButton", "text": "Save parameters (*.r1.ini)"},
+    load_para={"widget_type": "PushButton", "text": "Load parameters (*.ini)"},
+    save_para={"widget_type": "PushButton", "text": "Save parameters (*.ini)"},
     cell_value={"label": "Value of the cell region"},
     mask_value={"label": "Value of the mask region", "visible": False},
     historical_info={"label": "   Historical info:", "visible": False},
@@ -117,45 +119,30 @@ def use_mask():
 
 @widget_entry1.save_para.changed.connect
 def _on_save_para_changed():
-    seg_filename = "config.r1.ini"
-    mode_ = FileDialogMode.OPTIONAL_FILE
-    path = use_app().get_obj("show_file_dialog")(
-        mode_,
-        caption="Save ini",
-        start_path=str(CURRENT_DIR / seg_filename),
-        filter='*.r1.ini'
-    )
-    if path:
-        save_ini({"path_cells": widget_entry1.path_cells.value,
-                  "path_raw": widget_entry1.path_raw.value,
-                  "path_mask": widget_entry1.path_mask.value,
-                  "path_cache": widget_entry1.path_cache.value,
-                  "cell_value": widget_entry1.cell_value.value,
-                  "mask_value": widget_entry1.mask_value.value,
-                  "threshold_link": widget_entry1.threshold_link.value,
-                  "threshold_mask": widget_entry1.threshold_mask.value},
-                 Path(path))
+    parameters_r1 = {"path_cells": widget_entry1.path_cells.value,
+                     "path_raw": widget_entry1.path_raw.value,
+                     "path_mask": widget_entry1.path_mask.value,
+                     "path_cache": widget_entry1.path_cache.value,
+                     "cell_value": widget_entry1.cell_value.value,
+                     "mask_value": widget_entry1.mask_value.value,
+                     "threshold_link": widget_entry1.threshold_link.value,
+                     "threshold_mask": widget_entry1.threshold_mask.value}
+    USR_CONFIG.save_ini_r1(parameters_r1)
 
 
 @widget_entry1.load_para.changed.connect
 def _on_load_para_changed():
-    mode_ = FileDialogMode.EXISTING_FILE
-    path = use_app().get_obj("show_file_dialog")(
-        mode_,
-        caption="Load ini",
-        start_path=str(CURRENT_DIR),
-        filter='*.r1.ini'
-    )
-    if path:
-        parameters = read_ini(Path(path))
-        widget_entry1.path_cells.value = parameters["path_cells"]
-        widget_entry1.path_raw.value = parameters["path_raw"]
-        widget_entry1.path_mask.value = parameters["path_mask"]
-        widget_entry1.path_cache.value = parameters["path_cache"]
-        widget_entry1.cell_value.value = int(parameters["cell_value"])
-        widget_entry1.mask_value.value = int(parameters["mask_value"])
-        widget_entry1.threshold_link.value = float(parameters["threshold_link"])
-        widget_entry1.threshold_mask.value = float(parameters["threshold_mask"])
+    USR_CONFIG.load_ini()
+    parameters_r1 = USR_CONFIG.pars.r1
+    config.pars.set_from_dict(USR_CONFIG.pars.advanced)
+    widget_entry1.path_cells.value = parameters_r1["path_cells"]
+    widget_entry1.path_raw.value = parameters_r1["path_raw"]
+    widget_entry1.path_mask.value = parameters_r1["path_mask"]
+    widget_entry1.path_cache.value = parameters_r1["path_cache"]
+    widget_entry1.cell_value.value = int(parameters_r1["cell_value"])
+    widget_entry1.mask_value.value = int(parameters_r1["mask_value"])
+    widget_entry1.threshold_link.value = float(parameters_r1["threshold_link"])
+    widget_entry1.threshold_mask.value = float(parameters_r1["threshold_mask"])
 
 
 def set_path_error_info(widget_entry1_, num: int, error: bool):
@@ -206,19 +193,6 @@ def _on_path_mask_changed():
         set_path_error_info(widget_entry1, 3, True)
 
 
-def save_ini(parameters_dict: dict, filename: Path):
-    config_ = ConfigParser()
-    config_["parameters"] = parameters_dict
-    with open(filename, 'w') as configfile:
-        config_.write(configfile)
-
-
-def read_ini(path: Path) -> dict:
-    config_ = ConfigParser()
-    config_.read(path)
-    return dict(config_["parameters"])
-
-
 def update_error_info(error, num, num_str, widget_entry):
     if error:
         widget_entry.paths_exist.value[num - 1] = num_str[num]
@@ -228,6 +202,3 @@ def update_error_info(error, num, num_str, widget_entry):
         widget_entry.paths_exist.value[num - 1] = ""
         widget_entry.error_info.value = ",  ".join([s for s in widget_entry.paths_exist.value if len(s) > 0])
 
-
-if __name__ == "__main__":
-    widget_entry1.show(run=True)

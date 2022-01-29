@@ -12,7 +12,7 @@ from skimage.segmentation import expand_labels, watershed, find_boundaries
 from seg2link import config
 from seg2link.misc import dilation_scipy
 if config.debug:
-    from config import lprofile, qprofile
+    from config import lprofile
 
 
 def _dist_watershed(cell_img2d: ndarray) -> ndarray:
@@ -20,7 +20,7 @@ def _dist_watershed(cell_img2d: ndarray) -> ndarray:
     # Without this gaussian filtering, the h_maxima will generate multiple neighbouring maximum with the same distance,
     # and leading to over-segmentation
     distance_f = gaussian(distance, 1, preserve_range=True)
-    maxima_filtered: ndarray = h_maxima(distance_f, h=config.h_watershed)
+    maxima_filtered: ndarray = h_maxima(distance_f, h=config.pars.h_watershed)
     seg_connectivity: ndarray = measure.label(cell_img2d, connectivity=1)
     maxima_final: ndarray = maxima_combine(distance_f, seg_connectivity, maxima_filtered)
 
@@ -30,9 +30,9 @@ def _dist_watershed(cell_img2d: ndarray) -> ndarray:
 
 
 def _dist_watershed_3d(cell_img3d: ndarray):
-    distance: ndarray = ndi.distance_transform_edt(cell_img3d, sampling = config.scale_xyz)
+    distance: ndarray = ndi.distance_transform_edt(cell_img3d, sampling = config.pars.scale_xyz)
     distance_f = gaussian(distance, 1, preserve_range=True)
-    maxima_filtered: ndarray = h_maxima(distance_f, h=config.h_watershed)
+    maxima_filtered: ndarray = h_maxima(distance_f, h=config.pars.h_watershed)
     seg_connectivity: ndarray = measure.label(cell_img3d, connectivity=1)
     maxima_final: ndarray = maxima_combine_3d(distance_f, seg_connectivity, maxima_filtered)
     markers: ndarray = ndi.label(maxima_final)[0]
@@ -75,14 +75,14 @@ def remove_boundary_skimage(labels: ndarray) -> ndarray:
 
 def remove_boundary_scipy(labels: ndarray) -> ndarray:
     """Faster than using skimage"""
-    labels_dilate = dilation_scipy(labels, config.labels_expand_kernel)
+    labels_dilate = dilation_scipy(labels, config.pars.labels_dilate_kernel_r2)
     labels_dilate *= (labels == 0)
     labels += labels_dilate
     return labels
 
 
 if __name__ == "__main__":
-    from misc import load_image_pil
+    from misc import load_image_pil, qprofile
     from pathlib import Path
     import numpy as np
 
