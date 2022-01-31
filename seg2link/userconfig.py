@@ -22,12 +22,12 @@ class UserConfig:
     ini_path: str = None
     pars: Pars = Pars({}, {}, config.pars.all_attributes)
 
-    def load_ini(self):
+    def load_ini(self, current_dir):
         mode_ = FileDialogMode.EXISTING_FILE
         path = use_app().get_obj("show_file_dialog")(
             mode_,
             caption="Load ini",
-            start_path=str(CURRENT_DIR),
+            start_path=str(current_dir),
             filter='*.ini'
         )
         if path:
@@ -40,21 +40,23 @@ class UserConfig:
                 advanced=dict(config_["advanced_parameters"])
             )
             self.ini_path = path
+        else:
+            raise ValueError("No folder selected")
 
-    def save_ini_r1(self, pars_r1):
+    def save_ini_r1(self, pars_r1, current_dir):
         self.pars.r1 = pars_r1
         if self.ini_path is None:
-            path = self.get_path_save()
+            path = self.get_path_save(current_dir)
             if path:
                 self.save_ini(Path(path))
             self.ini_path = path
         else:
             self.save_ini(Path(self.ini_path))
 
-    def save_ini_r2(self, pars_r2):
+    def save_ini_r2(self, pars_r2, current_dir):
         self.pars.r2 = pars_r2
         if self.ini_path is None:
-            path = self.get_path_save()
+            path = self.get_path_save(current_dir)
             if path:
                 self.save_ini(Path(path))
             self.ini_path = path
@@ -69,13 +71,13 @@ class UserConfig:
         with open(filename, 'w') as configfile:
             config_.write(configfile)
 
-    def get_path_save(self):
+    def get_path_save(self, current_dir):
         seg_filename = "config.ini"
         mode_ = FileDialogMode.OPTIONAL_FILE
         path = use_app().get_obj("show_file_dialog")(
             mode_,
             caption="Save ini",
-            start_path=str(CURRENT_DIR / seg_filename),
+            start_path=str(current_dir / seg_filename),
             filter='*.ini'
         )
         return path

@@ -8,8 +8,8 @@ from seg2link.entry_2 import widget_entry2
     auto_call=True,
     layout="vertical",
     title={"widget_type": "Label", "label": "Seg2Link:"},
-    round1={"widget_type": "PushButton", "label": "The first round"},
-    round2={"widget_type": "PushButton", "label": "The second round"},
+    round1={"widget_type": "PushButton", "label": "Round #1: Segment and link"},
+    round2={"widget_type": "PushButton", "label": "Round #2: Overall correction"},
 )
 def widget_entry(title="Please select a round",round1=True, round2=True):
     return None

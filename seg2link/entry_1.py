@@ -1,6 +1,5 @@
-from configparser import ConfigParser
 from pathlib import Path
-from typing import Callable, Tuple
+from typing import Callable, List
 
 import numpy as np
 from magicgui import magicgui
@@ -54,7 +53,7 @@ def load_mask(mask_value: int, path_mask: Path) -> ndarray:
 
 
 @magicgui(
-    call_button="Start Seg2Link (1st round)",
+    call_button="Start Seg2Link (Round #1)",
     layout="vertical",
     load_para={"widget_type": "PushButton", "text": "Load parameters (*.ini)"},
     save_para={"widget_type": "PushButton", "text": "Save parameters (*.ini)"},
@@ -62,16 +61,16 @@ def load_mask(mask_value: int, path_mask: Path) -> ndarray:
     mask_value={"label": "Value of the mask region", "visible": False},
     historical_info={"label": "   Historical info:", "visible": False},
     paths_exist={"visible": False},
-    error_info={"label": "   !Following path(s) are not exist:", "visible": False},
+    error_info={"widget_type": "TextEdit", "label": "Warnings:", "visible": False},
     threshold_link={"widget_type": "FloatSlider", "label": "Min_Overlap (linking)", "min": 0.05, "max": 0.95},
     threshold_mask={"widget_type": "FloatSlider", "label": "Min_Overlap (masking)", "min": 0.05, "max": 0.95,
                     "visible": False},
     retrieve_slice={"widget_type": "Slider", "max": 1, "visible": False},
-    path_cells={"label": "Folder for cell images (*.tiff):", "mode": "d"},
-    path_raw={"label": "Folder for raw images (*.tiff):", "mode": "d"},
-    path_mask={"label": "Folder for mask images (*.tiff):", "mode": "d", "visible": False},
-    path_cache={"label": "Folder for cached files:", "mode": "d"},
-    enable_mask={"label": "Use the mask image"},
+    path_cells={"label": "Open image sequences: Cell regions (*.tiff):", "mode": "d"},
+    path_raw={"label": "Open image sequences: Raw images (*.tiff):", "mode": "d"},
+    path_mask={"label": "Open image sequences: Mask images (*.tiff):", "mode": "d", "visible": False},
+    path_cache={"label": "Select a folder for storing results:", "mode": "d"},
+    enable_mask={"label": "Use the Mask images"},
     enable_align={"label": "Use the affine alignment"},
 )
 def widget_entry1(
@@ -79,30 +78,48 @@ def widget_entry1(
         save_para,
         enable_mask=False,
         enable_align=False,
-        path_cells=CURRENT_DIR,
-        path_raw=CURRENT_DIR,
-        path_mask=CURRENT_DIR,
-        path_cache=CURRENT_DIR,
+        path_cells=CURRENT_DIR / "Cells",
+        path_raw=CURRENT_DIR / "Raw",
+        path_mask=CURRENT_DIR / "Mask",
+        path_cache=CURRENT_DIR / "Results",
         paths_exist=["", "", "", ""],
-        error_info="",
         historical_info="",
         retrieve_slice=0,
         cell_value=2,
         mask_value=2,
         threshold_link=0.5,
         threshold_mask=0.8,
+        error_info="",
 ):
     """Run some computation."""
-    cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells))
-    images = load_raw(path_raw, file_cached=_npy_name(path_raw))
-    if enable_mask:
-        mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask))
+    msg = check_existence_path(data_paths_r1())
+    if msg:
+        show_error_msg(widget_entry1.error_info, msg)
     else:
-        mask_dilated = None
-    layer_num = cells.shape[2]
-    Seg2LinkR1(images, cells, mask_dilated, layer_num, path_cache, threshold_link, threshold_mask,
-               widget_entry1.retrieve_slice.value, enable_align)
-    return None
+        cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells))
+        images = load_raw(path_raw, file_cached=_npy_name(path_raw))
+        if enable_mask:
+            mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask))
+        else:
+            mask_dilated = None
+        layer_num = cells.shape[2]
+        Seg2LinkR1(images, cells, mask_dilated, layer_num, path_cache, threshold_link, threshold_mask,
+                   widget_entry1.retrieve_slice.value, enable_align)
+        return None
+
+
+widget_entry1.error_info.min_height = 70
+
+
+def check_existence_path(paths_list: List[Path]) -> str:
+    msg = []
+    for path in paths_list:
+        if not path.exists():
+            if path.name[-4:]==".npy":
+                msg.append(f'File "{path.name}" does not exist')
+            else:
+                msg.append(f'Folder "{path.name}" does not exist')
+    return "\n".join(msg)
 
 
 def _npy_name(path_cells: Path, addi_str: str = "") -> Path:
@@ -116,6 +133,9 @@ def use_mask():
     widget_entry1.threshold_mask.visible = visible
     widget_entry1.mask_value.visible = visible
 
+    msg = check_existence_path(data_paths_r1())
+    show_error_msg(widget_entry1.error_info, msg)
+
 
 @widget_entry1.save_para.changed.connect
 def _on_save_para_changed():
@@ -127,12 +147,15 @@ def _on_save_para_changed():
                      "mask_value": widget_entry1.mask_value.value,
                      "threshold_link": widget_entry1.threshold_link.value,
                      "threshold_mask": widget_entry1.threshold_mask.value}
-    USR_CONFIG.save_ini_r1(parameters_r1)
+    USR_CONFIG.save_ini_r1(parameters_r1, CURRENT_DIR)
 
 
 @widget_entry1.load_para.changed.connect
 def _on_load_para_changed():
-    USR_CONFIG.load_ini()
+    try:
+        USR_CONFIG.load_ini(CURRENT_DIR)
+    except ValueError:
+        return
     parameters_r1 = USR_CONFIG.pars.r1
     config.pars.set_from_dict(USR_CONFIG.pars.advanced)
     widget_entry1.path_cells.value = parameters_r1["path_cells"]
@@ -143,11 +166,6 @@ def _on_load_para_changed():
     widget_entry1.mask_value.value = int(parameters_r1["mask_value"])
     widget_entry1.threshold_link.value = float(parameters_r1["threshold_link"])
     widget_entry1.threshold_mask.value = float(parameters_r1["threshold_mask"])
-
-
-def set_path_error_info(widget_entry1_, num: int, error: bool):
-    num_str = {1: "Cell", 2: "Raw", 3: "Mask", 4: "Cache"}
-    update_error_info(error, num, num_str, widget_entry1_)
 
 
 @widget_entry1.path_cache.changed.connect
@@ -161,44 +179,47 @@ def _on_path_cache_changed():
         widget_entry1.retrieve_slice.max = latest_slice
         widget_entry1.retrieve_slice.value = latest_slice
         widget_entry1.retrieve_slice.visible = True
-        set_path_error_info(widget_entry1, 4, False)
-    else:
-        set_path_error_info(widget_entry1, 4, True)
+    msg = check_existence_path(data_paths_r1())
+    show_error_msg(widget_entry1.error_info, msg)
 
 
 @widget_entry1.path_cells.changed.connect
 def _on_path_cells_changed():
     if widget_entry1.path_cells.value.exists():
-        new_cwd = widget_entry1.path_cells.value.parent
-        widget_entry1.path_raw.value = new_cwd
-        widget_entry1.path_mask.value = new_cwd
-        set_path_error_info(widget_entry1, 1, False)
+        global CURRENT_DIR
+        CURRENT_DIR = widget_entry1.path_cells.value.parent
+        widget_entry1.path_raw.value = CURRENT_DIR / "Raw"
+        widget_entry1.path_mask.value = CURRENT_DIR / "Mask"
+        widget_entry1.path_cache.value = CURRENT_DIR / "Results"
+    msg = check_existence_path(data_paths_r1())
+    show_error_msg(widget_entry1.error_info, msg)
+
+
+def show_error_msg(widget_error_state, msg):
+    widget_error_state.value = msg
+    if msg:
+        widget_error_state.show()
+
+
+def data_paths_r1():
+    if widget_entry1.enable_mask.value:
+        return [widget_entry1.path_cells.value,
+                widget_entry1.path_raw.value,
+                widget_entry1.path_mask.value,
+                widget_entry1.path_cache.value]
     else:
-        set_path_error_info(widget_entry1, 1, True)
+        return [widget_entry1.path_cells.value,
+                widget_entry1.path_raw.value,
+                widget_entry1.path_cache.value]
 
 
 @widget_entry1.path_raw.changed.connect
 def _on_path_raw_changed():
-    if widget_entry1.path_raw.value.exists():
-        set_path_error_info(widget_entry1, 2, False)
-    else:
-        set_path_error_info(widget_entry1, 2, True)
+    msg = check_existence_path(data_paths_r1())
+    show_error_msg(widget_entry1.error_info, msg)
 
 
 @widget_entry1.path_mask.changed.connect
 def _on_path_mask_changed():
-    if widget_entry1.path_mask.value.exists():
-        set_path_error_info(widget_entry1, 3, False)
-    else:
-        set_path_error_info(widget_entry1, 3, True)
-
-
-def update_error_info(error, num, num_str, widget_entry):
-    if error:
-        widget_entry.paths_exist.value[num - 1] = num_str[num]
-        widget_entry.error_info.value = ",  ".join([s for s in widget_entry.paths_exist.value if len(s) > 0])
-        widget_entry.error_info.visible = True
-    else:
-        widget_entry.paths_exist.value[num - 1] = ""
-        widget_entry.error_info.value = ",  ".join([s for s in widget_entry.paths_exist.value if len(s) > 0])
-
+    msg = check_existence_path(data_paths_r1())
+    show_error_msg(widget_entry1.error_info, msg)
