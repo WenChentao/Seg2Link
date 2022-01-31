@@ -236,7 +236,7 @@ class Seg2LinkR1:
 
     def widget_binding(self):
         export_button = self.vis.widgets.export_button
-        export_result = self.vis.widgets.export_result
+        state_info = self.vis.widgets.state_info
 
         @export_button.changed.connect
         def export_array():
@@ -249,15 +249,15 @@ class Seg2LinkR1:
                 filter=".npy"
             )
             if path:
-                export_result.value = "Transform segmentation to array ..."
+                self.vis.widgets.show_state_info("Generating segmentation... Please wait")
                 seg_array = self.labels.to_multiple_labels(slice(0, self.current_slice), self.seg, self.seg_img_cache)
-                export_result.value = "Sorting labels according to the sizes ..."
+                self.vis.widgets.show_state_info("Sorting labels... Please wait")
                 sorted_labels = self.sort_remove_tiny(seg_array)
-                export_result.value = "Export segmentation as .npy file ..."
+                self.vis.widgets.show_state_info("Save segmentation as npy... Please wait")
                 np.save(path, sorted_labels)
-                export_result.value = "Segementation was exported"
+                self.vis.widgets.show_state_info("Segmentation was exported")
             else:
-                export_result.value = "Warning: Folder doesn't exist!"
+                self.vis.widgets.show_state_info("Warning: Folder doesn't exist!")
 
     @staticmethod
     def sort_remove_tiny(seg_array):

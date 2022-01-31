@@ -6,7 +6,7 @@ from seg2link.entry_r2 import start_r2
 
 @magicgui(
     auto_call=True,
-    layout="vertical",
+    layout="verticapl",
     title={"widget_type": "Label", "label": "Seg2Link:"},
     round1={"widget_type": "PushButton", "label": "Round #1: Segment and link"},
     round2={"widget_type": "PushButton", "label": "Round #2: Overall correction"},
