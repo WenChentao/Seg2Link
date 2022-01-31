@@ -9,11 +9,11 @@ from napari.utils.colormaps import low_discrepancy_image
 from numpy import ndarray
 
 from seg2link import config
-from seg2link.first_correction import Cache, VisualizeBase
+from seg2link.correction_r1 import Cache, VisualizeBase
 from seg2link.misc import print_information, replace
 from seg2link.new_windows_r2 import message_delete_labels
 from seg2link.single_cell_division import separate_one_label, get_subregion, NoLabelError, NoDivisionError
-from seg2link.widgets import WidgetsB
+from seg2link.widgets_r2 import WidgetsR2
 
 if config.debug:
     from config import lprofile
@@ -258,7 +258,7 @@ class VisualizeAll(VisualizeBase):
         super().__init__(raw, cell_region, cell_mask)
         self.emseg2 = emseg2
         self.viewer.title = "Seg2link 2nd round"
-        self.widgets = WidgetsB(self)
+        self.widgets = WidgetsR2(self)
         self.show_segmentation_r2()
 
     def update_widgets(self, label_pre_division: int):

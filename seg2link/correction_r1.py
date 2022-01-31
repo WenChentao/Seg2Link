@@ -21,7 +21,7 @@ from seg2link import config
 from seg2link.emseg_core import Labels, Segmentation, Alignment, Archive
 from seg2link.misc import print_information, TinyCells
 from seg2link.single_cell_division import separate_one_slice_one_label
-from seg2link.widgets import WidgetsA
+from seg2link.widgets_r1 import WidgetsR1
 
 if config.debug:
     pass
@@ -310,7 +310,7 @@ class VisualizePartial(VisualizeBase):
         self.layer_num = cell_region.shape[-1]
         self.enable_align = enable_align
         self.add_layers()
-        self.widgets = WidgetsA(self, cell_region.shape)
+        self.widgets = WidgetsR1(self, cell_region.shape)
 
     def update_info(self):
         s = self.get_slice(self.emseg.current_slice)

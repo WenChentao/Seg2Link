@@ -1,8 +1,6 @@
 import datetime
-import textwrap
 from enum import Enum
 from pathlib import Path
-from typing import Tuple, Optional
 
 import numpy as np
 from PIL import Image
@@ -12,66 +10,13 @@ from magicgui.types import FileDialogMode
 from magicgui.widgets import Container
 
 from seg2link import config
-from seg2link.misc import add_blank_lines, TinyCells, make_folder
+from seg2link.misc import TinyCells, make_folder
+from seg2link.new_windows_r2 import sort_remove_window
 from seg2link.single_cell_division import DivideMode, NoLabelError
 from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
-from seg2link.new_windows_r2 import sort_remove_window
-
-if config.debug:
-    from config import lprofile
-    from misc import qprofile
-    from memory_profiler import profile as mprofile
 
 
-class WidgetsA:
-    def __init__(self, vis, img_shape: Tuple):
-        self.viewer = vis.viewer
-        self.emseg = vis.emseg
-
-        shape_str = f"H: {img_shape[0]}  W: {img_shape[1]}  D: {img_shape[2]}"
-        self.image_size = widgets.LineEdit(label="Image shape", value=shape_str, enabled=False)
-        self.max_label = widgets.LineEdit(label="Largest label", enabled=False)
-        self.cached_action = widgets.TextEdit(label="Cached actions",
-                                              tooltip=(f"Less than {config.pars.cache_length_r1} action can be cached"),
-                                              enabled=False)
-        self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
-
-        self.hotkeys_info_value = '[Shift + N]: To next slice\n---------------' \
-                                  '\n[R]:  Re-segment the last slice and link\n---------------' \
-                                  '\n[K]:  Divide a label in the last slice\n---------------' \
-                                  '\n[A]: Add labels to label list\n[C]: Clear the label list\n' \
-                                  '[M]: Merge labels in label list' \
-                                  '\n[D]: Delete labels in label list or the label selected\n ---------------' \
-                                  '\n[Q]: Switch (selected | all labels)\n ---------------' \
-                                  '\n[U]: Undo     [F]: Redo' \
-                                  '\n[L]:  Picker   [E]: Eraser' \
-                                  '\n[H]: Online Help'
-
-        self.hotkeys_info = widgets.Label(value=self.hotkeys_info_value)
-
-        self.export_button = widgets.PushButton(text="Export segmentation as .npy file")
-        self.export_result = widgets.Label(value="")
-
-        self.add_widgets()
-        QApplication.processEvents()
-
-    def add_widgets(self):
-        container_states = Container(widgets=[self.image_size, self.max_label, self.cached_action, self.label_list_msg])
-        container_export = Container(widgets=[self.export_button, self.export_result])
-        container_states.min_height = 300
-        self.viewer.window.add_dock_widget(container_states, name="States", area="right")
-        self.viewer.window.add_dock_widget([self.hotkeys_info], name="HotKeys", area="right")
-        self.viewer.window.add_dock_widget(container_export, name="Save/Export", area="right")
-
-    def update_info(self):
-        self.max_label.value = str(self.emseg.labels.max_label)
-        self.cached_action.value = add_blank_lines("".join(self.emseg.cache.cached_actions),
-                                                   config.pars.cache_length_r1 + 1)
-        self.label_list_msg.value = tuple(self.emseg.label_list)
-        return None
-
-
-class WidgetsB:
+class WidgetsR2:
     def __init__(self, visualizeall):
         self.viewer = visualizeall.viewer
         self.emseg2 = visualizeall.emseg2
@@ -380,12 +325,6 @@ class WidgetsB:
             return transformed_labels
 
 
-class Boundary(Enum):
-    Default: str = "None"
-    Add: str = "add"
-    Remove: str = "remove"
-
-
 class LocateSelectedCellButton(Container):
     def __init__(self, **kwargs):
         self.selected_label_ = widgets.SpinBox(min=1, value=1)
@@ -407,3 +346,9 @@ class SaveAndSaveAs(Container):
         kwargs["layout"] = "horizontal"
         super().__init__(**kwargs)
         self.margins = (0, 0, 0, 0)
+
+
+class Boundary(Enum):
+    Default: str = "None"
+    Add: str = "add"
+    Remove: str = "remove"

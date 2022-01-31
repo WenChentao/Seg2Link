@@ -5,8 +5,8 @@ import numpy as np
 from magicgui import magicgui
 
 from seg2link import config
-from seg2link.entry_1 import load_cells, load_raw, load_mask, _npy_name, check_existence_path, show_error_msg
-from seg2link.second_correction import Seg2LinkR2
+from seg2link.entry_r1 import load_cells, load_raw, load_mask, _npy_name, check_existence_path, show_error_msg
+from seg2link.correction_r2 import Seg2LinkR2
 from seg2link.userconfig import UserConfig
 
 CURRENT_DIR = Path.home()
@@ -30,7 +30,7 @@ USR_CONFIG = UserConfig()
     enable_mask={"label": "Use the Mask images"},
     enable_cell={"label": "Use the Cell-region images"},
 )
-def widget_entry2(
+def start_r2(
         load_para,
         save_para,
         enable_mask=False,
@@ -48,7 +48,7 @@ def widget_entry2(
     """Run some computation."""
     msg = check_existence_path(data_paths_r2())
     if msg:
-        show_error_msg(widget_entry2.error_info, msg)
+        show_error_msg(start_r2.error_info, msg)
     else:
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells)) if enable_cell else None
         images = load_raw(path_raw, file_cached=_npy_name(path_raw))
@@ -58,16 +58,16 @@ def widget_entry2(
         return None
 
 
-widget_entry2.error_info.min_height = 70
+start_r2.error_info.min_height = 70
 
 
 def data_paths_r2():
-    paths = [widget_entry2.path_raw.value,
-             widget_entry2.file_seg.value]
-    if widget_entry2.enable_mask.value:
-        paths.insert(-1, widget_entry2.path_mask.value)
-    if widget_entry2.path_cells.value:
-        paths.insert(0, widget_entry2.path_cells.value)
+    paths = [start_r2.path_raw.value,
+             start_r2.file_seg.value]
+    if start_r2.enable_mask.value:
+        paths.insert(-1, start_r2.path_mask.value)
+    if start_r2.path_cells.value:
+        paths.insert(0, start_r2.path_cells.value)
     return paths
 
 
@@ -77,33 +77,33 @@ def load_segmentation(file_seg):
         warnings.warn(f"segmentation should has dtype {config.pars.dtype_r2}. Transforming...")
         segmentation = segmentation.astype(config.pars.dtype_r2, copy=False)
     label_shape = segmentation.shape
-    widget_entry2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
+    start_r2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
     print("Segmentation shape:", label_shape, "dtype:", segmentation.dtype)
     return segmentation
 
 
-@widget_entry2.enable_mask.changed.connect
+@start_r2.enable_mask.changed.connect
 def use_mask():
-    visible = widget_entry2.enable_mask.value
-    widget_entry2.path_mask.visible = visible
-    widget_entry2.mask_value.visible = visible
+    visible = start_r2.enable_mask.value
+    start_r2.path_mask.visible = visible
+    start_r2.mask_value.visible = visible
 
     msg = check_existence_path(data_paths_r2())
-    show_error_msg(widget_entry2.error_info, msg)
+    show_error_msg(start_r2.error_info, msg)
 
 
-@widget_entry2.save_para.changed.connect
+@start_r2.save_para.changed.connect
 def _on_save_para_changed():
-    parameters_r2 = {"path_cells": widget_entry2.path_cells.value,
-                     "path_raw": widget_entry2.path_raw.value,
-                     "path_mask": widget_entry2.path_mask.value,
-                     "file_seg": widget_entry2.file_seg.value,
-                     "cell_value": widget_entry2.cell_value.value,
-                     "mask_value": widget_entry2.mask_value.value}
+    parameters_r2 = {"path_cells": start_r2.path_cells.value,
+                     "path_raw": start_r2.path_raw.value,
+                     "path_mask": start_r2.path_mask.value,
+                     "file_seg": start_r2.file_seg.value,
+                     "cell_value": start_r2.cell_value.value,
+                     "mask_value": start_r2.mask_value.value}
     USR_CONFIG.save_ini_r2(parameters_r2, CURRENT_DIR)
 
 
-@widget_entry2.load_para.changed.connect
+@start_r2.load_para.changed.connect
 def _on_load_para_changed():
     try:
         USR_CONFIG.load_ini(CURRENT_DIR)
@@ -118,39 +118,39 @@ def _on_load_para_changed():
 
 
 def set_pars_r2(parameters: dict):
-    widget_entry2.path_cells.value = parameters["path_cells"]
-    widget_entry2.path_raw.value = parameters["path_raw"]
-    widget_entry2.path_mask.value = parameters["path_mask"]
+    start_r2.path_cells.value = parameters["path_cells"]
+    start_r2.path_raw.value = parameters["path_raw"]
+    start_r2.path_mask.value = parameters["path_mask"]
     if parameters.get("file_seg"):
-        widget_entry2.file_seg.value = parameters["file_seg"]
-    widget_entry2.cell_value.value = int(parameters["cell_value"])
-    widget_entry2.mask_value.value = int(parameters["mask_value"])
+        start_r2.file_seg.value = parameters["file_seg"]
+    start_r2.cell_value.value = int(parameters["cell_value"])
+    start_r2.mask_value.value = int(parameters["mask_value"])
 
 
-@widget_entry2.file_seg.changed.connect
+@start_r2.file_seg.changed.connect
 def _on_file_seg_changed():
     msg = check_existence_path(data_paths_r2())
-    show_error_msg(widget_entry2.error_info, msg)
+    show_error_msg(start_r2.error_info, msg)
 
 
-@widget_entry2.path_cells.changed.connect
+@start_r2.path_cells.changed.connect
 def _on_path_cells_changed():
-    if widget_entry2.path_cells.value.exists():
-        new_cwd = widget_entry2.path_cells.value.parent
-        widget_entry2.path_raw.value = new_cwd
-        widget_entry2.path_mask.value = new_cwd
-        widget_entry2.file_seg.value = new_cwd.parent / "Seg.npy"
+    if start_r2.path_cells.value.exists():
+        new_cwd = start_r2.path_cells.value.parent
+        start_r2.path_raw.value = new_cwd
+        start_r2.path_mask.value = new_cwd
+        start_r2.file_seg.value = new_cwd.parent / "Seg.npy"
     msg = check_existence_path(data_paths_r2())
-    show_error_msg(widget_entry2.error_info, msg)
+    show_error_msg(start_r2.error_info, msg)
 
 
-@widget_entry2.path_raw.changed.connect
+@start_r2.path_raw.changed.connect
 def _on_path_raw_changed():
     msg = check_existence_path(data_paths_r2())
-    show_error_msg(widget_entry2.error_info, msg)
+    show_error_msg(start_r2.error_info, msg)
 
 
-@widget_entry2.path_mask.changed.connect
+@start_r2.path_mask.changed.connect
 def _on_path_mask_changed():
     msg = check_existence_path(data_paths_r2())
-    show_error_msg(widget_entry2.error_info, msg)
+    show_error_msg(start_r2.error_info, msg)
