@@ -7,12 +7,12 @@ from scipy.ndimage import measurements
 from skimage import measure
 from skimage.filters import gaussian
 from skimage.morphology import h_maxima, local_maxima
-from skimage.segmentation import expand_labels, watershed, find_boundaries
+from skimage.segmentation import watershed, find_boundaries
 
 from seg2link import config
 from seg2link.misc import dilation_scipy
 if config.debug:
-    from config import lprofile
+    pass
 
 
 def _dist_watershed(cell_img2d: ndarray) -> ndarray:
@@ -68,11 +68,6 @@ def labels_with_boundary(labels: ndarray) -> ndarray:
     return labels * np.logical_not(find_boundaries(labels, mode="outer", connectivity=3))
 
 
-def remove_boundary_skimage(labels: ndarray) -> ndarray:
-    """Slower than using scipy. Deprecated"""
-    return expand_labels(labels, distance=1)
-
-
 def remove_boundary_scipy(labels: ndarray) -> ndarray:
     """Faster than using skimage"""
     labels_dilate = dilation_scipy(labels, config.pars.labels_dilate_kernel_r2)
@@ -81,11 +76,3 @@ def remove_boundary_scipy(labels: ndarray) -> ndarray:
     return labels
 
 
-if __name__ == "__main__":
-    from misc import load_image_pil, qprofile
-    from pathlib import Path
-    import numpy as np
-
-    array = load_image_pil(Path("../Data/cells_unet2"))
-    print(array.shape)
-    _dist_watershed_3d(array[..., :5] == 0)

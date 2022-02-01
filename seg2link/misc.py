@@ -131,16 +131,6 @@ class TinyCells:
             num_delete = len(self.sorted_labels) - max_cell_num
         return max_area_delete, num_delete
 
-    def remove_tiny_cells(self, image3d: ndarray, max_cell_num: int):
-        """Deprecated as slow"""
-        image3d[np.isin(image3d, self.sorted_labels[max_cell_num:])] = 0
-        return image3d
-
-    def remove_tiny_cells_quick(self, image3d: ndarray, max_cell_num: int):
-        maps = np.arange(0, np.max(self.sorted_labels) + 1)
-        maps[np.isin(maps, self.sorted_labels[max_cell_num:])] = 0
-        return maps[image3d]
-
     def remove_and_relabel(self, image3d: ndarray, max_cell_num: Optional[int] = None) -> ndarray:
         maps = np.arange(0, np.max(self.sorted_labels) + 1, dtype=image3d.dtype)
         if max_cell_num is None:
@@ -159,15 +149,6 @@ class TinyCells:
         for o, t in zip(ori_labels, tgt_labels):
             if o != t:
                 maps[maps_ == o] = t
-
-    def relabel_minimize_change(self, maps, max_cell_num):
-        """Unused"""
-        cell_num = len(self.sorted_labels[:max_cell_num])
-        ori_labels = [l for l in self.sorted_labels[:max_cell_num] if l > cell_num]
-        tgt_labels = [i for i in range(1, cell_num + 1) if i not in sorted(self.sorted_labels[:max_cell_num])]
-        if len(ori_labels) != 0:
-            for o, t in zip(ori_labels, tgt_labels):
-                maps[maps == o] = t
 
 
 def replace(labels_old: Union[int, Set[int]], label_new: int, array: ndarray) -> ndarray:

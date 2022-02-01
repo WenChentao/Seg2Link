@@ -12,9 +12,8 @@ from seg2link import config
 from seg2link.link_by_overlap import link2slices_return_seg
 
 if config.debug:
-    from config import lprofile
-    from misc import qprofile
-    from memory_profiler import profile as mprofile
+    pass
+
 
 class DivideMode(Enum):
     _2D: str = "2D 1slice"
@@ -268,30 +267,6 @@ def bbox_3D_quick_v2(img):
     return rmax, rmin, cmax, cmin, zmax, zmin
 
 
-def bbox_3D_quick_v3(img):
-    """More efficient when the target cell is large"""
-    rmax, rmin = nonzero_min_max_1d(img, axis=0)
-    cmax, cmin = nonzero_min_max_1d(img[rmin:rmax + 1, :, :], axis=1)
-    zmax, zmin = nonzero_min_max_1d(img[rmin:rmax + 1, cmin:cmax + 1, :], axis=2)
-    return rmax, rmin, cmax, cmin, zmax, zmin
-
-
-def nonzero_min_max_1d(img, axis):
-    min_ = None
-    max_ = None
-    for i in range(img.shape[axis]):
-        if np.any(img.take(i, axis)):
-            min_ = i
-            break
-    if min_ is None:
-        raise NoLabelError
-    for _i in range(img.shape[axis] - 1, -1, -1):
-        if np.any(img.take(_i, axis)):
-            max_ = _i
-            break
-    return max_, min_
-
-
 def get_subregion_from_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -> Tuple[
     ndarray, Tuple[slice, slice]]:
     """Get the subregion (bbox) and the corresponding slice for the subregion in a 2d label image
@@ -304,7 +279,3 @@ def get_subregion_from_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -
     return subregion[slice_subregion], slice_subregion
 
 
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

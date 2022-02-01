@@ -5,7 +5,7 @@ import numpy as np
 from magicgui import magicgui
 
 from seg2link import config
-from seg2link.entry_r1 import load_cells, load_raw, load_mask, _npy_name, check_existence_path, show_error_msg, \
+from seg2link.entry_r1 import load_cells, load_mask, _npy_name, check_existence_path, show_error_msg, \
     load_raw_lazy
 from seg2link.correction_r2 import Seg2LinkR2
 from seg2link.userconfig import UserConfig

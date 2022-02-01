@@ -36,6 +36,3 @@ def message_delete_labels(
     """Run some computation."""
     return None
 
-
-if __name__ == "__main__":
-    sort_remove_window.show(run=True)

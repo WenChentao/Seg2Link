@@ -50,11 +50,6 @@ def cache_images_lazy(func) -> Callable:
     return wrapper
 
 
-@cache_images
-def load_raw(path_raw):
-    return load_image_pil(path_raw)
-
-
 def load_raw_lazy(path_raw):
     return load_image_lazy(path_raw)
 
