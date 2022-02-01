@@ -11,7 +11,7 @@ from numpy import ndarray
 from seg2link import config
 from seg2link.correction_r1 import Cache, VisualizeBase
 from seg2link.misc import print_information, replace
-from seg2link.new_windows_r2 import message_delete_labels
+from seg2link.msg_windows_r2 import message_delete_labels
 from seg2link.single_cell_division import separate_one_label, get_subregion, NoLabelError, NoDivisionError
 from seg2link.widgets_r2 import WidgetsR2
 

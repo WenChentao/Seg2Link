@@ -11,7 +11,7 @@ from magicgui.widgets import Container
 
 from seg2link import config
 from seg2link.misc import TinyCells, make_folder
-from seg2link.new_windows_r2 import sort_remove_window
+from seg2link.msg_windows_r2 import sort_remove_window
 from seg2link.single_cell_division import DivideMode, NoLabelError
 from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
 
