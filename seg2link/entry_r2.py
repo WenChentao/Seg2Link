@@ -5,7 +5,8 @@ import numpy as np
 from magicgui import magicgui
 
 from seg2link import config
-from seg2link.entry_r1 import load_cells, load_raw, load_mask, _npy_name, check_existence_path, show_error_msg
+from seg2link.entry_r1 import load_cells, load_raw, load_mask, _npy_name, check_existence_path, show_error_msg, \
+    load_raw_lazy
 from seg2link.correction_r2 import Seg2LinkR2
 from seg2link.userconfig import UserConfig
 
@@ -51,7 +52,7 @@ def start_r2(
         show_error_msg(start_r2.error_info, msg)
     else:
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells)) if enable_cell else None
-        images = load_raw(path_raw, file_cached=_npy_name(path_raw))
+        images = load_raw_lazy(path_raw)
         mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
         segmentation = load_segmentation(file_seg)
         Seg2LinkR2(images, cells, mask_dilated, segmentation, file_seg)

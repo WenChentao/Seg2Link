@@ -29,8 +29,9 @@ if config.debug:
 class Seg2LinkR1:
     """Segment the cells in 3D EM images"""
 
-    def __init__(self, raw: ndarray, cell_region: ndarray, mask: Optional[ndarray], layer_num: int, path_save: Path,
-                 ratio_overlap: float, ratio_mask: float, target_slice: int, enable_align: bool):
+    def __init__(self, raw: ndarray, cell_region: ndarray, mask: Optional[ndarray], enable_mask: bool,
+                 layer_num: int, path_save: Path, ratio_overlap: float, ratio_mask: float,
+                 target_slice: int, enable_align: bool):
         self.current_slice = 0
         self.layer_num = layer_num
         self.seg_img_cache = OrderedDict()
@@ -41,6 +42,7 @@ class Seg2LinkR1:
         self.archive = Archive(self, path_save)
         self.archive.make_folders()
         self.path_export = path_save
+        self.enable_mask = enable_mask
         self.seg = Segmentation(cell_region, mask, ratio_mask)
         self.vis = VisualizePartial(self, raw, cell_region, mask, enable_align)
         self.labels = Labels(self.archive, ratio_overlap)
@@ -63,7 +65,7 @@ class Seg2LinkR1:
 
     def _update_state(self, current_seg: ndarray, cells_aligned: ndarray):
         self.seg.current_seg = current_seg.copy()
-        self.cells_aligned = cells_aligned.copy()
+        self.cells_aligned = cells_aligned
         self.current_slice = self.labels.current_slice
 
     def _set_labels(self, labels: Union[List[List[int]], Labels]):
@@ -96,12 +98,12 @@ class Seg2LinkR1:
     def next_slice(self):
         """Save label until current slice and then segment and link to the next slice"""
         self.current_slice += 1
-        self.seg.watershed(self.current_slice)
+        self.seg.watershed(self.current_slice, self.enable_mask)
         self._link_and_relabel(reset_align=True)
 
     def reseg_link(self, modified_label: ndarray):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        self.seg.reseg(modified_label[..., z], self.current_slice)
+        self.seg.reseg(modified_label[..., z], self.current_slice, self.enable_mask)
         if self.current_slice == 1:
             self.labels.reset()
         else:
@@ -291,7 +293,7 @@ class VisualizeBase:
         putative_data = np.zeros((*self.raw.shape[:2], 2), dtype=np.uint8)
         if self.cell_mask is not None:
             viewer.add_labels(putative_data, name='mask_cells', color={0: "k", 1: "w"}, visible=False, scale=self.scale)
-        viewer.add_image(putative_data, name='raw_image', contrast_limits=[0, 256 ** self.raw.itemsize - 1], scale=self.scale)
+        viewer.add_image(putative_data, name='raw_image', contrast_limits=[0, 2 ** config.pars.raw_bit - 1], scale=self.scale)
         if self.cell_region is not None:
             viewer.add_labels(putative_data, name='cell_region', color={0: "k", 1: "w"}, opacity=0.4, scale=self.scale)
         viewer.add_labels(putative_data32bit, name='segmentation', num_colors=100, scale=self.scale)

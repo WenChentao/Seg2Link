@@ -8,7 +8,7 @@ from numpy import ndarray
 from seg2link import config
 from seg2link.emseg_core import Archive
 from seg2link.correction_r1 import Seg2LinkR1
-from seg2link.misc import load_image_pil, dilation_scipy
+from seg2link.misc import load_image_pil, dilation_scipy, load_image_lazy, load_array_lazy
 from seg2link.userconfig import UserConfig
 
 CURRENT_DIR = Path.home()
@@ -32,18 +32,38 @@ def cache_images(func) -> Callable:
 
     return wrapper
 
+def cache_images_lazy(func) -> Callable:
+    def wrapper(*args, file_cached: Path, **kwargs) -> ndarray:
+        print(f"Running {func.__name__} ...")
+        if file_cached is None:
+            array = func(*args, **kwargs)
+        elif file_cached.exists():
+            array = load_array_lazy(file_cached)
+        else:
+            array = func(*args, **kwargs)
+            print("Saving the image as cache data...")
+            np.save(file_cached, array)
+            array = load_array_lazy(file_cached)
+        print("Image shape:", array.shape)
+        return array
+
+    return wrapper
+
 
 @cache_images
 def load_raw(path_raw):
     return load_image_pil(path_raw)
 
 
-@cache_images
+def load_raw_lazy(path_raw):
+    return load_image_lazy(path_raw)
+
+@cache_images_lazy
 def load_cells(cell_value, path_cells):
     return load_image_pil(path_cells) == cell_value
 
 
-@cache_images
+@cache_images_lazy
 def load_mask(mask_value: int, path_mask: Path) -> ndarray:
     mask_images = load_image_pil(path_mask) == mask_value
     if config.pars.mask_dilate_kernel is None:
@@ -97,13 +117,13 @@ def start_r1(
         show_error_msg(start_r1.error_info, msg)
     else:
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells))
-        images = load_raw(path_raw, file_cached=_npy_name(path_raw))
+        images = load_raw_lazy(path_raw)
         if enable_mask:
             mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask))
         else:
             mask_dilated = None
         layer_num = cells.shape[2]
-        Seg2LinkR1(images, cells, mask_dilated, layer_num, path_cache, threshold_link, threshold_mask,
+        Seg2LinkR1(images, cells, mask_dilated, enable_mask, layer_num, path_cache, threshold_link, threshold_mask,
                    start_r1.retrieve_slice.value, enable_align)
         return None
 

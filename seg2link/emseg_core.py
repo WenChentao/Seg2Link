@@ -214,21 +214,21 @@ class Segmentation:
         self.ratio_mask = ratio_mask
         self.current_seg = np.array([], dtype=np.uint32)
 
-    def watershed(self, layer_idx: int):
+    def watershed(self, layer_idx: int, enable_mask: bool):
         """Segment a 2D label regions and save the result"""
-        current_seg = _dist_watershed(self.cell_region[..., layer_idx - 1])
-        if self.mask is None:
-            self.current_seg = current_seg
+        current_seg = _dist_watershed(self.cell_region[..., layer_idx - 1].compute())
+        if enable_mask:
+            self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:
-            self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx-1], self.ratio_mask)
+            self.current_seg = current_seg
 
-    def reseg(self, label_img: ndarray, layer_idx: int):
+    def reseg(self, label_img: ndarray, layer_idx: int, enable_mask: bool):
         """Resegment based on the modified segmentation"""
         current_seg = ski.measure.label(label_img, connectivity=1)
-        if self.mask is None:
-            self.current_seg = current_seg
+        if enable_mask:
+            self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:
-            self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx-1], self.ratio_mask)
+            self.current_seg = current_seg
 
 
 class Alignment:

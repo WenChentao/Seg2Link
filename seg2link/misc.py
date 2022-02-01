@@ -13,6 +13,8 @@ from numpy import ndarray
 from scipy import ndimage as ndi
 from scipy.ndimage import grey_dilation
 from skimage.segmentation import relabel_sequential
+from dask import delayed
+import dask.array as da
 
 from seg2link.config import debug
 from seg2link import config
@@ -22,12 +24,42 @@ if config.debug:
 
 
 def load_image_pil(path: Path) -> ndarray:
-    img_file_path = get_files(path)
+    paths_list = get_files(path)
     img = []
-    for img_path in img_file_path:
+    for img_path in paths_list:
         img.append(np.array(Image.open(img_path)))
     img_array = np.array(img).transpose((1, 2, 0))
     return img_array
+
+
+def load_image_lazy(path: Path) -> ndarray:
+    """Lazy imread with dask"""
+    paths_list = get_files(path)
+    imread = lambda fname: np.array(Image.open(fname))
+    sample = imread(paths_list[0])
+
+    lazy_imread = delayed(imread)  # lazy reader
+    lazy_arrays = [lazy_imread(fn) for fn in paths_list]
+    dask_arrays = [
+        da.from_delayed(delayed_reader, shape=sample.shape, dtype=sample.dtype)
+        for delayed_reader in lazy_arrays
+    ]
+    return da.stack(dask_arrays, axis=-1)
+
+
+def load_array_lazy(path: Path):
+    """Lazy array load with dask"""
+    mask = np.load(path, mmap_mode="r")
+    imread = lambda z: mask[...,z]
+    sample = imread(0)
+
+    lazy_imread = delayed(imread)  # lazy reader
+    lazy_arrays = [lazy_imread(z) for z in range(mask.shape[2])]
+    dask_arrays = [
+        da.from_delayed(delayed_reader, shape=sample.shape, dtype=sample.dtype)
+        for delayed_reader in lazy_arrays
+    ]
+    return da.stack(dask_arrays, axis=-1)
 
 
 def get_files(path: Path) -> List[str]:
