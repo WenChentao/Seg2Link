@@ -35,14 +35,7 @@ def separate_one_label(seg_img3d: ndarray, label: int, threshold_area: int, mode
     sub_region, slice_subregion, pre_region = get_subregion(seg_img3d, label, layer_num)
 
     max_label = np.max(seg_img3d)
-    if mode == DivideMode._3D:
-        segmented_subregion = separate_subregion_3d(sub_region)
-    elif mode == DivideMode._2D_Link:
-        segmented_subregion = segment_link(sub_region, threshold_area, pre_region, max_label)
-    elif mode == DivideMode._2D:
-        segmented_subregion = segment_stack(sub_region, threshold_area)
-    else:
-        raise ValueError
+    segmented_subregion = segment_subregion(max_label, mode, pre_region, sub_region, threshold_area)
 
     divided_labels = np.unique(segmented_subregion)
     divided_labels = divided_labels[divided_labels > 0]
@@ -51,6 +44,23 @@ def separate_one_label(seg_img3d: ndarray, label: int, threshold_area: int, mode
 
     subregion_old = seg_img3d[slice_subregion].copy()
     subregion_new = seg_img3d[slice_subregion].copy()
+
+    subregion_new, labels = assign_new_labels(
+        divided_labels, label, max_label, mode, pre_region, segmented_subregion, subregion_new)
+
+    return subregion_old, subregion_new, slice_subregion, labels
+
+
+def assign_new_labels(divided_labels, label, max_label, mode, pre_region, segmented_subregion, subregion_new):
+    if mode == DivideMode._3D:
+        segmented_subregion, smaller_labels = _suppress_largest_label(segmented_subregion)
+        updated_regions = segmented_subregion > 0
+        subregion_new[updated_regions] = segmented_subregion[updated_regions] + max_label
+        labels = [label] + [label_ + max_label for label_ in smaller_labels]
+    elif pre_region is None:
+        mode = DivideMode._2D
+    else:
+        pass
 
     if mode == DivideMode._2D:
         updated_regions = segmented_subregion > 0
@@ -65,17 +75,25 @@ def separate_one_label(seg_img3d: ndarray, label: int, threshold_area: int, mode
             labels.remove(label)
             labels = [label] + labels
     else:
-        segmented_subregion, smaller_labels = _suppress_largest_label(segmented_subregion)
-        updated_regions = segmented_subregion > 0
-        subregion_new[updated_regions] = segmented_subregion[updated_regions] + max_label
-        labels = [label] + [label_ + max_label for label_ in smaller_labels]
+        pass
 
-    return subregion_old, subregion_new, slice_subregion, labels
+    return subregion_new, labels
+
+
+def segment_subregion(max_label, mode, pre_region, sub_region, threshold_area):
+    if mode == DivideMode._3D:
+        segmented_subregion = separate_subregion_3d(sub_region)
+    elif mode == DivideMode._2D_Link:
+        segmented_subregion = segment_link(sub_region, threshold_area, pre_region, max_label)
+    elif mode == DivideMode._2D:
+        segmented_subregion = segment_stack(sub_region, threshold_area)
+    else:
+        raise ValueError
+    return segmented_subregion
 
 
 def segment_link(label_subregion: ndarray, threshold: int, pre_region: Optional[ndarray], max_label: int):
     seg = segment_stack(label_subregion, threshold)
-    print("seg_shape", seg.shape)
     if pre_region is None:
         return seg
     else:
