@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-debug = False
+debug = True
 
 if debug:
     import atexit

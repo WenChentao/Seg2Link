@@ -16,9 +16,7 @@ from seg2link.single_cell_division import separate_one_label, get_subregion, NoL
 from seg2link.widgets_r2 import WidgetsR2
 
 if config.debug:
-    from config import lprofile
-    from misc import qprofile
-    from memory_profiler import profile as mprofile
+    from seg2link.config import lprofile
 
 class Seg2LinkR2:
     """Segment the cells in 3D EM images"""
@@ -137,7 +135,9 @@ class Seg2LinkR2:
         @print_information("Merge labels")
         def _merge(viewer_seg):
             if not self.label_list:
-                self.vis.widgets.show_state_info("No label was merged")
+                self.vis.widgets.show_state_info("No label was selected")
+            elif len(self.label_list)==1:
+                self.vis.widgets.show_state_info("Only one label was selected")
             else:
                 self.vis.widgets.show_state_info("Merging... Please wait")
                 subarray_old, subarray_new, slice_ = self.merge(self.label_list)

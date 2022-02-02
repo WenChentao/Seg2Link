@@ -12,7 +12,7 @@ from skimage.segmentation import watershed, find_boundaries
 from seg2link import config
 from seg2link.misc import dilation_scipy
 if config.debug:
-    pass
+    from seg2link.config import lprofile
 
 
 def _dist_watershed(cell_img2d: ndarray) -> ndarray:
@@ -65,7 +65,10 @@ def maxima_combine_3d(distance: ndarray, seg_connectivity: ndarray, maxima_filte
 
 
 def labels_with_boundary(labels: ndarray) -> ndarray:
-    return labels * np.logical_not(find_boundaries(labels, mode="outer", connectivity=3))
+    result = find_boundaries(labels, mode="outer", connectivity=3)
+    result = np.logical_not(result)
+    result = result * labels
+    return result
 
 
 def remove_boundary_scipy(labels: ndarray) -> ndarray:

@@ -12,7 +12,7 @@ from seg2link import config
 from seg2link.link_by_overlap import link2slices_return_seg
 
 if config.debug:
-    pass
+    from seg2link.config import lprofile
 
 
 class DivideMode(Enum):
@@ -220,7 +220,7 @@ def get_subregion_3d(labels_img3d: ndarray, label: Union[int, Set[int]]) \
         -> Optional[Tuple[ndarray, Tuple[slice, slice, slice], None]]:
     labels = list(label) if isinstance(label, set) else label
     subregion = array_isin_labels_quick(labels, labels_img3d)
-    x_max, x_min, y_max, y_min, z_max, z_min = bbox_3D_quick_v2(subregion)
+    x_max, x_min, y_max, y_min, z_max, z_min = bbox_3D_quick_v4(subregion)
     slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1, z_min:z_max + 1]
     return subregion[slice_subregion], slice_subregion, None
 
@@ -252,18 +252,19 @@ def bbox_2D_quick_v2(img):
 
     return rmax, rmin, cmax, cmin
 
-def bbox_3D_quick_v2(img):
-    """More efficient when the target cell is small"""
-    r = np.any(img, axis=(1, 2))
-    if not np.any(r):
-        raise NoLabelError
-    rmin, rmax = np.where(r)[0][[0, -1]]
 
-    c = np.any(img[rmin:rmax + 1, :, :], axis=(0, 2))
+def bbox_3D_quick_v4(img):
+    """first compute along z axis"""
+    z = np.any(img, axis=(0, 1))
+    if not np.any(z):
+        raise NoLabelError
+    zmin, zmax = np.where(z)[0][[0, -1]]
+
+    c = np.any(img[:, :, zmin:zmax + 1], axis=(0, 2))
     cmin, cmax = np.where(c)[0][[0, -1]]
 
-    z = np.any(img[rmin:rmax + 1, cmin:cmax + 1, :], axis=(0, 1))
-    zmin, zmax = np.where(z)[0][[0, -1]]
+    r = np.any(img[:, cmin:cmax + 1, zmin:zmax + 1], axis=(1, 2))
+    rmin, rmax = np.where(r)[0][[0, -1]]
     return rmax, rmin, cmax, cmin, zmax, zmin
 
 
