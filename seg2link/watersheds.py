@@ -15,12 +15,12 @@ if config.debug:
     from seg2link.config import lprofile
 
 
-def _dist_watershed(cell_img2d: ndarray) -> ndarray:
+def dist_watershed(cell_img2d: ndarray, h: int) -> ndarray:
     distance: ndarray = ndi.distance_transform_edt(cell_img2d)
     # Without this gaussian filtering, the h_maxima will generate multiple neighbouring maximum with the same distance,
     # and leading to over-segmentation
     distance_f = gaussian(distance, 1, preserve_range=True)
-    maxima_filtered: ndarray = h_maxima(distance_f, h=config.pars.h_watershed)
+    maxima_filtered: ndarray = h_maxima(distance_f, h=h)
     seg_connectivity: ndarray = measure.label(cell_img2d, connectivity=1)
     maxima_final: ndarray = maxima_combine(distance_f, seg_connectivity, maxima_filtered)
 

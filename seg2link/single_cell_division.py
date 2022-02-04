@@ -10,6 +10,7 @@ from sklearn.neighbors import NearestNeighbors
 
 from seg2link import config
 from seg2link.link_by_overlap import link2slices_return_seg
+from seg2link.watersheds import dist_watershed
 
 if config.debug:
     from seg2link.config import lprofile
@@ -82,52 +83,36 @@ def assign_new_labels(divided_labels, label, max_label, mode, pre_region, segmen
 
 def segment_subregion(max_label, mode, pre_region, sub_region, threshold_area):
     if mode == DivideMode._3D:
-        segmented_subregion = separate_subregion_3d(sub_region)
+        segmented_subregion = separate_one_cell_3d(sub_region)
     elif mode == DivideMode._2D_Link:
         segmented_subregion = segment_link(sub_region, threshold_area, pre_region, max_label)
     elif mode == DivideMode._2D:
-        segmented_subregion = segment_stack(sub_region, threshold_area)
+        segmented_subregion = segment_one_cell_2d_watershed(sub_region, threshold_area)
     else:
         raise ValueError
     return segmented_subregion
 
 
 def segment_link(label_subregion: ndarray, threshold: int, pre_region: Optional[ndarray], max_label: int):
-    seg = segment_stack(label_subregion, threshold)
+    seg = segment_one_cell_2d_watershed(label_subregion, threshold)
     if pre_region is None:
         return seg
     else:
         return link2slices_return_seg(pre_region, seg[..., 0], max_label, ratio_overlap=0.5)[..., np.newaxis]
 
 
-def segment_stack(labels_img3d: ndarray, threshold: int = 0) -> ndarray:
-    """
-
-    Examples
-    --------
-    >>> a = np.array([[[1, 1, 0, 0],
-    ...               [1, 1, 0, 0],
-    ...               [0, 0, 0, 1],
-    ...               [0, 0, 1, 1]],
-    ...              [[1, 1, 0, 0],
-    ...               [1, 0, 0, 0],
-    ...               [0, 0, 1, 1],
-    ...               [0, 0, 1, 1]]]).transpose((1, 2, 0))
-    >>> segment_stack(a).transpose((2,0,1))
-    array([[[1, 1, 0, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 2],
-            [0, 0, 2, 2]],
-    <BLANKLINE>
-           [[1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 2, 2],
-            [0, 0, 2, 2]]], dtype=uint16)
-    """
+def segment_one_cell_2d_connectivity(labels_img3d: ndarray, threshold: int = 0) -> ndarray:
+    """Input: a 3D array with shape (x,x,1). Segmentation is based on connectivity"""
     result = np.zeros_like(labels_img3d, dtype=np.uint16)
-    for z in range(labels_img3d.shape[2]):
-        seg2d = ski.measure.label(labels_img3d[..., z], connectivity=1)
-        result[..., z] = suppress_small_regions(seg2d, threshold)
+    seg2d = ski.measure.label(labels_img3d[..., 0], connectivity=1)
+    result[..., 0] = suppress_small_regions(seg2d, threshold)
+    return result
+
+def segment_one_cell_2d_watershed(labels_img3d: ndarray, threshold: int = 0) -> ndarray:
+    """Input: a 3D array with shape (x,x,1). Segmentation is based on watershed"""
+    result = np.zeros_like(labels_img3d, dtype=np.uint16)
+    seg2d = dist_watershed(labels_img3d[..., 0], h=2)
+    result[..., 0] = suppress_small_regions(seg2d, threshold)
     return result
 
 
@@ -143,7 +128,7 @@ def separate_one_slice_one_label(seg_img2d: ndarray, label: int, max_label: int)
     return seg_img2d
 
 
-def separate_subregion_3d(sub_region: ndarray) -> ndarray:
+def separate_one_cell_3d(sub_region: ndarray) -> ndarray:
     return ski.measure.label(sub_region, connectivity=3)
 
 def _suppress_largest_label(seg: ndarray) -> Tuple[ndarray, List[int]]:

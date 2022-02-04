@@ -24,7 +24,7 @@ from seg2link.single_cell_division import separate_one_slice_one_label
 from seg2link.widgets_r1 import WidgetsR1
 
 if config.debug:
-    pass
+    from seg2link.config import lprofile
 
 class Seg2LinkR1:
     """Segment the cells in 3D EM images"""
@@ -89,12 +89,14 @@ class Seg2LinkR1:
             self.cache.cache_state(f"Retrieve ({self.current_slice})")
             self.vis.update_info()
 
+    @lprofile
     def _link_and_relabel(self, reset_align: bool):
         self.cells_aligned = self.labels.link_next_slice(
             self.seg, self.align, reset_align, self.seg_img_cache, self.enable_align)
         if self.current_slice > 1:
             self.labels.relabel()
 
+    @lprofile
     def next_slice(self):
         """Save label until current slice and then segment and link to the next slice"""
         self.current_slice += 1

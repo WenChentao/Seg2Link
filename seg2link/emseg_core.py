@@ -14,10 +14,12 @@ from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
 from seg2link import config
-from seg2link.link_by_overlap import link2slices
+from seg2link.link_by_overlap import match_for_r1
 from seg2link.misc import make_folder, replace, mask_cells
-from seg2link.watersheds import _dist_watershed
+from seg2link.watersheds import dist_watershed
 
+if config.debug:
+    from seg2link.config import lprofile
 
 class Labels:
     """Labels are stored as a python list corresponding to the values in the segmented images"""
@@ -144,6 +146,7 @@ class Labels:
                 break
         return labels_img.transpose((1, 2, 0))
 
+    @lprofile
     def link_next_slice(self, initial_seg: Segmentation, align: Alignment, reset_align: bool,
                         seg_img_cache: OrderedDict, should_align: bool = True) -> ndarray:
         """Link current label with the segmentation in next slice"""
@@ -154,8 +157,8 @@ class Labels:
         newseg_pre, newseg_post, list_post, list_pre_1d = self._get_images_tolink(initial_seg, seg_img_cache)
         cells_aligned, newseg_post_aligned = self._align_slice_post(newseg_post, initial_seg.cell_region,
                                                                     align, reset_align, should_align)
-        list_pre_1d_linked, list_post_linked = link2slices(newseg_pre, newseg_post_aligned, list_pre_1d, list_post,
-                                                           self.ratio_overlap)
+        list_pre_1d_linked, list_post_linked = match_for_r1(newseg_pre, newseg_post_aligned,
+                                                            self.ratio_overlap, list_pre_1d, list_post)
         self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
         self.current_slice += 1
 
@@ -216,7 +219,7 @@ class Segmentation:
 
     def watershed(self, layer_idx: int, enable_mask: bool):
         """Segment a 2D label regions and save the result"""
-        current_seg = _dist_watershed(self.cell_region[..., layer_idx - 1].compute())
+        current_seg = dist_watershed(self.cell_region[..., layer_idx - 1].compute(), h=config.pars.h_watershed)
         if enable_mask:
             self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:
