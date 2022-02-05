@@ -20,7 +20,7 @@ from skimage.segmentation import relabel_sequential
 from seg2link import config
 from seg2link.emseg_core import Labels, Segmentation, Alignment, Archive
 from seg2link.misc import print_information, TinyCells
-from seg2link.single_cell_division import separate_one_slice_one_label
+from seg2link.single_cell_division import separate_one_label_r1
 from seg2link.widgets_r1 import WidgetsR1
 
 if config.debug:
@@ -89,19 +89,20 @@ class Seg2LinkR1:
             self.cache.cache_state(f"Retrieve ({self.current_slice})")
             self.vis.update_info()
 
-    @lprofile
     def _link_and_relabel(self, reset_align: bool):
         self.cells_aligned = self.labels.link_next_slice(
             self.seg, self.align, reset_align, self.seg_img_cache, self.enable_align)
         if self.current_slice > 1:
             self.labels.relabel()
 
-    @lprofile
     def next_slice(self):
         """Save label until current slice and then segment and link to the next slice"""
         self.current_slice += 1
+        self.vis.widgets.show_state_info(f"Segmenting slice {self.current_slice} by watershed... Please wait")
         self.seg.watershed(self.current_slice, self.enable_mask)
+        self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
         self._link_and_relabel(reset_align=True)
+        self.vis.widgets.show_state_info(f"Linking was done")
 
     def reseg_link(self, modified_label: ndarray):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
@@ -112,9 +113,9 @@ class Seg2LinkR1:
             self.labels.rollback()
         self._link_and_relabel(reset_align=False)
 
-    def divide_one_slice_one_cell(self, modified_label: ndarray, selected_label: int):
+    def divide_one_cell(self, modified_label: ndarray, selected_label: int):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        current_seg = separate_one_slice_one_label(modified_label[..., z], selected_label, self.labels.max_label)
+        current_seg = separate_one_label_r1(modified_label[..., z], selected_label, self.labels.max_label)
         _labels = np.unique(current_seg)
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]
@@ -146,7 +147,7 @@ class Seg2LinkR1:
             if viewer_seg.selected_label == 0:
                 print("\nLabel 0 should not be divided!")
             else:
-                self.divide_one_slice_one_cell(viewer_seg.data, viewer_seg.selected_label)
+                self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
 
                 viewer_seg._all_vals = low_discrepancy_image(
                     np.arange(self.labels.max_label + 1), viewer_seg._seed)

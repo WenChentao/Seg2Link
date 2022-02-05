@@ -15,33 +15,15 @@ CURRENT_DIR = Path.home()
 USR_CONFIG = UserConfig()
 
 
-def cache_images(func) -> Callable:
-    def wrapper(*args, file_cached: Path, **kwargs) -> ndarray:
-        print(f"Running {func.__name__} ...")
-        if file_cached is None:
-            array = func(*args, **kwargs)
-        elif file_cached.exists():
-            array = np.load(file_cached)
-        else:
-            array = func(*args, **kwargs)
-            print("Saving the image as cache data...")
-            np.save(file_cached, array)
-            array = np.load(file_cached)
-        print("Image shape:", array.shape)
-        return array
-
-    return wrapper
-
 def cache_images_lazy(func) -> Callable:
     def wrapper(*args, file_cached: Path, **kwargs) -> ndarray:
-        print(f"Running {func.__name__} ...")
         if file_cached is None:
             array = func(*args, **kwargs)
         elif file_cached.exists():
             array = load_array_lazy(file_cached)
         else:
+            print("Caching data... Please wait")
             array = func(*args, **kwargs)
-            print("Saving the image as cache data...")
             np.save(file_cached, array)
             array = load_array_lazy(file_cached)
         print("Image shape:", array.shape)
@@ -64,7 +46,14 @@ def load_mask(mask_value: int, path_mask: Path) -> ndarray:
     if config.pars.mask_dilate_kernel is None:
         return mask_images
     else:
+        print("Dilating mask image... Please wait")
         return dilation_scipy(mask_images, filter_size=config.pars.mask_dilate_kernel)
+
+
+def show_error_msg(widget_error_state, msg):
+    """For unknown reason, twice running are required to show message immediately"""
+    widget_error_state.show()
+    widget_error_state.value = msg
 
 
 @magicgui(
@@ -111,15 +100,20 @@ def start_r1(
     if msg:
         show_error_msg(start_r1.error_info, msg)
     else:
+        print("Loading cell image... Please wait")
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells))
+        print("Loading raw image... Please wait")
         images = load_raw_lazy(path_raw)
         if enable_mask:
+            print("Loading mask image... Please wait")
             mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask))
         else:
             mask_dilated = None
         layer_num = cells.shape[2]
+        print("Initiating the soft... Please wait")
         Seg2LinkR1(images, cells, mask_dilated, enable_mask, layer_num, path_cache, threshold_link, threshold_mask,
                    start_r1.retrieve_slice.value, enable_align)
+        print("The soft was started")
         return None
 
 
@@ -131,9 +125,9 @@ def check_existence_path(paths_list: List[Path]) -> str:
     for path in paths_list:
         if not path.exists():
             if path.name[-4:]==".npy":
-                msg.append(f'File "{path.name}" does not exist')
+                msg.append(f'Warning: File "{path.name}" does not exist')
             else:
-                msg.append(f'Folder "{path.name}" does not exist')
+                msg.append(f'Warning: Folder "{path.name}" does not exist')
     return "\n".join(msg)
 
 
@@ -209,11 +203,6 @@ def _on_path_cells_changed():
     msg = check_existence_path(data_paths_r1())
     show_error_msg(start_r1.error_info, msg)
 
-
-def show_error_msg(widget_error_state, msg):
-    widget_error_state.value = msg
-    if msg:
-        widget_error_state.show()
 
 
 def data_paths_r1():

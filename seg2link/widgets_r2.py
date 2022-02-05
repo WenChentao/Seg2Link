@@ -45,7 +45,7 @@ class WidgetsR2:
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
 
         # Divide panel
-        self.divide_mode = widgets.RadioButtons(choices=DivideMode, value=DivideMode._2D,
+        self.divide_mode = widgets.RadioButtons(choices=["2D","2D Link","3D"], value="2D",
                                                 orientation="horizontal", label='Mode')
         tooltip = "Avoid generating a label with too small area,\nused when dividing a single cell"
         self.threshold_area = widgets.RadioButtons(choices=[0, 1, 5, 10], value=10, label="Min_area (%)",

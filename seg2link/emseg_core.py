@@ -146,7 +146,6 @@ class Labels:
                 break
         return labels_img.transpose((1, 2, 0))
 
-    @lprofile
     def link_next_slice(self, initial_seg: Segmentation, align: Alignment, reset_align: bool,
                         seg_img_cache: OrderedDict, should_align: bool = True) -> ndarray:
         """Link current label with the segmentation in next slice"""
@@ -219,7 +218,10 @@ class Segmentation:
 
     def watershed(self, layer_idx: int, enable_mask: bool):
         """Segment a 2D label regions and save the result"""
-        current_seg = dist_watershed(self.cell_region[..., layer_idx - 1].compute(), h=config.pars.h_watershed)
+        mask = self.mask[..., layer_idx - 1].compute() if enable_mask else None
+        current_seg = dist_watershed(self.cell_region[..., layer_idx - 1].compute(),
+                                     h=config.pars.h_watershed,
+                                     mask=mask)
         if enable_mask:
             self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:

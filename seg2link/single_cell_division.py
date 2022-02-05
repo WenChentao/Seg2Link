@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple, List, Union, Dict, Optional, Set
 
@@ -13,12 +14,12 @@ from seg2link.link_by_overlap import link2slices_return_seg
 from seg2link.watersheds import dist_watershed
 
 if config.debug:
-    from seg2link.config import lprofile
+    pass
 
-
-class DivideMode(Enum):
-    _2D: str = "2D 1slice"
-    _2D_Link: str = "2D multi-slices"
+@dataclass
+class DivideMode:
+    _2D: str = "2D"
+    _2D_Link: str = "2D Link"
     _3D: str = "3D"
 
 
@@ -81,45 +82,38 @@ def assign_new_labels(divided_labels, label, max_label, mode, pre_region, segmen
     return subregion_new, labels
 
 
-def segment_subregion(max_label, mode, pre_region, sub_region, threshold_area):
+def segment_subregion(max_label, mode, pre_region, sub_region, min_area):
     if mode == DivideMode._3D:
         segmented_subregion = separate_one_cell_3d(sub_region)
     elif mode == DivideMode._2D_Link:
-        segmented_subregion = segment_link(sub_region, threshold_area, pre_region, max_label)
+        segmented_subregion = segment_link(sub_region, min_area, pre_region, max_label)
     elif mode == DivideMode._2D:
-        segmented_subregion = segment_one_cell_2d_watershed(sub_region, threshold_area)
+        segmented_subregion = segment_one_cell_2d_watershed(sub_region, min_area)
     else:
         raise ValueError
     return segmented_subregion
 
 
-def segment_link(label_subregion: ndarray, threshold: int, pre_region: Optional[ndarray], max_label: int):
-    seg = segment_one_cell_2d_watershed(label_subregion, threshold)
+def segment_link(label_subregion: ndarray, min_area: int, pre_region: Optional[ndarray], max_label: int):
+    seg = segment_one_cell_2d_watershed(label_subregion, min_area)
     if pre_region is None:
         return seg
     else:
         return link2slices_return_seg(pre_region, seg[..., 0], max_label, ratio_overlap=0.5)[..., np.newaxis]
 
 
-def segment_one_cell_2d_connectivity(labels_img3d: ndarray, threshold: int = 0) -> ndarray:
-    """Input: a 3D array with shape (x,x,1). Segmentation is based on connectivity"""
-    result = np.zeros_like(labels_img3d, dtype=np.uint16)
-    seg2d = ski.measure.label(labels_img3d[..., 0], connectivity=1)
-    result[..., 0] = suppress_small_regions(seg2d, threshold)
-    return result
-
-def segment_one_cell_2d_watershed(labels_img3d: ndarray, threshold: int = 0) -> ndarray:
+def segment_one_cell_2d_watershed(labels_img3d: ndarray, min_area: int = 0) -> ndarray:
     """Input: a 3D array with shape (x,x,1). Segmentation is based on watershed"""
     result = np.zeros_like(labels_img3d, dtype=np.uint16)
     seg2d = dist_watershed(labels_img3d[..., 0], h=2)
-    result[..., 0] = suppress_small_regions(seg2d, threshold)
+    result[..., 0] = suppress_small_regions(seg2d, min_area)
     return result
 
 
-def separate_one_slice_one_label(seg_img2d: ndarray, label: int, max_label: int) -> ndarray:
-    sub_region, slice_subregion = get_subregion_from_2d(seg_img2d, label)
+def separate_one_label_r1(seg_img2d: ndarray, label: int, max_label: int) -> ndarray:
+    sub_region, slice_subregion, _ = get_subregion_2d(seg_img2d, label)
 
-    seg2d = ski.measure.label(sub_region, connectivity=1)
+    seg2d = dist_watershed(sub_region, h=2)
     segmented_subregion = suppress_small_regions(seg2d, 0)
     segmented_subregion, smaller_labels = _suppress_largest_label(segmented_subregion)
 
@@ -178,11 +172,11 @@ class SortedRegion():
         return neigh.kneighbors(X=coord1, return_distance=True)[0].min()
 
 
-def suppress_small_regions(seg2d: ndarray, threshold_area_percentile: int) -> ndarray:
-    """Merge regions with area < threshold with other regions
+def suppress_small_regions(seg2d: ndarray, min_area_percentile: int) -> ndarray:
+    """Merge regions with area < min_area with other regions
     """
     total_areas = np.count_nonzero(seg2d)
-    threshold_area_ = total_areas * threshold_area_percentile / 100
+    threshold_area_ = total_areas * min_area_percentile / 100
     regions = regionprops(seg2d)
     num_tinyregions = int(np.sum([1 for r in regions if r.area < threshold_area_]))
     if num_tinyregions == 0:
@@ -203,20 +197,18 @@ def get_subregion(labels_img3d: ndarray, label: Union[int, Set[int]], layer_from
     if layer_from0 is None:
         return get_subregion_3d(labels_img3d, label)
     else:
-        return get_subregion_2d(labels_img3d, label, layer_from0)
+        return get_subregion2d_and_preslice(labels_img3d, label, layer_from0)
 
-def get_subregion_2d(labels_img3d: ndarray, label: Union[int, List[int]], layer_from0: int) \
+def get_subregion2d_and_preslice(labels_img3d: ndarray, label: Union[int, List[int]], layer_from0: int) \
         -> Tuple[ndarray, Tuple[slice, slice, slice], Optional[ndarray]]:
-    subregion = array_isin_labels_quick(label, labels_img3d[..., layer_from0])
-    x_max, x_min, y_max, y_min = bbox_2D_quick_v2(subregion)
-    z_min = z_max = layer_from0
-    slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1, z_min:z_max + 1]
+    subregion_2d, _, (x_max, x_min, y_max, y_min) = get_subregion_2d(labels_img3d[..., layer_from0], label)
+    slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1, layer_from0:layer_from0 + 1]
     if layer_from0 == 0:
         pre_region_2d = None
     else:
         pre_region_2d = labels_img3d[x_min:x_max + 1, y_min:y_max + 1, layer_from0 - 1].copy()
 
-    return subregion[x_min:x_max + 1, y_min:y_max + 1, np.newaxis], slice_subregion, pre_region_2d
+    return subregion_2d[:, :, np.newaxis], slice_subregion, pre_region_2d
 
 
 def get_subregion_3d(labels_img3d: ndarray, label: Union[int, Set[int]]) \
@@ -226,13 +218,6 @@ def get_subregion_3d(labels_img3d: ndarray, label: Union[int, Set[int]]) \
     x_max, x_min, y_max, y_min, z_max, z_min = bbox_3D_quick_v4(subregion)
     slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1, z_min:z_max + 1]
     return subregion[slice_subregion], slice_subregion, None
-
-
-def array_isin_labels(labels: Union[int, List[int]], labels_img: ndarray):
-    """Deprecated as slow"""
-    # find the label 4582 (for delete): 3.4s (uniem_test1_600)
-    # find the label 2864, 4785, 5184, 4582 (for merge): 6.4s (uniem_test1_600)
-    return np.isin(labels_img, labels).astype(np.int8)
 
 
 def array_isin_labels_quick(labels: Union[int, List[int]], labels_img: ndarray):
@@ -271,15 +256,13 @@ def bbox_3D_quick_v4(img):
     return rmax, rmin, cmax, cmin, zmax, zmin
 
 
-def get_subregion_from_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -> Tuple[
-    ndarray, Tuple[slice, slice]]:
+def get_subregion_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -> Tuple[
+    ndarray, Tuple[slice, slice], Tuple[int, int, int, int]]:
     """Get the subregion (bbox) and the corresponding slice for the subregion in a 2d label image
     """
-    subregion = np.isin(labels_img2d, label).astype(np.int8)
-    coordinates = np.where(subregion)
-    x_max, x_min = np.max(coordinates[0]), np.min(coordinates[0])
-    y_max, y_min = np.max(coordinates[1]), np.min(coordinates[1])
+    subregion = array_isin_labels_quick(label, labels_img2d)
+    x_max, x_min, y_max, y_min = bbox_2D_quick_v2(subregion)
     slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1]
-    return subregion[slice_subregion], slice_subregion
+    return subregion[slice_subregion], slice_subregion, (x_max, x_min, y_max, y_min)
 
 
