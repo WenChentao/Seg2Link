@@ -29,7 +29,8 @@ class WidgetsR2:
                                   '\n[A]: Add a label into the label list (LL)' \
                                   '\n[C]: Clear LL' \
                                   '\n[M]: Merge labels in LL' \
-                                  '\n[D]: Delete a selected label or labels in LL\n---------------' \
+                                  '\n[D]: Delete a selected label or labels in LL' \
+                                  '\n---------------' \
                                   '\n[Q]: Switch: Viewing one label | all labels' \
                                   '\n[U]: Undo     [F]: Redo' \
                                   '\n[L]: Picker    [E]: Eraser' \
