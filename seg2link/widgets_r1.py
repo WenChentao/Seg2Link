@@ -24,13 +24,19 @@ class WidgetsR1:
                                               enabled=False)
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
 
-        self.hotkeys_info_value = '[Shift + N]: To next slice\n---------------' \
-                                  '\n[R]:  Re-segment the last slice and link\n---------------' \
-                                  '\n[K]:  Divide a label in the last slice\n---------------' \
-                                  '\n[A]: Add labels to label list\n[C]: Clear the label list\n' \
-                                  '[M]: Merge labels in label list' \
-                                  '\n[D]: Delete labels in label list or the label selected\n ---------------' \
-                                  '\n[Q]: Switch (selected | all labels)\n ---------------' \
+        self.hotkeys_info_value = '[Shift + N]: Go to the next slice' \
+                                  '\n---------------' \
+                                  '\n[K]:  Divide a label in the last slice (LS)' \
+                                  '\n---------------' \
+                                  '\n[R]:  Re-link LS to the previous slice LS-1' \
+                                  '\n---------------' \
+                                  '\n[A]: Add a label into the label list (LL)' \
+                                  '\n[C]: Clear LL' \
+                                  '\n[M]: Merge labels in LL' \
+                                  '\n[D]: Delete a selected label or labels in LL' \
+                                  '\n ---------------' \
+                                  '\n[Q]: Switch: Viewing one label | all labels' \
+                                  '\n ---------------' \
                                   '\n[U]: Undo     [F]: Redo' \
                                   '\n[L]:  Picker   [E]: Eraser' \
                                   '\n[H]: Online Help'

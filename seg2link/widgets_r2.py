@@ -24,13 +24,13 @@ class WidgetsR2:
         self.label_max = 0
 
         # Hotkeys panel
-        self.hotkeys_info_value = '[K]:  Divide one cell' \
+        self.hotkeys_info_value = '[K]:  Divide one label' \
                                   '\n---------------' \
-                                  '\n[A]: Add labels to label list' \
-                                  '\n[C]: Clear the label list' \
-                                  '\n[M]: Merge labels in label list' \
-                                  '\n[D]: Delete labels in label list or the label selected\n---------------' \
-                                  '\n[Q]: Switch (selected | all labels)' \
+                                  '\n[A]: Add a label into the label list (LL)' \
+                                  '\n[C]: Clear LL' \
+                                  '\n[M]: Merge labels in LL' \
+                                  '\n[D]: Delete a selected label or labels in LL\n---------------' \
+                                  '\n[Q]: Switch: Viewing one label | all labels' \
                                   '\n[U]: Undo     [F]: Redo' \
                                   '\n[L]: Picker    [E]: Eraser' \
                                   '\n[H]: Online Help'
