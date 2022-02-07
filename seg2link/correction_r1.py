@@ -138,6 +138,7 @@ class Seg2LinkR1:
             print(f"Resegment slice {self.current_slice}")
             self.reseg_link(viewer_seg.data)
             self.update("Re-segment")
+            viewer_seg.mode = "pick"
 
 
         @viewer_seg.bind_key(config.pars.key_separate)
@@ -153,6 +154,7 @@ class Seg2LinkR1:
                     np.arange(self.labels.max_label + 1), viewer_seg._seed)
                 viewer_seg._all_vals[0] = 0
                 self.update("Divide")
+                viewer_seg.mode = "pick"
 
         @viewer_seg.bind_key(config.pars.key_add)
         @print_information("Add labels to be processed")

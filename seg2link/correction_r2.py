@@ -167,6 +167,7 @@ class Seg2LinkR2:
         @viewer_seg.bind_key(config.pars.key_separate)
         @print_information("Separate")
         def separate_label(viewer_seg):
+            viewer_seg.mode = "pick"
             if config.pars.dtype_r2==np.uint16 and self.vis.widgets.label_max >= config.pars.upper_limit_labels_r2:
                 self.show_warning_delete_cells()
                 return
