@@ -174,7 +174,7 @@ def min_dist_knn_scipy(coord1, coord2):
 def suppress_small_regions(seg2d: ndarray, max_division: int) -> ndarray:
     """Merge tiny regions with other regions
     """
-    if max_division == "inf":
+    if max_division == "Inf":
         max_division = float("inf")
     regions = regionprops(seg2d)
     num_labels_remove = len(regions) - max_division if len(regions) > max_division else 0
