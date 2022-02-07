@@ -24,11 +24,14 @@ if config.debug:
 
 
 def load_image_pil(path: Path) -> ndarray:
+    """Load image as ndarray into RAM"""
     paths_list = get_files(path)
-    img = []
-    for img_path in paths_list:
-        img.append(np.array(Image.open(img_path)))
-    img_array = np.array(img).transpose((1, 2, 0))
+    imread = lambda fname: np.array(Image.open(fname))
+    sample = imread(paths_list[0])
+
+    img_array = np.zeros((sample.shape[0],sample.shape[1],len(paths_list)), dtype=sample.dtype)
+    for z, img_path in enumerate(paths_list):
+        img_array[..., z] = np.array(Image.open(img_path))
     return img_array
 
 

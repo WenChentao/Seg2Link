@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 from magicgui import magicgui
 
+from seg2link.misc import load_image_pil
 from seg2link import config
 from seg2link.entry_r1 import load_cells, load_mask, _npy_name, check_existence_path, show_error_msg, \
     load_raw_lazy
@@ -24,22 +25,26 @@ USR_CONFIG = UserConfig()
     paths_exist={"visible": False, "enabled": False},
     error_info={"widget_type": "TextEdit", "label": "Warnings:", "visible": False},
     image_size={"label": "Image size (segmentation)", "enabled": False},
-    path_cells={"label": "Open image sequences: Cell regions (*.tiff):", "mode": "d"},
-    path_raw={"label": "Open image sequences: Raw images (*.tiff):", "mode": "d"},
-    path_mask={"label": "Open image sequences: Mask images (*.tiff):", "mode": "d", "visible": False},
-    file_seg={"label": "Open segmentation file (*.npy):", "mode": "r", "filter": '*.npy'},
+    path_cells={"label": "Open image sequence: Cell regions (*.tiff):", "mode": "d"},
+    path_raw={"label": "Open image sequence: Raw images (*.tiff):", "mode": "d"},
+    path_mask={"label": "Open image sequence: Mask images (*.tiff):", "mode": "d", "visible": False},
+    file_seg={"label": "Open file: segmentation (*.npy):", "mode": "r", "filter": '*.npy'},
+    dir_seg={"label": "Open image sequence: segmentation (*.tiff): ", "mode": "d", "visible": False},
     enable_mask={"label": "Use the Mask images"},
     enable_cell={"label": "Use the Cell-region images"},
+    load_seg_dir={"label": "Use image sequence as segmentation"},
 )
 def start_r2(
         load_para,
         save_para,
         enable_mask=False,
         enable_cell=False,
+        load_seg_dir=False,
         path_cells=CURRENT_DIR / "Cells",
         path_raw=CURRENT_DIR / "Raw",
         path_mask=CURRENT_DIR / "Mask",
         file_seg=CURRENT_DIR / "Seg.npy",
+        dir_seg=CURRENT_DIR / "Seg",
         paths_exist=["", "", "", ""],
         image_size="",
         cell_value=2,
@@ -54,7 +59,7 @@ def start_r2(
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells)) if enable_cell else None
         images = load_raw_lazy(path_raw)
         mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
-        segmentation = load_segmentation(file_seg)
+        segmentation = load_segmentation(dir_seg) if load_seg_dir else load_segmentation(file_seg)
         Seg2LinkR2(images, cells, mask_dilated, segmentation, file_seg)
         return None
 
@@ -63,8 +68,8 @@ start_r2.error_info.min_height = 70
 
 
 def data_paths_r2():
-    paths = [start_r2.path_raw.value,
-             start_r2.file_seg.value]
+    seg_path = start_r2.dir_seg.value if start_r2.load_seg_dir.value else start_r2.file_seg.value
+    paths = [start_r2.path_raw.value, seg_path]
     if start_r2.enable_mask.value:
         paths.insert(-1, start_r2.path_mask.value)
     if start_r2.path_cells.value:
@@ -72,8 +77,15 @@ def data_paths_r2():
     return paths
 
 
-def load_segmentation(file_seg):
-    segmentation = np.load(str(file_seg))
+def load_segmentation(path_seg: Path):
+    if path_seg.is_dir():
+        print("Caching segmentation... Please wait")
+        segmentation = load_image_pil(path_seg)
+        np.save(path_seg.parent / "seg_from_img_sequence.npy", segmentation)
+        start_r2.file_seg.value = path_seg.parent / "seg_from_img_sequence.npy"
+    else:
+        segmentation = np.load(str(path_seg))
+
     if segmentation.dtype != config.pars.dtype_r2:
         warnings.warn(f"segmentation should has dtype {config.pars.dtype_r2}. Transforming...")
         segmentation = segmentation.astype(config.pars.dtype_r2, copy=False)
@@ -88,6 +100,15 @@ def use_mask():
     visible = start_r2.enable_mask.value
     start_r2.path_mask.visible = visible
     start_r2.mask_value.visible = visible
+
+    msg = check_existence_path(data_paths_r2())
+    show_error_msg(start_r2.error_info, msg)
+
+@start_r2.load_seg_dir.changed.connect
+def load_seg_dir():
+    visible = start_r2.load_seg_dir.value
+    start_r2.file_seg.visible = not visible
+    start_r2.dir_seg.visible = visible
 
     msg = check_existence_path(data_paths_r2())
     show_error_msg(start_r2.error_info, msg)
@@ -130,6 +151,12 @@ def set_pars_r2(parameters: dict):
 
 @start_r2.file_seg.changed.connect
 def _on_file_seg_changed():
+    msg = check_existence_path(data_paths_r2())
+    show_error_msg(start_r2.error_info, msg)
+
+
+@start_r2.dir_seg.changed.connect
+def _on_dir_seg_changed():
     msg = check_existence_path(data_paths_r2())
     show_error_msg(start_r2.error_info, msg)
 
