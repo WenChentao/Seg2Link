@@ -179,7 +179,7 @@ class Seg2LinkR2:
                     subarray_old, subarray_new, slice_, divide_list = \
                         separate_one_label(self.labels,
                                            viewer_seg.selected_label,
-                                           self.vis.widgets.threshold_area.value,
+                                           self.vis.widgets.max_division.value,
                                            mode=self.vis.widgets.divide_mode.value,
                                            layer_from0=self.layer_selected)
                 except NoDivisionError:

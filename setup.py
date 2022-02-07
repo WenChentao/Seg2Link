@@ -7,8 +7,7 @@ setup(
     entry_points={'console_scripts': ['seg2link=seg2link.start_seg2link:main'],},
     install_requires=[
             'napari[pyqt5]==0.4.10',
-            'scikit-image==0.18.3',
-            'scikit-learn==0.23.2'
+            'scikit-image==0.18.3'
         ],
     package_dir={'seg2link': 'seg2link'},
     url='https://github.com/WenChentao/Seg2Link',

@@ -1,20 +1,19 @@
 from collections import OrderedDict
 from dataclasses import dataclass
-from enum import Enum
 from typing import Tuple, List, Union, Dict, Optional, Set
 
 import numpy as np
 import skimage as ski
 from numpy import ndarray
+from scipy.spatial import KDTree
 from skimage.measure import regionprops
-from sklearn.neighbors import NearestNeighbors
 
 from seg2link import config
-from seg2link.link_by_overlap import link2slices_return_seg
+from seg2link.link_by_overlap import match_return_seg_img
 from seg2link.watersheds import dist_watershed
 
 if config.debug:
-    pass
+    from seg2link.config import lprofile
 
 @dataclass
 class DivideMode:
@@ -30,14 +29,14 @@ class NoDivisionError(Exception):
 class NoLabelError(Exception):
     pass
 
-
-def separate_one_label(seg_img3d: ndarray, label: int, threshold_area: int, mode: str, layer_from0: int) \
+@lprofile
+def separate_one_label(seg_img3d: ndarray, label: int, max_division: int, mode: str, layer_from0: int) \
         -> Tuple[ndarray, ndarray, Tuple[slice, slice, slice], List[int]]:
     layer_num = layer_from0 if mode != DivideMode._3D else None
     sub_region, slice_subregion, pre_region = get_subregion(seg_img3d, label, layer_num)
 
     max_label = np.max(seg_img3d)
-    segmented_subregion = segment_subregion(max_label, mode, pre_region, sub_region, threshold_area)
+    segmented_subregion = segment_subregion(max_label, mode, pre_region, sub_region, max_division)
 
     divided_labels = np.unique(segmented_subregion)
     divided_labels = divided_labels[divided_labels > 0]
@@ -82,31 +81,31 @@ def assign_new_labels(divided_labels, label, max_label, mode, pre_region, segmen
     return subregion_new, labels
 
 
-def segment_subregion(max_label, mode, pre_region, sub_region, min_area):
+def segment_subregion(max_label, mode, pre_region, sub_region, max_division):
     if mode == DivideMode._3D:
         segmented_subregion = separate_one_cell_3d(sub_region)
     elif mode == DivideMode._2D_Link:
-        segmented_subregion = segment_link(sub_region, min_area, pre_region, max_label)
+        segmented_subregion = segment_link(sub_region, max_division, pre_region, max_label)
     elif mode == DivideMode._2D:
-        segmented_subregion = segment_one_cell_2d_watershed(sub_region, min_area)
+        segmented_subregion = segment_one_cell_2d_watershed(sub_region, max_division)
     else:
         raise ValueError
     return segmented_subregion
 
 
-def segment_link(label_subregion: ndarray, min_area: int, pre_region: Optional[ndarray], max_label: int):
-    seg = segment_one_cell_2d_watershed(label_subregion, min_area)
+def segment_link(label_subregion: ndarray, max_division: int, pre_region: Optional[ndarray], max_label: int):
+    seg = segment_one_cell_2d_watershed(label_subregion, max_division)
     if pre_region is None:
         return seg
     else:
-        return link2slices_return_seg(pre_region, seg[..., 0], max_label, ratio_overlap=0.5)[..., np.newaxis]
+        return match_return_seg_img(pre_region, seg[..., 0], max_label, ratio_overlap=0.5)[..., np.newaxis]
 
 
-def segment_one_cell_2d_watershed(labels_img3d: ndarray, min_area: int = 0) -> ndarray:
+def segment_one_cell_2d_watershed(labels_img3d: ndarray, max_division: int = 2) -> ndarray:
     """Input: a 3D array with shape (x,x,1). Segmentation is based on watershed"""
     result = np.zeros_like(labels_img3d, dtype=np.uint16)
     seg2d = dist_watershed(labels_img3d[..., 0], h=2)
-    result[..., 0] = suppress_small_regions(seg2d, min_area)
+    result[..., 0] = suppress_small_regions(seg2d, max_division)
     return result
 
 
@@ -114,8 +113,7 @@ def separate_one_label_r1(seg_img2d: ndarray, label: int, max_label: int) -> nda
     sub_region, slice_subregion, _ = get_subregion_2d(seg_img2d, label)
 
     seg2d = dist_watershed(sub_region, h=2)
-    segmented_subregion = suppress_small_regions(seg2d, 0)
-    segmented_subregion, smaller_labels = _suppress_largest_label(segmented_subregion)
+    segmented_subregion, smaller_labels = _suppress_largest_label(seg2d)
 
     smaller_regions = segmented_subregion > 0
     seg_img2d[slice_subregion][smaller_regions] = segmented_subregion[smaller_regions] + max_label
@@ -153,38 +151,40 @@ class SortedRegion():
         self.coords = coords  # OrderedDict: sorted coords from small region to big region
         self.seg2d = seg2d
 
+    @lprofile
     def removetiny(self):
         coords = iter(self.coords.items())
         label_ini, smallest_coord = next(coords)
         label_tgt = label_ini
         dist_min = np.inf
         for label, coord in coords:
-            dist = self.min_dist_knn(smallest_coord, coord)
+            dist = min_dist_knn_scipy(smallest_coord, coord)
             if dist < dist_min:
                 dist_min = dist
                 label_tgt = label
         self.coords[label_tgt] = np.vstack((self.coords[label_tgt], self.coords.pop(label_ini)))
         self.seg2d[self.seg2d == label_ini] = label_tgt
 
-    def min_dist_knn(self, coord1, coord2):
-        neigh = NearestNeighbors(n_neighbors=1)
-        neigh.fit(coord2)
-        return neigh.kneighbors(X=coord1, return_distance=True)[0].min()
+@lprofile
+def min_dist_knn_scipy(coord1, coord2):
+    tree = KDTree(coord2)
+    return np.min(tree.query(coord1, k=1)[0])
 
 
-def suppress_small_regions(seg2d: ndarray, min_area_percentile: int) -> ndarray:
-    """Merge regions with area < min_area with other regions
+def suppress_small_regions(seg2d: ndarray, max_division: int) -> ndarray:
+    """Merge tiny regions with other regions
     """
-    total_areas = np.count_nonzero(seg2d)
-    threshold_area_ = total_areas * min_area_percentile / 100
+    if max_division == "inf":
+        max_division = float("inf")
     regions = regionprops(seg2d)
-    num_tinyregions = int(np.sum([1 for r in regions if r.area < threshold_area_]))
-    if num_tinyregions == 0:
+    num_labels_remove = len(regions) - max_division if len(regions) > max_division else 0
+    if num_labels_remove == 0:
         return seg2d
+
     sorted_idxes: List[int] = sorted(range(len(regions)), key=lambda k: regions[k].area)
     sorted_coords = OrderedDict({regions[k].label: regions[k].coords for k in sorted_idxes})
     sorted_regions = SortedRegion(sorted_coords, seg2d)
-    for i in range(num_tinyregions):
+    for i in range(num_labels_remove):
         sorted_regions.removetiny()
     return sorted_regions.seg2d
 

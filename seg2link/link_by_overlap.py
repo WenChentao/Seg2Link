@@ -10,16 +10,33 @@ if config.debug:
     from seg2link.config import lprofile
 
 
-def link2slices_return_seg(seg_s1: ndarray, seg_s2: ndarray, max_label: int, ratio_overlap: float) -> ndarray:
-    """EmSeg two images and return the modified list of label for the two images
+def match_return_seg_img(seg_s1: ndarray, seg_s2: ndarray, max_label: int, ratio_overlap: float) -> ndarray:
+    """Match the segmentation in slice 2 with slice 1 and only return the modified slice 2
 
     Notes
     -----
-    This function is for the 2nd round. seg_s2's values should start from 1
+    The modifed slice 1 will be discarded.
+    The labels in s1 not corresponding to slice 1 will be assigned with values > max_label
     """
     seg_s2[seg_s2!=0] += max_label
     seg_s1, seg_s2, _, _ = match_by_overlap(seg_s1, seg_s2, ratio_overlap)
     return seg_s2
+
+
+def match_return_label_list(seg_s1: ndarray, seg_s2: ndarray, ratio_overlap: float,
+                            labels_pre: ndarray, labels_post: ndarray):
+    """Match the segmentation in slice 2 with slice 1 and return the modified label list in s1 and s2
+
+    Notes
+    -----
+    The seg_s1 and seg_s2 will not be returned
+    The labels in s2 should have been modified to values higher than all labels in previous slices
+    """
+    _, _, targets_post, targets_pre = match_by_overlap(seg_s1, seg_s2, ratio_overlap)
+
+    labels_pre = targets_pre[labels_pre]
+    labels_post = targets_post[labels_post]
+    return labels_pre.tolist(), labels_post.tolist()
 
 
 def _labels_areas(label_img: ndarray) -> Tuple[ndarray, ndarray]:
@@ -27,13 +44,17 @@ def _labels_areas(label_img: ndarray) -> Tuple[ndarray, ndarray]:
     return labels[labels!=0], areas[labels!=0]
 
 
-def match_for_r1(seg_s1: ndarray, seg_s2: ndarray, ratio_overlap: float,
-                 labels_pre: ndarray, labels_post: ndarray):
-    seg_s1, seg_s2, targets_post, targets_pre = match_by_overlap(seg_s1, seg_s2, ratio_overlap)
+def _del0(labels: ndarray, counts: ndarray) -> Tuple[ndarray, ndarray]:
+    """Remove label with zero value and its count"""
+    if len(labels) == 0:
+        return labels, counts
+    else:
+        return labels[labels != 0], counts[labels != 0]
 
-    labels_pre = targets_pre[labels_pre]
-    labels_post = targets_post[labels_post]
-    return labels_pre.tolist(), labels_post.tolist()
+
+def _overlapped_labels(label_s1_i: int, seg_1: ndarray, seg_2: ndarray) -> Tuple[ndarray, ndarray]:
+    labels_s2_overlap, areas_overlap = np.unique(seg_2[seg_1 == label_s1_i], return_counts=True)
+    return _del0(labels_s2_overlap, areas_overlap)
 
 
 def match_by_overlap(seg_s1, seg_s2, ratio_overlap: float):
@@ -50,6 +71,7 @@ def match_by_overlap(seg_s1, seg_s2, ratio_overlap: float):
             continue
         update_targets(labels_pre_target, labels_post_target, overlapped_areas, label_i_pre,
                        labels_pre_area, labels_post_area, ratio_overlap)
+
     targets_pre = np.arange(np.max(seg_s1) + 1)
     for label, target in labels_pre_target.items():
         targets_pre[label] = target
@@ -81,15 +103,3 @@ def update_target(target_post_ori: int, label_pre: int, labels_pre_area: Dict[in
     else:
         return label_pre
 
-
-def _overlapped_labels(label_s1_i: int, seg_1: ndarray, seg_2: ndarray) -> Tuple[ndarray, ndarray]:
-    labels_s2_overlap, areas_overlap = np.unique(seg_2[seg_1 == label_s1_i], return_counts=True)
-    return _del0(labels_s2_overlap, areas_overlap)
-
-
-def _del0(labels: ndarray, counts: ndarray) -> Tuple[ndarray, ndarray]:
-    """Remove label with zero value and its count"""
-    if len(labels) == 0:
-        return labels, counts
-    else:
-        return labels[labels!=0], counts[labels!=0]

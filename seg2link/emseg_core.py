@@ -14,7 +14,7 @@ from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
 from seg2link import config
-from seg2link.link_by_overlap import match_for_r1
+from seg2link.link_by_overlap import match_return_label_list
 from seg2link.misc import make_folder, replace, mask_cells
 from seg2link.watersheds import dist_watershed
 
@@ -156,8 +156,8 @@ class Labels:
         newseg_pre, newseg_post, list_post, list_pre_1d = self._get_images_tolink(initial_seg, seg_img_cache)
         cells_aligned, newseg_post_aligned = self._align_slice_post(newseg_post, initial_seg.cell_region,
                                                                     align, reset_align, should_align)
-        list_pre_1d_linked, list_post_linked = match_for_r1(newseg_pre, newseg_post_aligned,
-                                                            self.ratio_overlap, list_pre_1d, list_post)
+        list_pre_1d_linked, list_post_linked = match_return_label_list(newseg_pre, newseg_post_aligned,
+                                                                       self.ratio_overlap, list_pre_1d, list_post)
         self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
         self.current_slice += 1
 

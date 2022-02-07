@@ -6,6 +6,5 @@ magicgui~=0.3.4
 pyqt5~=5.15.6
 dask~=2022.1.0
 napari~=0.4.10
-scikit-learn~=0.23.2
 seg2link~=0.1.0
 setuptools~=60.5.0

@@ -48,8 +48,8 @@ class WidgetsR2:
         self.divide_mode = widgets.RadioButtons(choices=["2D","2D Link","3D"], value="2D",
                                                 orientation="horizontal", label='Mode')
         tooltip = "Avoid generating a label with too small area,\nused when dividing a single cell"
-        self.threshold_area = widgets.RadioButtons(choices=[0, 1, 5, 10], value=10, label="Min_area (%)",
-                                                   orientation="horizontal", tooltip=tooltip)
+        self.max_division = widgets.RadioButtons(choices=[2, 4, 8, "Inf"], value=2, label="Max division",
+                                                 orientation="horizontal", tooltip=tooltip)
         self.divide_msg = widgets.LineEdit(label="Divide cell", value="", enabled=False, visible=True)
         self.choose_box = widgets.SpinBox(min=1, max=1, label="Check it", visible=True)
 
@@ -72,7 +72,7 @@ class WidgetsR2:
         container_save_states = Container(widgets=[self.max_label_info, self.cached_action, self.locate_cell_button,
                                                    self.label_list_msg])
         container_divide_cell = Container(widgets=[
-            self.divide_mode, self.threshold_area, self.divide_msg, self.choose_box])
+            self.divide_mode, self.max_division, self.divide_msg, self.choose_box])
         container_save_export = Container(
             widgets=[self.save_button, self.load_dialog, self.remove_and_save,
                      self.boundary_action, self.export_button])
