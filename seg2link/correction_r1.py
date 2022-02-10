@@ -4,7 +4,7 @@ import copy
 import datetime
 import os
 import webbrowser
-from collections import deque, OrderedDict
+from collections import deque, OrderedDict, namedtuple
 from pathlib import Path
 from typing import Tuple, Optional, List, Union, Set
 
@@ -25,6 +25,8 @@ from seg2link.widgets_r1 import WidgetsR1
 
 if config.debug:
     from seg2link.config import lprofile
+
+StateR1 = namedtuple("StateR1", ["labels", "seg_img", "aligned_img", "action"])
 
 class Seg2LinkR1:
     """Segment the cells in 3D EM images"""
@@ -214,18 +216,19 @@ class Seg2LinkR1:
         @print_information("Undo")
         def undo(viewer_seg):
             """Undo one keyboard command"""
-            labels, current_seg, cells_aligned, action = self.cache.load_cache("undo")
-            self._set_labels(labels)
-            self._update_state(current_seg, cells_aligned)
+            #TODO: the program crash when performing undo after division
+            state: StateR1 = self.cache.load_cache("undo")
+            self._set_labels(state.labels)
+            self._update_state(state.seg_img, state.aligned_img)
             self.update()
 
         @viewer_seg.bind_key(config.pars.key_redo)
         @print_information("Redo")
         def redo(viewer_seg):
             """Undo one keyboard command"""
-            labels, current_seg, cells_aligned, action = self.cache.load_cache("redo")
-            self._set_labels(labels)
-            self._update_state(current_seg, cells_aligned)
+            state: StateR1 = self.cache.load_cache("redo")
+            self._set_labels(state.labels)
+            self._update_state(state.seg_img, state.aligned_img)
             self.update()
 
         @viewer_seg.bind_key(config.pars.key_switch_one_label_all_labels)
@@ -409,23 +412,22 @@ class CacheState:
 
     def cache_state(self, action: str):
         """Cache the current state"""
-        self.cache.append([copy.deepcopy(self.emseg.labels._labels), self.emseg.seg.current_seg.copy(),
-                           self.emseg.cells_aligned.copy(), action])
+        state = StateR1(copy.deepcopy(self.emseg.labels._labels), self.emseg.seg.current_seg.copy(),
+                           self.emseg.cells_aligned.copy(), action)
+        self.cache.append(state)
 
     def load_cache(self, method: str) -> Tuple[Labels, ndarray, ndarray, str]:
         """load the cache of the emseg states"""
         if method == "undo":
-            labels, current_seg, cells_aligned, action = self.cache.undo()
-            return labels, current_seg, cells_aligned, action
+            return self.cache.undo()
         elif method == "redo":
-            labels, current_seg, cells_aligned, action = self.cache.redo()
-            return labels, current_seg, cells_aligned, action
+            return self.cache.redo()
         else:
             raise ValueError("Method must be 'undo' or 'redo'!")
 
     @property
     def cached_actions(self) -> List[str]:
-        history = [hist[-1] + "\n" for hist in self.cache.history]
-        future = [fut[-1] + "\n" for fut in self.cache.future][::-1]
-        history_str_list = history + [f"***Head ({len(self.cache.history[-1][0])})***\n"] + future
+        history = [hist.action + "\n" for hist in self.cache.history]
+        future = [fut.action + "\n" for fut in self.cache.future][::-1]
+        history_str_list = history + [f"***Head ({len(self.cache.history[-1].labels)})***\n"] + future
         return history_str_list

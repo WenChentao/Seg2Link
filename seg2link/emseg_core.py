@@ -220,8 +220,7 @@ class Segmentation:
         """Segment a 2D label regions and save the result"""
         mask = self.mask[..., layer_idx - 1].compute() if enable_mask else None
         current_seg = dist_watershed(self.cell_region[..., layer_idx - 1].compute(),
-                                     h=config.pars.h_watershed,
-                                     mask=mask)
+                                     h=config.pars.h_watershed)
         if enable_mask:
             self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:

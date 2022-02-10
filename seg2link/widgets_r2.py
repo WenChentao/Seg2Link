@@ -12,7 +12,8 @@ from magicgui.widgets import Container
 from seg2link import config
 from seg2link.misc import TinyCells, make_folder
 from seg2link.msg_windows_r2 import sort_remove_window
-from seg2link.single_cell_division import DivideMode, NoLabelError
+from seg2link.single_cell_division import DivideMode
+from seg2link.cache_bbox import NoLabelError
 from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
 
 
@@ -85,7 +86,7 @@ class WidgetsR2:
         self.viewer.window.add_dock_widget([self.hotkeys_info], name="HotKeys", area="left")
 
     def update_info(self, label_pre_division: int):
-        self.label_max = np.max(self.emseg2.labels)
+        self.label_max = max(self.emseg2.cache_bbox.bbox)
         labels_post_division = self.emseg2.divide_list
         if len(labels_post_division) != 0:
             self.choose_box.max = len(labels_post_division)
@@ -93,7 +94,7 @@ class WidgetsR2:
         else:
             self.choose_box.max = 1
             self.divide_msg.value = ""
-        self.label_list_msg.value = tuple(self.emseg2.label_list)
+        self.label_list_msg.value = tuple(self.emseg2.label_set)
         if self.label_max is not None:
             self.max_label_info.value = str(self.label_max)
             self.locate_cell_button.selected_label_.max = self.label_max
