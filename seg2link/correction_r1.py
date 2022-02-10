@@ -117,7 +117,7 @@ class Seg2LinkR1:
 
     def divide_one_cell(self, modified_label: ndarray, selected_label: int):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        current_seg = separate_one_label_r1(modified_label[..., z], selected_label, self.labels.max_label)
+        current_seg, _ = separate_one_label_r1(modified_label[..., z], selected_label, self.labels.max_label)
         _labels = np.unique(current_seg)
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]

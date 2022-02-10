@@ -26,6 +26,8 @@ class DivideMode:
 class NoDivisionError(Exception):
     pass
 
+BBox2D = Tuple[slice, slice]
+BBox = Tuple[slice, slice, slice]
 
 def segment_link(label_subregion: ndarray, max_division: int, pre_region: Optional[ndarray], max_label: int):
     seg = segment_one_cell_2d_watershed(label_subregion, max_division)
@@ -39,19 +41,22 @@ def segment_one_cell_2d_watershed(labels_img3d: ndarray, max_division: int = 2) 
     """Input: a 3D array with shape (x,x,1). Segmentation is based on watershed"""
     result = np.zeros_like(labels_img3d, dtype=np.uint16)
     seg2d = dist_watershed(labels_img3d[..., 0], h=2)
-    result[..., 0] = suppress_small_regions(seg2d, max_division)
+    result[..., 0] = merge_tiny_labels(seg2d, max_division)
     return result
 
 
-def separate_one_label_r1(seg_img2d: ndarray, label: int, max_label: int) -> ndarray:
-    sub_region, slice_subregion, _ = get_subregion_2d(seg_img2d, label)
+def separate_one_label_r1(seg_img2d: ndarray, label: int, max_label: int) -> Tuple[ndarray, List[int]]:
+    sub_region, slice_subregion = get_subregion_2d(seg_img2d, label)
 
     seg2d = dist_watershed(sub_region, h=2)
-    segmented_subregion, smaller_labels = _suppress_largest_label(seg2d)
+    return keep_largest_label_unchange(max_label, seg2d, seg_img2d, slice_subregion)
 
-    smaller_regions = segmented_subregion > 0
-    seg_img2d[slice_subregion][smaller_regions] = segmented_subregion[smaller_regions] + max_label
-    return seg_img2d
+
+def keep_largest_label_unchange(max_label, seg2d, seg_img2d, slice_subregion: Union[slice, BBox2D]=slice(None)):
+    seg2d, other_labels = _suppress_largest_label(seg2d)
+    smaller_regions = seg2d > 0
+    seg_img2d[slice_subregion][smaller_regions] = seg2d[smaller_regions] + max_label
+    return seg_img2d, other_labels
 
 
 def separate_one_cell_3d(sub_region: ndarray) -> ndarray:
@@ -59,17 +64,7 @@ def separate_one_cell_3d(sub_region: ndarray) -> ndarray:
 
 
 def _suppress_largest_label(seg: ndarray) -> Tuple[ndarray, List[int]]:
-    """Revise the _labels: largest label (of area) -> 0; _labels>larest label: -= 1
-
-    Examples
-    --------
-    >>> _suppress_largest_label(np.array([[1, 1, 0],
-    ...                                   [1, 1, 2],
-    ...                                   [0, 3, 2]]))
-    (array([[0, 0, 0],
-           [0, 0, 1],
-           [0, 2, 1]]), [1, 2])
-    """
+    """Revise the _labels: largest label (of area): l = 0; _labels > largest label: l = l - 1"""
     regions = regionprops(seg)
     max_idx = max(range(len(regions)), key=lambda k: regions[k].area)
     max_label = regions[max_idx].label
@@ -79,6 +74,24 @@ def _suppress_largest_label(seg: ndarray) -> Tuple[ndarray, List[int]]:
     other_labels_ = np.array(other_labels)
     other_labels_[other_labels_ > max_label] -= 1
     return seg, other_labels_.tolist()
+
+
+def merge_tiny_labels(seg2d: ndarray, max_division: int) -> ndarray:
+    """Merge tiny regions with other regions
+    """
+    if max_division == "Inf":
+        max_division = float("inf")
+    regions = regionprops(seg2d)
+    num_labels_remove = len(regions) - max_division if len(regions) > max_division else 0
+    if num_labels_remove == 0:
+        return seg2d
+
+    sorted_idxes: List[int] = sorted(range(len(regions)), key=lambda k: regions[k].area)
+    sorted_coords = OrderedDict({regions[k].label: regions[k].coords for k in sorted_idxes})
+    sorted_regions = SortedRegion(sorted_coords, seg2d)
+    for i in range(num_labels_remove):
+        sorted_regions.remove_tiny()
+    return sorted_regions.seg2d
 
 
 class SortedRegion():
@@ -105,37 +118,19 @@ def min_dist_knn_scipy(coord1, coord2):
     return np.min(tree.query(coord1, k=1)[0])
 
 
-def suppress_small_regions(seg2d: ndarray, max_division: int) -> ndarray:
-    """Merge tiny regions with other regions
-    """
-    if max_division == "Inf":
-        max_division = float("inf")
-    regions = regionprops(seg2d)
-    num_labels_remove = len(regions) - max_division if len(regions) > max_division else 0
-    if num_labels_remove == 0:
-        return seg2d
-
-    sorted_idxes: List[int] = sorted(range(len(regions)), key=lambda k: regions[k].area)
-    sorted_coords = OrderedDict({regions[k].label: regions[k].coords for k in sorted_idxes})
-    sorted_regions = SortedRegion(sorted_coords, seg2d)
-    for i in range(num_labels_remove):
-        sorted_regions.remove_tiny()
-    return sorted_regions.seg2d
-
-
 def get_subregion2d_and_preslice(labels_img3d: ndarray, label: Union[int, List[int]], layer_from0: int) \
-        -> Tuple[ndarray, Tuple[slice, slice, slice], Optional[ndarray]]:
-    subregion_2d, _, (x_max, x_min, y_max, y_min) = get_subregion_2d(labels_img3d[..., layer_from0], label)
-    slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1, layer_from0:layer_from0 + 1]
+        -> Tuple[ndarray, BBox, Optional[ndarray]]:
+    subregion_2d, bbox = get_subregion_2d(labels_img3d[..., layer_from0], label)
+    slice_subregion = bbox[0], bbox[1], slice(layer_from0, layer_from0 + 1)
     if layer_from0 == 0:
         pre_region_2d = None
     else:
-        pre_region_2d = labels_img3d[x_min:x_max + 1, y_min:y_max + 1, layer_from0 - 1].copy()
+        pre_region_2d = labels_img3d[bbox[0], bbox[1], layer_from0 - 1].copy()
 
     return subregion_2d[:, :, np.newaxis], slice_subregion, pre_region_2d
 
 
-def bbox_2D_quick(img_2d: ndarray) -> Tuple[int, int, int, int]:
+def bbox_2D_quick(img_2d: ndarray) -> BBox2D:
     r = np.any(img_2d, axis=1)
     if not np.any(r):
         raise NoLabelError
@@ -144,17 +139,16 @@ def bbox_2D_quick(img_2d: ndarray) -> Tuple[int, int, int, int]:
     c = np.any(img_2d[rmin:rmax + 1, :], axis=0)
     cmin, cmax = np.where(c)[0][[0, -1]]
 
-    return rmax, rmin, cmax, cmin
+    return slice(rmin, rmax+1), slice(cmin, cmax+1)
 
 
 def get_subregion_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -> Tuple[
-    ndarray, Tuple[slice, slice], Tuple[int, int, int, int]]:
+    ndarray, BBox2D]:
     """Get the subregion (bbox) and the corresponding slice for the subregion in a 2d label image
     """
     subregion = array_isin_labels_quick(label, labels_img2d)
-    x_max, x_min, y_max, y_min = bbox_2D_quick(subregion)
-    slice_subregion = np.s_[x_min:x_max + 1, y_min:y_max + 1]
-    return subregion[slice_subregion], slice_subregion, (x_max, x_min, y_max, y_min)
+    bbox = bbox_2D_quick(subregion)
+    return subregion[bbox], bbox
 
 
 

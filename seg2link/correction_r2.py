@@ -16,8 +16,9 @@ from seg2link.misc import print_information, replace
 from seg2link.msg_windows_r2 import message_delete_labels
 from seg2link.cache_bbox import NoLabelError
 from seg2link.widgets_r2 import WidgetsR2
-from seg2link.single_cell_division import DivideMode,  get_subregion2d_and_preslice, NoDivisionError, \
-    _suppress_largest_label, separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed
+from seg2link.single_cell_division import DivideMode, get_subregion2d_and_preslice, NoDivisionError, \
+    _suppress_largest_label, separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed, \
+    keep_largest_label_unchange
 
 if config.debug:
     from seg2link.config import lprofile
@@ -272,21 +273,21 @@ class Seg2LinkR2:
 
             return pre_region, segmented_subregion, bbox_subregion
 
-        def assign_new_labels(divided_labels, max_label, pre_region, segmented_subregion, subregion_new):
+        def assign_new_labels(divided_labels, max_label, pre_region, segmented_subregion, subregion_ori):
             mode = self.vis.widgets.divide_mode.value
             if mode == DivideMode._3D:
-                return assign_new_labels_3d(max_label, segmented_subregion, subregion_new)
+                return assign_new_labels_3d(max_label, segmented_subregion, subregion_ori)
             else:
                 mode = DivideMode._2D if pre_region is None else mode
                 if mode == DivideMode._2D:
-                    return assign_new_labels_2d_wo_link(divided_labels, max_label, segmented_subregion, subregion_new)
+                    return assign_new_labels_2d_wo_link(divided_labels, max_label, segmented_subregion, subregion_ori)
                 else:
-                    return assign_new_labels_2d_link(segmented_subregion, subregion_new)
+                    return assign_new_labels_2d_link(segmented_subregion, subregion_ori)
 
-        def assign_new_labels_3d(max_label, segmented_subregion, subregion_new):
-            segmented_subregion, smaller_labels = _suppress_largest_label(segmented_subregion)
-            updated_regions = segmented_subregion > 0
-            subregion_new[updated_regions] = segmented_subregion[updated_regions] + max_label
+        def assign_new_labels_3d(max_label, segmented_subregion, subregion_ori):
+            subregion_new, smaller_labels = keep_largest_label_unchange(
+                max_label, segmented_subregion, subregion_ori
+            )
             labels = [viewer_seg.selected_label] + [label_ + max_label for label_ in smaller_labels]
             return subregion_new, labels
 
