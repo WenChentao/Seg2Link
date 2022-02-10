@@ -9,15 +9,14 @@ from PyQt5.QtWidgets import QApplication
 from napari.utils.colormaps import low_discrepancy_image
 from numpy import ndarray
 
-from seg2link.cache_bbox import CacheBbox, merge_bbox, Bbox
 from seg2link import config
 from seg2link.correction_r1 import Cache, VisualizeBase
 from seg2link.misc import print_information, replace
 from seg2link.msg_windows_r2 import message_delete_labels
-from seg2link.cache_bbox import NoLabelError
+from seg2link.cache_bbox import NoLabelError, CacheBbox, merge_bbox, Bbox
 from seg2link.widgets_r2 import WidgetsR2
 from seg2link.single_cell_division import DivideMode, get_subregion2d_and_preslice, NoDivisionError, \
-    _suppress_largest_label, separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed, \
+    separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed, \
     keep_largest_label_unchange
 
 if config.debug:
@@ -61,7 +60,7 @@ class Seg2LinkR2:
         self.label_set.clear()
         self.s = slice(0, self.labels.shape[2])
         self._update_segmentation()
-        self.cache = CacheSubArray()
+        self.cache = CacheSubArray(self)
         self.update_info()
 
     def reset_division_list(self):
@@ -302,7 +301,7 @@ class Seg2LinkR2:
             updated_regions = segmented_subregion > 0
             subregion_new[updated_regions] = segmented_subregion[updated_regions]
             labels = np.unique(segmented_subregion)
-            labels = labels[labels != 0].tolist()
+            labels: List[int] = labels[labels != 0].tolist()
             if viewer_seg.selected_label in labels:
                 labels.remove(viewer_seg.selected_label)
                 labels = [viewer_seg.selected_label] + labels

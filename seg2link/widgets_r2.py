@@ -130,7 +130,16 @@ class WidgetsR2:
             self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
     def locate_cell_3d(self, label, subregion_slice=None):
-        center_layer, x_loc, y_loc = self.locate_cell_3d_subregion(self.emseg2.labels, label, subregion_slice)
+        try:
+            stored_bbox = self.emseg2.cache_bbox.bbox[label]
+        except KeyError:
+            raise NoLabelError
+        center_layer, x_loc, y_loc = self.locate_cell_3d_subregion(
+            self.emseg2.labels[stored_bbox], label, subregion_slice
+        )
+        center_layer, x_loc, y_loc = center_layer + stored_bbox[2].start, \
+                                     x_loc + stored_bbox[0].start, \
+                                     y_loc + stored_bbox[1].start
         self.emseg2.vis.viewer.dims.set_current_step(axis=2, value=center_layer)
         self.locate_cell_button.location.value = f"[{x_loc}, {y_loc}]"
 
