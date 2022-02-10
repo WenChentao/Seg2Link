@@ -323,8 +323,6 @@ class Seg2LinkR2:
             if history is None:
                 return
             self.cache_bbox.bbox = history.old.bboxes.copy()
-            print("current bboxes:",
-                  [(k, v) for k, v in self.cache_bbox.bbox.items() if k == 13 or k == 8])
             self.labels[history.bbox] = history.old.array
             self.reset_division_list()
             self._update_segmentation()
@@ -339,8 +337,6 @@ class Seg2LinkR2:
             if future is None:
                 return
             self.cache_bbox.bbox = future.new.bboxes.copy()
-            print("current bboxes:",
-                  [(k, v) for k, v in self.cache_bbox.bbox.items() if k == 13 or k == 8])
             self.labels[future.bbox] = future.new.array
             self.reset_division_list()
             self._update_segmentation()
@@ -419,8 +415,6 @@ class CacheSubArray:
     def cache_state(self, state: StateR2):
         """Cache the previous & current states"""
         self.cache.append(state)
-        print("old bboxes:", [(k, v) for k, v in state.old.bboxes.items() if k == 13 or k == 8])
-        print("new bboxes:", [(k, v) for k, v in state.new.bboxes.items() if k == 13 or k == 8])
 
     def load_cache(self, method: str) -> Optional[Tuple[ndarray, Tuple[slice, slice, slice], str]]:
         """Load the cache"""
