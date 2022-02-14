@@ -1,16 +1,19 @@
 import pickle
 from pathlib import Path
-from typing import Tuple, List, Dict, Optional, Union, Set
+from typing import Tuple, List, Dict, Optional, Union, Set, TYPE_CHECKING
 
 import numpy as np
 from numpy import ndarray
 from scipy import ndimage
 
+if TYPE_CHECKING:
+    from seg2link.correction_r2 import Seg2LinkR2
+
 Bbox = Tuple[slice, slice, slice]
 
 
 class CacheBbox:
-    def __init__(self, emseg2):
+    def __init__(self, emseg2: "Seg2LinkR2"):
         self.emseg2 = emseg2
         self.seg_shape = self.emseg2.labels.shape
         bbox_path = self.get_bbox_path(emseg2.labels_path)

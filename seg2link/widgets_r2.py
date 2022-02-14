@@ -1,7 +1,7 @@
 import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import numpy as np
 from PIL import Image
@@ -17,11 +17,14 @@ from seg2link.single_cell_division import DivideMode
 from seg2link.cache_bbox import NoLabelError
 from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
 
+if TYPE_CHECKING:
+    from seg2link.correction_r2 import VisualizeAll
+
 
 class WidgetsR2:
-    def __init__(self, visualizeall):
-        self.viewer = visualizeall.viewer
-        self.emseg2 = visualizeall.emseg2
+    def __init__(self, vis: "VisualizeAll"):
+        self.viewer = vis.viewer
+        self.emseg2 = vis.emseg2
         self.tiny_cells = TinyCells(self.emseg2.labels)
         self.label_max = 0
 

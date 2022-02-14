@@ -28,6 +28,7 @@ if config.debug:
 
 StateR1 = namedtuple("StateR1", ["labels", "seg_img", "aligned_img", "action"])
 
+
 class Seg2LinkR1:
     """Segment the cells in 3D EM images"""
 
@@ -301,7 +302,9 @@ class VisualizeBase:
         putative_data = np.zeros((*self.raw.shape[:2], 2), dtype=np.uint8)
         if self.cell_mask is not None:
             viewer.add_labels(putative_data, name='mask_cells', color={0: "k", 1: "w"}, visible=False, scale=self.scale)
-        viewer.add_image(putative_data, name='raw_image', contrast_limits=[0, 2 ** config.pars.raw_bit - 1], scale=self.scale)
+        viewer.add_image(
+            putative_data, name='raw_image', contrast_limits=[0, 2 ** config.pars.raw_bit - 1], scale=self.scale
+        )
         if self.cell_region is not None:
             viewer.add_labels(putative_data, name='cell_region', color={0: "k", 1: "w"}, opacity=0.4, scale=self.scale)
         viewer.add_labels(putative_data32bit, name='segmentation', num_colors=100, scale=self.scale)
