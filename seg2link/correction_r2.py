@@ -40,9 +40,9 @@ class Seg2LinkR2:
         self.label_set: Set[int] = set()
         self.s = slice(0, self.labels.shape[2])
         self.divide_subregion_slice = None
-        self.labels_path = labels_path.parent / "seg-modified.npy"
+        self.labels_path = labels_path
         self.vis = VisualizeAll(self, raw, cell_region, mask)
-        self.cache_bbox = CacheBbox(self, labels_path.parent / "cache_bbox.pickle")
+        self.cache_bbox = CacheBbox(self)
         self.cache = CacheSubArray(self)
         self.update_info()
         self.keys_binding()

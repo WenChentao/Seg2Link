@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 from PIL import Image
@@ -85,7 +86,7 @@ class WidgetsR2:
         self.viewer.window.add_dock_widget([self.state_info], name="State info", area="right")
         self.viewer.window.add_dock_widget([self.hotkeys_info], name="HotKeys", area="left")
 
-    def update_info(self, label_pre_division: int):
+    def update_info(self, label_pre_division: Optional[int]=None):
         self.label_max = max(self.emseg2.cache_bbox.bbox)
         labels_post_division = self.emseg2.divide_list
         if len(labels_post_division) != 0:
@@ -194,10 +195,12 @@ class WidgetsR2:
             if self.viewer.layers["segmentation"].data.dtype != config.pars.dtype_r2:
                 self.show_state_info(f"Warning: dtype should be {config.pars.dtype_r2}!")
             elif self.emseg2.labels_path.parent.exists():
+                labels_path = self.emseg2.labels_path.parent / "seg-modified.npy"
                 self.show_state_info("Saving segmentation as .npy file... Please wait")
-                np.save(self.emseg2.labels_path, self.viewer.layers["segmentation"].data)
-                self.show_state_info(f"{self.emseg2.labels_path.name} was saved at: "
+                save_seg_and_bbox(labels_path)
+                self.show_state_info("seg-modified.npy was saved at: "
                                      f"{datetime.datetime.now().strftime('%H:%M:%S')}")
+
             else:
                 self.show_state_info("Warning: Folder doesn't exist!")
 
@@ -206,15 +209,19 @@ class WidgetsR2:
             if self.viewer.layers["segmentation"].data.dtype != config.pars.dtype_r2:
                 self.show_state_info(f"Warning: dtype should be {config.pars.dtype_r2}!")
             elif self.emseg2.labels_path.parent.exists():
-                path = select_file()
-                if path:
+                labels_path = select_file()
+                if labels_path:
                     self.show_state_info("Saving segmentation as .npy file... Please wait")
-                    np.save(path, self.viewer.layers["segmentation"].data)
-                    self.show_state_info(f"{Path(path).name} was saved")
+                    save_seg_and_bbox(Path(labels_path))
+                    self.show_state_info(f"{Path(labels_path).name} was saved")
             else:
                 self.show_state_info("Warning: Folder doesn't exist!")
 
-        def select_file():
+        def save_seg_and_bbox(labels_path: Path):
+            np.save(labels_path, self.viewer.layers["segmentation"].data)
+            self.emseg2.cache_bbox.save_bbox(labels_path)
+
+        def select_file() -> str:
             seg_filename = "seg-modified-" + datetime.datetime.now().strftime("%Y-%h-%d-%p%I") + ".npy"
             mode_ = FileDialogMode.OPTIONAL_FILE
             return use_app().get_obj("show_file_dialog")(
@@ -226,14 +233,17 @@ class WidgetsR2:
         @load_dialog.changed.connect
         def load_npy():
             mode_ = FileDialogMode.EXISTING_FILE
-            path = use_app().get_obj("show_file_dialog")(
+            labels_path = use_app().get_obj("show_file_dialog")(
                 mode_,
                 caption=load_dialog.text,
-                start_path=str(self.emseg2.labels_path),
+                start_path=str(self.emseg2.labels_path.parent / "seg-modified.npy"),
                 filter='*.npy'
             )
-            if path:
-                self.emseg2.reset_labels(np.load(path))
+            if labels_path:
+                self.emseg2.reset_labels(np.load(labels_path))
+                self.emseg2.cache_bbox.load_bbox(Path(labels_path))
+                self.update_info()
+
 
         @remove_and_save.changed.connect
         def show_info_remove_cells():
@@ -259,17 +269,18 @@ class WidgetsR2:
         def remove_save(max_cell_num):
             if self.emseg2.labels_path.parent.exists():
                 self.show_state_info("Saving segmentation before relabeling... Please wait")
-                np.save(self.emseg2.labels_path.parent / "seg-modified_before_sort_remove.npy",
-                        self.viewer.layers["segmentation"].data)
+                save_seg_and_bbox(self.emseg2.labels_path.parent / "seg-modified_before_sort_remove.npy")
+
                 self.show_state_info("Relabeling/Removing tiny cells... Please wait")
                 self.emseg2.labels = self.tiny_cells.remove_and_relabel(self.emseg2.labels, max_cell_num)
                 self.emseg2._update_segmentation()
+
+                self.emseg2.cache_bbox.refresh_bboxes()
                 self.show_state_info("Saving segmentation after relabeling... Please wait")
-                np.save(self.emseg2.labels_path.parent / "seg-modified_after_sort_remove.npy",
-                        self.viewer.layers["segmentation"].data)
+                save_seg_and_bbox(self.emseg2.labels_path.parent / "seg-modified_after_sort_remove.npy")
                 self.show_state_info(f"Segmentation was saved as: seg-modified_after_sort_remove.npy")
                 self.emseg2.cache.cache.reset_cache_b()
-                self.emseg2.update_info()
+                self.update_info()
             else:
                 self.show_state_info("Warning: Folder doesn't exist!")
 
@@ -291,7 +302,7 @@ class WidgetsR2:
             path = use_app().get_obj("show_file_dialog")(
                 mode_,
                 caption=export_button.text,
-                start_path=str(self.emseg2.labels_path),
+                start_path=str(self.emseg2.labels_path.parent),
                 filter=None
             )
             if path:
@@ -309,19 +320,17 @@ class WidgetsR2:
 
         def modify_boundary():
             if boundary_action.value == Boundary.Add:
-                np.save(self.emseg2.labels_path.parent / "seg-modified_before_adding_boundary.npy",
-                        self.viewer.layers["segmentation"].data)
+                save_seg_and_bbox(self.emseg2.labels_path.parent / "seg-modified_before_adding_boundary.npy")
                 self.emseg2.labels = labels_with_boundary(self.emseg2.labels)
                 self.emseg2._update_segmentation()
-                np.save(self.emseg2.labels_path.parent / "seg-modified_after_adding_boundary.npy",
-                        self.viewer.layers["segmentation"].data)
+                self.emseg2.cache_bbox.refresh_bboxes()
+                save_seg_and_bbox(self.emseg2.labels_path.parent / "seg-modified_after_adding_boundary.npy")
             elif boundary_action.value == Boundary.Remove:
-                np.save(self.emseg2.labels_path.parent / "seg-modified_before_removing_boundary.npy",
-                        self.viewer.layers["segmentation"].data)
+                save_seg_and_bbox(self.emseg2.labels_path.parent / "seg-modified_before_removing_boundary.npy")
                 self.emseg2.labels = remove_boundary_scipy(self.emseg2.labels)
                 self.emseg2._update_segmentation()
-                np.save(self.emseg2.labels_path.parent / "seg-modified_after_removing_boundary.npy",
-                        self.viewer.layers["segmentation"].data)
+                self.emseg2.cache_bbox.refresh_bboxes()
+                save_seg_and_bbox(self.emseg2.labels_path.parent / "seg-modified_after_removing_boundary.npy")
             else:
                 pass
 

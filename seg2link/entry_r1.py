@@ -64,7 +64,6 @@ def show_error_msg(widget_error_state, msg):
     cell_value={"label": "Value of the cell region"},
     mask_value={"label": "Value of the mask region", "visible": False},
     historical_info={"label": "   Historical info:", "visible": False},
-    paths_exist={"visible": False},
     error_info={"widget_type": "TextEdit", "label": "Warnings:", "visible": False},
     threshold_link={"widget_type": "FloatSlider", "label": "Min_Overlap (linking)", "min": 0.05, "max": 0.95},
     threshold_mask={"widget_type": "FloatSlider", "label": "Min_Overlap (masking)", "min": 0.05, "max": 0.95,
@@ -75,7 +74,7 @@ def show_error_msg(widget_error_state, msg):
     path_mask={"label": "Open image sequences: Mask images (*.tiff):", "mode": "d", "visible": False},
     path_cache={"label": "Select a folder for storing results:", "mode": "d"},
     enable_mask={"label": "Use the Mask images"},
-    enable_align={"label": "Use the affine alignment"},
+    enable_align={"label": "Use the affine alignment", "visible": False}, # fobidden to use it
 )
 def start_r1(
         load_para,
@@ -86,7 +85,6 @@ def start_r1(
         path_raw=CURRENT_DIR / "Raw",
         path_mask=CURRENT_DIR / "Mask",
         path_cache=CURRENT_DIR / "Results",
-        paths_exist=["", "", "", ""],
         historical_info="",
         retrieve_slice=0,
         cell_value=2,
@@ -114,6 +112,7 @@ def start_r1(
         Seg2LinkR1(images, cells, mask_dilated, enable_mask, layer_num, path_cache, threshold_link, threshold_mask,
                    start_r1.retrieve_slice.value, enable_align)
         print("The soft was started")
+        start_r1.close()
         return None
 
 

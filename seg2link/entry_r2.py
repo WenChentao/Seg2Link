@@ -22,7 +22,6 @@ USR_CONFIG = UserConfig()
     save_para={"widget_type": "PushButton", "text": "Save parameters (*.ini)"},
     cell_value={"label": "Value of the cell region"},
     mask_value={"label": "Value of the mask region", "visible": False},
-    paths_exist={"visible": False, "enabled": False},
     error_info={"widget_type": "TextEdit", "label": "Warnings:", "visible": False},
     image_size={"label": "Image size (segmentation)", "enabled": False},
     path_cells={"label": "Open image sequence: Cell regions (*.tiff):", "mode": "d"},
@@ -45,7 +44,6 @@ def start_r2(
         path_mask=CURRENT_DIR / "Mask",
         file_seg=CURRENT_DIR / "Seg.npy",
         dir_seg=CURRENT_DIR / "Seg",
-        paths_exist=["", "", "", ""],
         image_size="",
         cell_value=2,
         mask_value=2,
@@ -61,6 +59,7 @@ def start_r2(
         mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
         segmentation = load_segmentation(dir_seg) if load_seg_dir else load_segmentation(file_seg)
         Seg2LinkR2(images, cells, mask_dilated, segmentation, file_seg)
+        start_r2.close()
         return None
 
 

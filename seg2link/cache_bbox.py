@@ -10,27 +10,37 @@ Bbox = Tuple[slice, slice, slice]
 
 
 class CacheBbox:
-    def __init__(self, emseg2, path_save: Path):
+    def __init__(self, emseg2):
         self.emseg2 = emseg2
-        self.path_save = path_save
         self.seg_shape = self.emseg2.labels.shape
-        if path_save.exists():
-            self.bbox: Dict[int, Bbox] = self.load_bbox()
+        bbox_path = self.get_bbox_path(emseg2.labels_path)
+        self.bbox: Dict[int, Bbox] = {}
+        if bbox_path.exists():
+            self.load_bbox(emseg2.labels_path)
         else:
-            self.emseg2.vis.widgets.show_state_info("Calculating bboxes for all labels... Please wait")
-            _subregions = get_all_subregions_3d(self.emseg2.labels)
-            self.bbox: Dict[int, Bbox] = \
-                {label + 1: bbox for label, bbox in enumerate(_subregions) if bbox is not None}
-            self.save_bbox()
-            self.emseg2.vis.widgets.show_state_info("Bboxes were calculated")
+            self.refresh_bboxes()
+            self.save_bbox(self.emseg2.labels_path)
 
-    def save_bbox(self):
-        with open(self.path_save, 'wb') as f:
+    def refresh_bboxes(self):
+        self.emseg2.vis.widgets.show_state_info("Calculating bboxes for all labels... Please wait")
+        _subregions = get_all_subregions_3d(self.emseg2.labels)
+        self.bbox: Dict[int, Bbox] = {label + 1: bbox for label, bbox in enumerate(_subregions) if bbox is not None}
+        self.emseg2.vis.widgets.show_state_info("Bboxes were calculated")
+
+    def save_bbox(self, labels_path: Path):
+        bbox_path = self.get_bbox_path(labels_path)
+        bbox_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(bbox_path, 'wb') as f:
             pickle.dump(self.bbox, f, pickle.HIGHEST_PROTOCOL)
 
-    def load_bbox(self):
-        with open(self.path_save, 'rb') as f:
-            return pickle.load(f)
+    @staticmethod
+    def get_bbox_path(labels_path: Path):
+        return labels_path.parent / "cache_bbox" / (labels_path.stem + ".pickle")
+
+    def load_bbox(self, labels_path: Path):
+        bbox_path = self.get_bbox_path(labels_path)
+        with open(bbox_path, 'rb') as f:
+            self.bbox = pickle.load(f)
 
     def update_bbox_for_division(self, seg_subregion: ndarray, label_ori: int, divide_list: List[int], bbox_with_division: Bbox):
         """Add new divided labels, update changed labels, and delete the removed label after division"""

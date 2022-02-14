@@ -18,11 +18,13 @@ def widget_entry(title="Please select a round",round1=True, round2=True):
 @widget_entry.round1.changed.connect
 def r1_changed():
     start_r1.show(run=True)
+    widget_entry.close()
 
 
 @widget_entry.round2.changed.connect
 def r2_changed():
     start_r2.show(run=True)
+    widget_entry.close()
 
 
 def main():
