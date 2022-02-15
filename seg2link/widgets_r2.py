@@ -31,10 +31,12 @@ class WidgetsR2:
         # Hotkeys panel
         self.hotkeys_info_value = '[K]:  Divide one label' \
                                   '\n---------------' \
-                                  '\n[A]: Add a label into the label list (LL)' \
-                                  '\n[C]: Clear LL' \
-                                  '\n[M]: Merge labels in LL' \
-                                  '\n[D]: Delete a selected label or labels in LL' \
+                                  '\n[A]: Add a label into the label list (ll)' \
+                                  '\n[C]: Clear ll' \
+                                  '\n[M]: Merge labels in ll' \
+                                  '\n[D]: Delete a selected label or labels in ll' \
+                                  '\n---------------' \
+                                  '\n[I]: Insert a new label' \
                                   '\n---------------' \
                                   '\n[Q]: Switch: Viewing one label | all labels' \
                                   '\n[U]: Undo     [F]: Redo' \
