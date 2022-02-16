@@ -1,7 +1,7 @@
 from magicgui import magicgui
 
-from seg2link.entry_r1 import start_r1
-from seg2link.entry_r2 import start_r2
+from seg2link.seg2link_r1 import start_r1
+from seg2link.seg2link_r2 import start_r2
 
 
 @magicgui(

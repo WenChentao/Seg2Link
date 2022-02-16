@@ -121,7 +121,6 @@ class Seg2LinkR1:
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]
 
-    @lprofile
     def update(self, cache_action: Optional[str] = None):
         self.archive_state()
         self.vis.show_segmentation_r1()
@@ -342,7 +341,6 @@ class VisualizePartial(VisualizeBase):
             self.viewer.add_labels(putative_data, name="cell_region_aligned", color={0: "k", 1: "w"}, visible=False)
         return None
 
-    @lprofile
     def show_segmentation_r1(self, reset_focus: bool = True):
         """Update the segmentation results and other images/label"""
         current_slice = self.emseg1.current_slice
