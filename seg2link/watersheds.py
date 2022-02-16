@@ -11,7 +11,7 @@ from skimage.segmentation import watershed, find_boundaries
 
 from seg2link import config
 from seg2link.misc import dilation_scipy
-if config.debug:
+if config.DEBUG:
     from seg2link.config import lprofile
 
 

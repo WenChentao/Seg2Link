@@ -13,7 +13,7 @@ from seg2link import config
 from seg2link.link_by_overlap import match_return_seg_img
 from seg2link.watersheds import dist_watershed
 
-if config.debug:
+if config.DEBUG:
     pass
 
 @dataclass

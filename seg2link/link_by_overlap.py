@@ -1,11 +1,11 @@
-from typing import Tuple, List, Optional, Dict
+from typing import Tuple, Dict
 
 import numpy as np
 from numpy import ndarray
 
 from seg2link import config
 
-if config.debug:
+if config.DEBUG:
     from seg2link.misc import qprofile
     from seg2link.config import lprofile
 
@@ -23,8 +23,8 @@ def match_return_seg_img(seg_s1: ndarray, seg_s2: ndarray, max_label: int, ratio
     return seg_s2
 
 
-def match_return_label_list(seg_s1: ndarray, seg_s2: ndarray, ratio_overlap: float,
-                            labels_pre: ndarray, labels_post: ndarray):
+def match_return_label_list(seg_s1: ndarray, seg_s2: ndarray, labels_pre: ndarray, labels_post: ndarray,
+                            ratio_overlap: float):
     """Match the segmentation in slice 2 with slice 1 and return the modified label list in s1 and s2
 
     Notes

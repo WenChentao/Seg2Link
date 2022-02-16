@@ -6,7 +6,7 @@ import pickle
 import re
 from collections import OrderedDict
 from pathlib import Path
-from typing import List, Tuple, Optional, Union, Set
+from typing import List, Tuple, Optional, Union, Set, TYPE_CHECKING
 
 import numpy as np
 import skimage as ski
@@ -18,23 +18,26 @@ from seg2link.link_by_overlap import match_return_label_list
 from seg2link.misc import make_folder, replace, mask_cells
 from seg2link.watersheds import dist_watershed
 
-if config.debug:
+if TYPE_CHECKING:
+    from seg2link.correction_r1 import Seg2LinkR1
+
+if config.DEBUG:
     from seg2link.config import lprofile
 
 class Labels:
     """Labels are stored as a python list corresponding to the values in the segmented images"""
 
-    __slots__ = ['archive', '_labels', '_voxels', 'current_slice', 'ratio_overlap', '_label_nums']
+    __slots__ = ['emseg1', '_labels', '_voxels', 'current_slice', 'ratio_overlap', '_label_nums']
 
     _labels: List[List[int]]
     _label_nums: List[int]
     current_slice: int
 
-    def __init__(self, archive: Archive, ratio_overlap: float = 0.5):
+    def __init__(self, emseg1: "Seg2LinkR1", ratio_overlap: float = 0.5):
         self._labels = []
         self._voxels = {}  # Unused and will be removed in future
         self.current_slice = 0
-        self.archive = archive
+        self.emseg1 = emseg1
         self.ratio_overlap = ratio_overlap
         self._label_nums = []
 
@@ -47,7 +50,7 @@ class Labels:
 
     def rollback(self):
         if len(self._labels) > 0:
-            labels = self.archive.read_labels(self.current_slice - 1)
+            labels = self.emseg1.archive.read_labels(self.current_slice - 1)
             if isinstance(labels, Labels):
                 self._labels = labels._labels
             else:
@@ -66,15 +69,15 @@ class Labels:
         labels1d_array = replace(delete_list, 0, labels1d_array)
         self._labels = self._to_labels2d(labels1d_array.tolist(), label_nums)
 
-    def merge(self, merge_list: Set[int]):
+    def merge(self):
         """Merge the cells in the label_list and modify the transformation list"""
         labels1d, label_nums = self._flatten()
         labels1d_array = np.asarray(labels1d, dtype=int)
 
-        target = min(merge_list)
+        target = min(self.emseg1.label_list)
         if not np.isin(target, labels1d_array):
             raise ValueError("Label ", target, " not exist")
-        for label in merge_list:
+        for label in self.emseg1.label_list:
             labels1d_array = replace(label, target, labels1d_array)
         self._labels = self._to_labels2d(labels1d_array.tolist(), label_nums)
 
@@ -103,20 +106,20 @@ class Labels:
     def to_labels_img(self, layer: int, seg_img_cache: OrderedDict) -> ndarray:
         try:
             _labels = np.asarray([0] + self._labels[layer - 1])
-            seg_img = self.archive.read_seg_img(seg_img_cache, layer)
+            seg_img = self.emseg1.archive.read_seg_img(seg_img_cache, layer)
             return _labels[seg_img]
         except IndexError:
             raise IndexError(f"{_labels.max()=}, {seg_img.max()=}, {layer=}")
 
-    def _get_images_tolink(self, initial_seg: Segmentation, seg_img_cache: OrderedDict) \
+    def _get_images_tolink(self) \
             -> Tuple[ndarray, ndarray, ndarray, ndarray]:
         """Prepare the segmentations and label for linking"""
-        seg_pre = self.to_labels_img(self.current_slice, seg_img_cache)
+        seg_pre = self.to_labels_img(self.current_slice, self.emseg1.seg_img_cache)
 
         labels1d, self._label_nums = self._flatten()
         labels_pre_1d = np.asarray(labels1d)
 
-        seg_post = initial_seg.current_seg.copy()
+        seg_post = self.emseg1.seg.current_seg.copy()
         seg_post[seg_post != 0] += max(labels1d)
 
         labels_post = np.unique(seg_post)
@@ -124,44 +127,45 @@ class Labels:
 
         return seg_pre, seg_post, labels_post, labels_pre_1d
 
-    def _align_slice_post(self, seg_post: ndarray, cells: ndarray, align: Alignment, reset_align: bool,
-                          should_align: bool) -> Tuple[Optional[ndarray], ndarray]:
-        z = self.current_slice + 1
-        if should_align:
-            cells_aligned, seg_aligned = align.align_(cells[:, :, z - 2], cells[:, :, z - 1], seg_post, reset_align)
-        else:
-            cells_aligned = cells[:, :, z - 1]
-            seg_aligned = seg_post
-        return cells_aligned, seg_aligned
-
-    def to_multiple_labels(self, layers: slice, initial_seg: Segmentation, seg_img_cache: OrderedDict) -> ndarray:
+    def to_multiple_labels(self, layers: slice) -> ndarray:
         """Get segmentation results (images) around current slice"""
         layer_num = layers.stop - layers.start
-        h, w = initial_seg.current_seg.shape
+        h, w = self.emseg1.seg.current_seg.shape
         labels_img = np.zeros((layer_num, h, w), dtype=np.uint32)
         for i, z in enumerate(range(layers.start, layers.stop)):
             if (z + 1) <= self.current_slice:
-                labels_img[i, ...] = self.to_labels_img(z + 1, seg_img_cache)
+                labels_img[i, ...] = self.to_labels_img(z + 1, self.emseg1.seg_img_cache)
             else:
                 break
         return labels_img.transpose((1, 2, 0))
 
-    def link_next_slice(self, initial_seg: Segmentation, align: Alignment, reset_align: bool,
-                        seg_img_cache: OrderedDict, should_align: bool = True) -> ndarray:
+    def link_next_slice(self, reset_align: bool) -> ndarray:
         """Link current label with the segmentation in next slice"""
         if self.current_slice == 0:
-            self.append_labels(initial_seg)
-            return initial_seg.cell_region[..., 0]
+            self.append_labels(self.emseg1.seg)
+            return self.emseg1.seg.cell_region[..., 0]
 
-        newseg_pre, newseg_post, list_post, list_pre_1d = self._get_images_tolink(initial_seg, seg_img_cache)
-        cells_aligned, newseg_post_aligned = self._align_slice_post(newseg_post, initial_seg.cell_region,
-                                                                    align, reset_align, should_align)
-        list_pre_1d_linked, list_post_linked = match_return_label_list(newseg_pre, newseg_post_aligned,
-                                                                       self.ratio_overlap, list_pre_1d, list_post)
+        list_post, list_pre_1d, seg_post, seg_pre = self.prepare_data_for_link(reset_align)
+        list_pre_1d_linked, list_post_linked = match_return_label_list(seg_pre, seg_post, list_pre_1d, list_post,
+                                                                       self.ratio_overlap)
         self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
         self.current_slice += 1
 
-        return np.array(cells_aligned, dtype=np.uint8)
+    def prepare_data_for_link(self, reset_align):
+        seg_pre, seg_post, list_post, list_pre_1d = self._get_images_tolink()
+        cells_aligned, seg_post = self._align_slice_post(seg_post, reset_align)
+        self.emseg1.cells_aligned = np.array(cells_aligned, dtype=np.uint8)
+        return list_post, list_pre_1d, seg_post, seg_pre
+
+    def _align_slice_post(self, seg_post: ndarray, reset_align: bool) -> Tuple[Optional[ndarray], ndarray]:
+        cells = self.emseg1.seg.cell_region
+        z = self.current_slice + 1
+        if self.emseg1.enable_align:
+            cells_aligned, seg_aligned = self.emseg1.align.align_(cells[:, :, z - 2], cells[:, :, z - 1], seg_post, reset_align)
+        else:
+            cells_aligned = cells[:, :, z - 1]
+            seg_aligned = seg_post
+        return cells_aligned, seg_aligned
 
     def relabel(self):
         """Relabel all N cells with label from 1 to N and save the current state"""
@@ -208,28 +212,28 @@ class Labels:
 
 class Segmentation:
     """Segment cells in each 2D slice"""
-    __slots__ = ['cell_region', 'mask', 'ratio_mask', 'current_seg']
+    __slots__ = ['enable_mask', 'cell_region', 'mask', 'ratio_mask', 'current_seg']
 
-    def __init__(self, cell_region: ndarray, mask: Optional[ndarray], ratio_mask: float):
+    def __init__(self, cell_region: ndarray, enable_mask: bool, mask: Optional[ndarray], ratio_mask: float):
         self.cell_region = cell_region
+        self.enable_mask = enable_mask
         self.mask = mask
         self.ratio_mask = ratio_mask
         self.current_seg = np.array([], dtype=np.uint32)
 
-    def watershed(self, layer_idx: int, enable_mask: bool):
+    def watershed(self, layer_idx: int):
         """Segment a 2D label regions and save the result"""
-        mask = self.mask[..., layer_idx - 1].compute() if enable_mask else None
         current_seg = dist_watershed(self.cell_region[..., layer_idx - 1].compute(),
                                      h=config.pars.h_watershed)
-        if enable_mask:
+        if self.enable_mask:
             self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:
             self.current_seg = current_seg
 
-    def reseg(self, label_img: ndarray, layer_idx: int, enable_mask: bool):
+    def reseg(self, label_img: ndarray, layer_idx: int):
         """Resegment based on the modified segmentation"""
         current_seg = ski.measure.label(label_img, connectivity=1)
-        if enable_mask:
+        if self.enable_mask:
             self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:
             self.current_seg = current_seg
@@ -272,8 +276,8 @@ class Alignment:
 
 
 class Archive:
-    def __init__(self, emseg, path_save: Path):
-        self.emseg = emseg
+    def __init__(self, emseg1: "Seg2LinkR1", path_save: Path):
+        self.emseg1 = emseg1
         self._path_labels = path_save / "History_labels"
         self._path_seg = path_save / "History_seg"
 
@@ -321,15 +325,15 @@ class Archive:
 
     def save_labels_v2(self):
         """Save the labels"""
-        labels = self.emseg.labels
+        labels = self.emseg1.labels
         if labels.current_slice >= 1:
             with open(self._path_labels / (config.label_filename_v2 % labels.current_slice), 'wb') as f:
                 pickle.dump(labels._labels, f, pickle.HIGHEST_PROTOCOL)
 
     def save_seg_img(self):
-        np.savez_compressed(self._path_seg / ('segmentation_slice%04i.npz' % self.emseg.labels.current_slice),
-                            segmentation=self.emseg.seg.current_seg)
-        self.append_seg(self.emseg.seg_img_cache, self.emseg.seg.current_seg, self.emseg.labels.current_slice)
+        np.savez_compressed(self._path_seg / ('segmentation_slice%04i.npz' % self.emseg1.labels.current_slice),
+                            segmentation=self.emseg1.seg.current_seg)
+        self.append_seg(self.emseg1.seg_img_cache, self.emseg1.seg.current_seg, self.emseg1.labels.current_slice)
 
     @staticmethod
     def append_seg(seg_img_cache: OrderedDict, seg: ndarray, z: int):

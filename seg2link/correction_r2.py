@@ -16,10 +16,9 @@ from seg2link.msg_windows_r2 import message_delete_labels
 from seg2link.cache_bbox import NoLabelError, CacheBbox, merge_bbox, Bbox
 from seg2link.widgets_r2 import WidgetsR2
 from seg2link.single_cell_division import DivideMode, get_subregion2d_and_preslice, NoDivisionError, \
-    separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed, \
-    keep_largest_label_unchange
+    separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed, keep_largest_label_unchange
 
-if config.debug:
+if config.DEBUG:
     from seg2link.config import lprofile
 
 BiState = namedtuple("BiState", ["array", "bboxes"])

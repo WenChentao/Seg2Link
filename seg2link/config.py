@@ -1,13 +1,12 @@
-# Cache length
 import ast
 from dataclasses import dataclass, fields
 from typing import Optional, Tuple
 
 import numpy as np
 
-debug = True
+DEBUG = True
 
-if debug:
+if DEBUG:
     import atexit
     import line_profiler
     lprofile = line_profiler.LineProfiler()

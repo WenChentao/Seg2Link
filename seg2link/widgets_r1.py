@@ -7,7 +7,7 @@ from magicgui.widgets import Container
 from seg2link import config
 from seg2link.misc import add_blank_lines
 
-if config.debug:
+if config.DEBUG:
     pass
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class WidgetsR1:
     def __init__(self, vis: "VisualizePartial", img_shape: Tuple):
         self.viewer = vis.viewer
-        self.emseg = vis.emseg
+        self.emseg1 = vis.emseg1
 
         shape_str = f"H: {img_shape[0]}  W: {img_shape[1]}  D: {img_shape[2]}"
         self.image_size = widgets.LineEdit(label="Image shape", value=shape_str, enabled=False)
@@ -67,8 +67,8 @@ class WidgetsR1:
         self.viewer.window.add_dock_widget([self.state_info], name="State info", area="right")
 
     def update_info(self):
-        self.max_label.value = str(self.emseg.labels.max_label)
-        self.cached_action.value = add_blank_lines("".join(self.emseg.cache.cached_actions),
+        self.max_label.value = str(self.emseg1.labels.max_label)
+        self.cached_action.value = add_blank_lines("".join(self.emseg1.cache.cached_actions),
                                                    config.pars.cache_length_r1 + 1)
-        self.label_list_msg.value = tuple(self.emseg.label_list)
+        self.label_list_msg.value = tuple(self.emseg1.label_list)
         return None

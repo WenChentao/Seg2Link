@@ -23,7 +23,7 @@ from seg2link.misc import print_information, TinyCells
 from seg2link.single_cell_division import separate_one_label_r1
 from seg2link.widgets_r1 import WidgetsR1
 
-if config.debug:
+if config.DEBUG:
     from seg2link.config import lprofile
 
 StateR1 = namedtuple("StateR1", ["labels", "seg_img", "aligned_img", "action"])
@@ -45,10 +45,9 @@ class Seg2LinkR1:
         self.archive = Archive(self, path_save)
         self.archive.make_folders()
         self.path_export = path_save
-        self.enable_mask = enable_mask
-        self.seg = Segmentation(cell_region, mask, ratio_mask)
-        self.vis = VisualizePartial(self, raw, cell_region, mask, enable_align)
-        self.labels = Labels(self.archive, ratio_overlap)
+        self.seg = Segmentation(cell_region, enable_mask, mask, ratio_mask)
+        self.vis = VisualizePartial(self, raw, cell_region, mask)
+        self.labels = Labels(self, ratio_overlap)
         self.align = Alignment(enable_align)
         self.keys_binding()
         self.widget_binding()
@@ -93,8 +92,7 @@ class Seg2LinkR1:
             self.vis.update_info()
 
     def _link_and_relabel(self, reset_align: bool):
-        self.cells_aligned = self.labels.link_next_slice(
-            self.seg, self.align, reset_align, self.seg_img_cache, self.enable_align)
+        self.labels.link_next_slice(reset_align)
         if self.current_slice > 1:
             self.labels.relabel()
 
@@ -102,14 +100,14 @@ class Seg2LinkR1:
         """Save label until current slice and then segment and link to the next slice"""
         self.current_slice += 1
         self.vis.widgets.show_state_info(f"Segmenting slice {self.current_slice} by watershed... Please wait")
-        self.seg.watershed(self.current_slice, self.enable_mask)
+        self.seg.watershed(self.current_slice)
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
         self._link_and_relabel(reset_align=True)
         self.vis.widgets.show_state_info(f"Linking was done")
 
     def reseg_link(self, modified_label: ndarray):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        self.seg.reseg(modified_label[..., z], self.current_slice, self.enable_mask)
+        self.seg.reseg(modified_label[..., z], self.current_slice)
         if self.current_slice == 1:
             self.labels.reset()
         else:
@@ -123,6 +121,7 @@ class Seg2LinkR1:
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]
 
+    @lprofile
     def update(self, cache_action: Optional[str] = None):
         self.archive_state()
         self.vis.show_segmentation_r1()
@@ -217,7 +216,6 @@ class Seg2LinkR1:
         @print_information("Undo")
         def undo(viewer_seg):
             """Undo one keyboard command"""
-            #TODO: the program crash when performing undo after division
             state: StateR1 = self.cache.load_cache("undo")
             self._set_labels(state.labels)
             self._update_state(state.seg_img, state.aligned_img)
@@ -261,7 +259,7 @@ class Seg2LinkR1:
             )
             if path:
                 self.vis.widgets.show_state_info("Generating segmentation... Please wait")
-                seg_array = self.labels.to_multiple_labels(slice(0, self.current_slice), self.seg, self.seg_img_cache)
+                seg_array = self.labels.to_multiple_labels(slice(0, self.current_slice))
                 self.vis.widgets.show_state_info("Sorting labels... Please wait")
                 sorted_labels = self.sort_remove_tiny(seg_array)
                 self.vis.widgets.show_state_info("Save segmentation as npy... Please wait")
@@ -317,16 +315,15 @@ class VisualizeBase:
 class VisualizePartial(VisualizeBase):
     """Visualize the segmentation results"""
 
-    def __init__(self, emseg, raw: ndarray, cell_region: ndarray, cell_mask: Optional[ndarray], enable_align: bool = True):
+    def __init__(self, emseg1: Seg2LinkR1, raw: ndarray, cell_region: ndarray, cell_mask: Optional[ndarray]):
         super().__init__(raw, cell_region, cell_mask)
-        self.emseg = emseg
+        self.emseg1 = emseg1
         self.layer_num = cell_region.shape[-1]
-        self.enable_align = enable_align
         self.add_layers()
         self.widgets = WidgetsR1(self, cell_region.shape)
 
     def update_info(self):
-        s = self.get_slice(self.emseg.current_slice)
+        s = self.get_slice(self.emseg1.current_slice)
         self.widgets.update_info()
         self.viewer.dims.set_axis_label(axis=2, label=f"Slice ({s.start + 1}-{s.stop})")
 
@@ -337,25 +334,20 @@ class VisualizePartial(VisualizeBase):
         stop = min(start + config.pars.max_draw_layers_r1, self.layer_num)
         return slice(start, stop)
 
-    @staticmethod
-    def _expand_2d_to_3d(img2d: ndarray, layers: slice, current_layer: int) -> ndarray:
-        img3d = np.tile(np.zeros_like(img2d), reps=(layers.stop - layers.start, 1, 1))
-        img3d[current_layer - layers.start - 1, ...] = img2d
-        return img3d
-
     def add_layers(self):
         """Initialize the napari viewer"""
         self.viewer.title = "Seg2Link 1st round"
-        if self.enable_align:
+        if self.emseg1.enable_align:
             putative_data = np.zeros((2, *self.cell_region.shape[:2]), dtype=np.uint8)
             self.viewer.add_labels(putative_data, name="cell_region_aligned", color={0: "k", 1: "w"}, visible=False)
         return None
 
+    @lprofile
     def show_segmentation_r1(self, reset_focus: bool = True):
         """Update the segmentation results and other images/label"""
-        current_slice = self.emseg.current_slice
+        current_slice = self.emseg1.current_slice
         slice_layers = self.get_slice(current_slice)
-        labels = self.emseg.labels.to_multiple_labels(slice_layers, self.emseg.seg, self.emseg.seg_img_cache)
+        labels = self.emseg1.labels.to_multiple_labels(slice_layers)
 
         if self.cell_mask is not None:
             self.viewer.layers['mask_cells'].data = self.cell_mask[..., slice_layers]
@@ -363,15 +355,23 @@ class VisualizePartial(VisualizeBase):
         if self.cell_region is not None:
             self.viewer.layers['cell_region'].data = self.cell_region[..., slice_layers]
         self.viewer.layers['segmentation'].data = labels
-        if self.enable_align:
+        if self.emseg1.enable_align:
             self.viewer.layers['cell_region_aligned'].data = \
-                self._expand_2d_to_3d(self.emseg.cell_region_aligned, slice_layers, current_slice)
-        QApplication.processEvents()
+                self._expand_align_to_3d(slice_layers, current_slice)
 
         current_layer_relative = current_slice - slice_layers.start - 1
         if reset_focus:
             self.viewer.dims.set_current_step(axis=2, value=current_layer_relative)
 
+        QApplication.processEvents()
+
+    def _expand_align_to_3d(self, layers: slice, current_layer: int) -> ndarray:
+        aligned_img = self.emseg1.cells_aligned
+        aligned_cell_3d = np.tile(np.zeros_like(aligned_img), reps=(layers.stop - layers.start, 1, 1))
+        aligned_cell_3d[current_layer - layers.start - 1, ...] = aligned_img
+        return aligned_cell_3d
+
+refaction = 1
 
 class Cache:
     def __init__(self, maxlen: int):
@@ -409,18 +409,18 @@ class CacheR1(Cache):
 
 
 class CacheState:
-    def __init__(self, emseg):
+    def __init__(self, emseg1: Seg2LinkR1):
         self.cache = CacheR1(maxlen=config.pars.cache_length_r1)
-        self.emseg = emseg
+        self.emseg1 = emseg1
 
     def cache_state(self, action: str):
         """Cache the current state"""
-        state = StateR1(copy.deepcopy(self.emseg.labels._labels), self.emseg.seg.current_seg.copy(),
-                           self.emseg.cells_aligned.copy(), action)
+        state = StateR1(copy.deepcopy(self.emseg1.labels._labels), self.emseg1.seg.current_seg.copy(),
+                        self.emseg1.cells_aligned.copy(), action)
         self.cache.append(state)
 
     def load_cache(self, method: str) -> Tuple[Labels, ndarray, ndarray, str]:
-        """load the cache of the emseg states"""
+        """load the cache of the emseg1 states"""
         if method == "undo":
             return self.cache.undo()
         elif method == "redo":

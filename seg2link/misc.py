@@ -16,10 +16,10 @@ from skimage.segmentation import relabel_sequential
 from dask import delayed
 import dask.array as da
 
-from seg2link.config import debug
+from seg2link.config import DEBUG
 from seg2link import config
 
-if config.debug:
+if config.DEBUG:
     pass
 
 
@@ -186,7 +186,7 @@ def qprofile(func):
     def profiled_func(*args, **kwargs):
         para_num = len(signature(func).parameters)
 
-        if not debug:
+        if not DEBUG:
             return func() if para_num == 0 else func(*args, **kwargs)
 
         profile = cProfile.Profile()

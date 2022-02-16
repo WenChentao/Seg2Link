@@ -179,7 +179,7 @@ def _on_load_para_changed():
 @start_r1.path_cache.changed.connect
 def _on_path_cache_changed():
     if start_r1.path_cache.value.exists():
-        latest_slice = Archive(emseg=None, path_save=start_r1.path_cache.value).latest_slice
+        latest_slice = Archive(emseg1=None, path_save=start_r1.path_cache.value).latest_slice
         s1 = 1 if latest_slice >= 1 else 0
         start_r1.historical_info.value = f"Segmented slices: {s1}-{latest_slice} / Restart: 0"
         start_r1.historical_info.visible = True
