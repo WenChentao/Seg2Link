@@ -371,7 +371,6 @@ class VisualizePartial(VisualizeBase):
         aligned_cell_3d[current_layer - layers.start - 1, ...] = aligned_img
         return aligned_cell_3d
 
-refaction = 1
 
 class Cache:
     def __init__(self, maxlen: int):
