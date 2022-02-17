@@ -27,7 +27,7 @@
     C-->|Manual correction + <br> Seg+Link next layer|C
     C-->D[Linked 2D SEG. in All layers]
   end
-
+ 
   subgraph ide2 [Seg2Link round #2]
     D-->|Transform|E[3D SEG.]
     E-->|Manual <br/> correction|F[Compleated SEG]
