@@ -16,8 +16,28 @@
   and *remove* those tiniest cells. It can also help users to locate each cell's position to 
   check the mistakes.
   
+```mermaid
+  flowchart LR
+  A[Raw Image]-->|DNN prediction|B1[Cell/NonCell]
+
+  subgraph ide1 [Seg2Link round #1]
+    B1-->|Segment|B2[2D SEG. in layer 1]
+    B2-->|Segment+Link|C[Linked 2D SEG. in layer i]
+    C-->|Manual correction + <br> Seg+Link next layer|C
+    C-->D[Linked 2D SEG. in All layers]
+  end
+
+  subgraph ide2 [Seg2Link round #2]
+    D-->|Transform|E[3D SEG.]
+    E-->|Manual <br/> correction|F[Compleated SEG]
+    F-->|Export|G[TIFF image sequence]
+  end
+  A-->|Other software|E
+```
+
 ## Install
-- Install anaconda or miniconda
+- Install [Anaconda](https://www.anaconda.com/products/individual) 
+  or [Miniconda](https://conda.io/miniconda.html)
 - Create a new conda environment and activate it by:
 ```console
 $ conda create -n env-name python=3.8 pip

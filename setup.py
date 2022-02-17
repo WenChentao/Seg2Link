@@ -12,7 +12,7 @@ setup(
     package_dir={'seg2link': 'seg2link'},
     url='https://github.com/WenChentao/Seg2Link',
     license='MIT',
-    author='Wen',
-    author_email='Chentao Wen',
+    author='Chentao Wen',
+    author_email='chintou.on@gmail.com',
     description='A napari based 3D segmentation software for electron microscopy images'
 )
