@@ -16,6 +16,7 @@
   and *remove* those tiniest cells. It can also help users to locate each cell's position to 
   check the mistakes.
   
+## Workflow
 ```mermaid
   flowchart TB
   A[Raw Image]-->|DNN prediction|B1[Cell/NonCell]
@@ -27,10 +28,10 @@
     C-->|Manual correction + <br> Seg+Link next layer|C
     C-->D[Linked 2D SEG. in All layers]
   end
- 
+
   subgraph ide2 [Seg2Link round #2]
     D-->|Transform|E[3D SEG.]
-    E-->|Manual <br/> correction|F[Compleated SEG]
+    E-->|Manual <br/> correction|F[Completed SEG]
     F-->|Export|G[TIFF image sequence]
   end
   A-->|Other software|E
