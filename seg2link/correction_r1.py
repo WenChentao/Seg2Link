@@ -184,7 +184,7 @@ class Seg2LinkR1:
             if not self.label_list:
                 print("No labels were merged")
             else:
-                self.labels.merge(self.label_list)
+                self.labels.merge()
                 self.label_list.clear()
                 self.update("Merge labels")
 

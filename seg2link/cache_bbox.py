@@ -25,8 +25,6 @@ class CacheBbox:
         else:
             self.refresh_bboxes()
             self.save_bbox(self.emseg2.labels_path)
-        for label in self.bbox.keys():
-            print(label, self.bbox[label])
 
     def insert_label(self):
         new_label = 1
