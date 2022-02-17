@@ -17,12 +17,13 @@
   check the mistakes.
   
 ```mermaid
-  flowchart LR
+  flowchart TB
   A[Raw Image]-->|DNN prediction|B1[Cell/NonCell]
 
   subgraph ide1 [Seg2Link round #1]
     B1-->|Segment|B2[2D SEG. in layer 1]
     B2-->|Segment+Link|C[Linked 2D SEG. in layer i]
+    B2-->|Manual correction|B2
     C-->|Manual correction + <br> Seg+Link next layer|C
     C-->D[Linked 2D SEG. in All layers]
   end
