@@ -1,10 +1,12 @@
 import pickle
 from pathlib import Path
-from typing import Tuple, List, Dict, Optional, Union, Set, TYPE_CHECKING
+from typing import Tuple, List, Dict, Optional, Union, Set, Iterable, TYPE_CHECKING
 
 import numpy as np
 from numpy import ndarray
 from scipy import ndimage
+
+from seg2link.misc import get_unused_labels_quick
 
 if TYPE_CHECKING:
     from seg2link.correction_r2 import Seg2LinkR2
@@ -27,9 +29,7 @@ class CacheBbox:
             self.save_bbox(self.emseg2.labels_path)
 
     def insert_label(self):
-        new_label = 1
-        while new_label in self.bbox.keys():
-            new_label += 1
+        new_label = get_unused_labels_quick(self.bbox.keys(), max_num=1)[0]
         self.bbox[new_label] = slice(0, None), slice(0, None), slice(0, None)
         self.new_labels.add(new_label)
         return new_label

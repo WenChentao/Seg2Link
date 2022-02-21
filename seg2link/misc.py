@@ -5,7 +5,7 @@ import traceback
 from inspect import signature
 from io import StringIO
 from pathlib import Path
-from typing import List, Tuple, Optional, Callable, Union, Set
+from typing import List, Tuple, Optional, Callable, Union, Set, Iterable
 
 from PIL import Image
 import numpy as np
@@ -21,7 +21,6 @@ from seg2link import config
 
 if config.DEBUG:
     pass
-
 
 def load_image_pil(path: Path) -> ndarray:
     """Load image as ndarray into RAM"""
@@ -101,10 +100,14 @@ def print_information(operation: Optional[str] = None, print_errors: bool = True
                     print(f"!!!Error occurred in {func.__name__}()!!!")
                     print(traceback.format_exc())
                     raise
-
         return wrapper
-
     return deco
+
+
+def flatten_2d_list(labels2d: List[List[int]]) -> Tuple[List[int], List[int]]:
+    labels1d = [item for sublist in labels2d for item in sublist]
+    label_nums = [len(sublist) for sublist in labels2d]
+    return labels1d, label_nums
 
 
 def make_folder(path_i: Path) -> Path:
@@ -172,6 +175,30 @@ def mask_cells(label_img: ndarray, mask: ndarray, ratio_mask: float) -> ndarray:
     for idx in idx_mask:
         mask_idx[index[idx]] = 0
     return relabel_sequential(mask_idx[label_img])[0]
+
+
+def get_unused_labels_quick(used_labels: Iterable, max_num: Optional[int] = None) -> List[int]:
+    def get_unused_labels_init_quick(labels_array_, label_max_):
+        """labels_array_: array of positive int"""
+        pointer = 0
+        new_labels_ = []
+        for label in range(1, label_max_ + 1):
+            if labels_array_[pointer] != label:
+                new_labels_.append(label)
+            else:
+                pointer += 1
+        return new_labels_
+
+    labels_array = np.unique(list(used_labels))
+    labels_array = labels_array[labels_array > 0]
+    label_max = labels_array[-1]
+    new_labels = get_unused_labels_init_quick(labels_array, label_max)
+    if max_num is None:
+        return new_labels
+    if len(new_labels) >= max_num:
+        return new_labels[:max_num]
+    else:
+        return new_labels + [i for i in range(label_max + 1, label_max + max_num - len(new_labels) + 1)]
 
 
 def qprofile(func):

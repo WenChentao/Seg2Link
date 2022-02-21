@@ -11,7 +11,7 @@ from seg2link.seg2link_r2 import start_r2
     round1={"widget_type": "PushButton", "label": "Round #1: Segment and link"},
     round2={"widget_type": "PushButton", "label": "Round #2: Overall correction"},
 )
-def widget_entry(title="Please select a round",round1=True, round2=True):
+def widget_entry(title="Please select a round",round1=False, round2=False):
     return None
 
 

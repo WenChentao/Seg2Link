@@ -20,6 +20,7 @@ from skimage.segmentation import relabel_sequential
 from seg2link import config
 from seg2link.emseg_core import Labels, Segmentation, Alignment, Archive
 from seg2link.misc import print_information, TinyCells
+from seg2link._tests import test_merge_r1, test_delete_r1, test_divide_r1, test_link_r1
 from seg2link.single_cell_division import separate_one_label_r1
 from seg2link.widgets_r1 import WidgetsR1
 
@@ -51,12 +52,10 @@ class Seg2LinkR1:
         self.align = Alignment(enable_align)
         self.keys_binding()
         self.widget_binding()
-        self.retrieve_history(target_slice)
+        self.retrieve_or_restart(target_slice)
 
     def initialize(self):
-        print(self.labels)
         self.next_slice()
-        print(self.labels)
         self.archive_state()
         self.vis.show_segmentation_r1()
         self.cache.cache_state(f"Next slice ({self.current_slice})")
@@ -78,7 +77,7 @@ class Seg2LinkR1:
             self.labels._labels = labels
             self.labels.current_slice = len(labels)
 
-    def retrieve_history(self, target_slice: int):
+    def retrieve_or_restart(self, target_slice: int):
         history = self.archive.retrieve_history(target_slice, self.seg_img_cache)
         if history is None:
             self.initialize()
@@ -92,9 +91,13 @@ class Seg2LinkR1:
             self.vis.update_info()
 
     def _link_and_relabel(self, reset_align: bool):
-        self.labels.link_next_slice(reset_align)
-        if self.current_slice > 1:
-            self.labels.relabel()
+        @test_link_r1(self)
+        def link_relabel():
+            self.labels.link_next_slice(reset_align)
+            if self.current_slice > 1:
+                self.labels.relabel()
+
+        link_relabel()
 
     def next_slice(self):
         """Save label until current slice and then segment and link to the next slice"""
@@ -112,11 +115,14 @@ class Seg2LinkR1:
             self.labels.reset()
         else:
             self.labels.rollback()
+        self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
         self._link_and_relabel(reset_align=False)
+        self.vis.widgets.show_state_info(f"Linking was done")
 
     def divide_one_cell(self, modified_label: ndarray, selected_label: int):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        current_seg, _ = separate_one_label_r1(modified_label[..., z], selected_label, self.labels.max_label)
+        current_seg, divided_labels = separate_one_label_r1(modified_label[..., z], selected_label,
+                                                            self.labels._flatten()[0])
         _labels = np.unique(current_seg)
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]
@@ -141,9 +147,16 @@ class Seg2LinkR1:
             self.update("Re-segment")
             viewer_seg.mode = "pick"
 
+        @viewer_seg.bind_key(config.pars.key_next_r1)
+        @print_information("\nTo next slice")
+        def _next_slice(viewer_seg):
+            """To the next slice"""
+            self.next_slice()
+            self.update(f"Next slice ({self.current_slice})")
 
         @viewer_seg.bind_key(config.pars.key_separate)
         @print_information("Divide a label")
+        @test_divide_r1(self)
         def re_divide_2d(viewer_seg):
             """Re-segment current slice"""
             if viewer_seg.selected_label == 0:
@@ -156,6 +169,7 @@ class Seg2LinkR1:
                 viewer_seg._all_vals[0] = 0
                 self.update("Divide")
                 viewer_seg.mode = "pick"
+            print("Unused labels:", self.labels.unused_labels)
 
         @viewer_seg.bind_key(config.pars.key_add)
         @print_information("Add labels to be processed")
@@ -180,6 +194,7 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(config.pars.key_merge)
         @print_information("Merge labels")
+        @test_merge_r1(self)
         def _merge(viewer_seg):
             if not self.label_list:
                 print("No labels were merged")
@@ -187,9 +202,11 @@ class Seg2LinkR1:
                 self.labels.merge()
                 self.label_list.clear()
                 self.update("Merge labels")
+            print("Unused labels:", self.labels.unused_labels)
 
         @viewer_seg.bind_key(config.pars.key_delete)
         @print_information("Delete the selected label(s)")
+        @test_delete_r1(self)
         def del_label(viewer_seg):
             """Delete the selected label"""
             if viewer_seg.mode != "pick":
@@ -202,14 +219,7 @@ class Seg2LinkR1:
                 self.label_list.clear()
                 self.update("Delete label(s)")
                 print(f"Label(s) {delete_list} were deleted")
-
-        @viewer_seg.bind_key(config.pars.key_next_r1)
-        @print_information("\nTo next slice")
-        def _next_slice(viewer_seg):
-            """To the next slice"""
-            self.next_slice()
-            self.update(f"Next slice ({self.current_slice})")
-
+            print("Unused labels:", self.labels.unused_labels)
 
         @viewer_seg.bind_key(config.pars.key_undo)
         @print_information("Undo")

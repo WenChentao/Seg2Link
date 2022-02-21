@@ -245,7 +245,6 @@ class Seg2LinkR2:
             self.vis.viewer.layers["segmentation"].mode = "paint"
             self.vis.widgets.show_state_info(f"Inserted a new label: {label}. Please draw with it.")
 
-
         def separate_one_label() -> Tuple[ndarray, ndarray, Bbox, List[int]]:
             max_label = max(self.cache_bbox.bbox)
             pre_region, segmented_subregion, slice_subregion = segment(max_label)

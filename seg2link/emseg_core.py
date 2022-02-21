@@ -6,7 +6,7 @@ import pickle
 import re
 from collections import OrderedDict
 from pathlib import Path
-from typing import List, Tuple, Optional, Union, Set, TYPE_CHECKING
+from typing import List, Tuple, Optional, Union, Set, TYPE_CHECKING, Iterable
 
 import numpy as np
 import skimage as ski
@@ -15,7 +15,7 @@ from skimage.segmentation import relabel_sequential
 
 from seg2link import config
 from seg2link.link_by_overlap import match_return_label_list
-from seg2link.misc import make_folder, replace, mask_cells
+from seg2link.misc import make_folder, replace, mask_cells, flatten_2d_list, get_unused_labels_quick
 from seg2link.watersheds import dist_watershed
 
 if TYPE_CHECKING:
@@ -48,6 +48,13 @@ class Labels:
         self._labels.clear()
         self.current_slice = 0
 
+    def cal_unused_labels(self) -> Set[int]:
+        return set(get_unused_labels_quick(self._flatten()[0]))
+
+    @property
+    def unused_labels(self) -> str:
+        return str(f"{self.cal_unused_labels()}, and {np.max(self._flatten()[0])+1}...")
+
     def rollback(self):
         if len(self._labels) > 0:
             labels = self.emseg1.archive.read_labels(self.current_slice - 1)
@@ -58,9 +65,7 @@ class Labels:
             self.current_slice -= 1
 
     def _flatten(self) -> Tuple[List[int], List[int]]:
-        labels1d = [item for sublist in self._labels for item in sublist]
-        label_nums = [len(sublist) for sublist in self._labels]
-        return labels1d, label_nums
+        return flatten_2d_list(self._labels)
 
     def delete(self, delete_list: Union[int, Set[int]]):
         """Delete a label (modify the value in self._labels to 0)"""
@@ -78,8 +83,10 @@ class Labels:
         if not np.isin(target, labels1d_array):
             raise ValueError("Label ", target, " not exist")
         for label in self.emseg1.label_list:
-            labels1d_array = replace(label, target, labels1d_array)
+            if label != target:
+                labels1d_array = replace(label, target, labels1d_array)
         self._labels = self._to_labels2d(labels1d_array.tolist(), label_nums)
+
 
     @staticmethod
     def _to_labels2d(labels1d: List[int], label_nums: List[int]) -> List[List[int]]:
@@ -170,8 +177,7 @@ class Labels:
     def relabel(self):
         """Relabel all N cells with label from 1 to N and save the current state"""
         labels1d, label_nums = self._flatten()
-        max_label_pre = max(labels1d[:-label_nums[-1]])
-        labels1d_re = self.relabel_min_change(np.asarray(labels1d), max_label_pre)
+        labels1d_re = self.relabel_min_change(np.asarray(labels1d), labels1d[:-label_nums[-1]])
         self._labels = self._to_labels2d(labels1d_re.tolist(), label_nums)
 
     def relabel_deprecated(self):
@@ -181,28 +187,20 @@ class Labels:
         self._labels = self._to_labels2d(labels1d_re.tolist(), label_nums)
 
     @staticmethod
-    def relabel_min_change(labels_array: ndarray, boundary: int) -> ndarray:
+    def relabel_min_change(labels_array: ndarray, labels_pre_1d: Iterable) -> ndarray:
         """
-        Return the labels_array and the area_dict with labels > boundary modified to
-        a value <= boundary if possible
+        Relabel the new labels with unused labels in previous slices
         """
         labels = np.unique(labels_array)
-        labels_new = labels[labels > boundary]
-        ori = []
-        tgt = []
+        max_label_pre = np.max(labels_pre_1d)
+        labels_new = labels[labels > max_label_pre]
         len_new = len(labels_new)
-        for label in range(1, boundary + 1):
-            if label not in labels:
-                if len_new == 0:
-                    break
-                else:
-                    ori.append(labels_new[len_new - 1])
-                    tgt.append(label)
-                    len_new -= 1
 
-        if len_new > 0:
-            ori += labels_new[:len_new].tolist()
-            tgt += list(range(boundary + 1, boundary + len_new + 1))
+        if len_new == 0:
+            return labels_array
+
+        ori = labels_new.tolist()
+        tgt = get_unused_labels_quick(labels_pre_1d, len_new)
 
         labels_result = labels_array.copy()
         for i, j in zip(ori, tgt):

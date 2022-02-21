@@ -8,6 +8,7 @@ from numpy import ndarray
 from scipy.spatial import KDTree
 from skimage.measure import regionprops
 
+from seg2link.misc import get_unused_labels_quick
 from seg2link.cache_bbox import array_isin_labels_quick, NoLabelError
 from seg2link import config
 from seg2link.link_by_overlap import match_return_seg_img
@@ -45,11 +46,16 @@ def segment_one_cell_2d_watershed(labels_img3d: ndarray, max_division: int = 2) 
     return result
 
 
-def separate_one_label_r1(seg_img2d: ndarray, label: int, max_label: int) -> Tuple[ndarray, List[int]]:
+def separate_one_label_r1(seg_img2d: ndarray, label: int, used_labels: List[int]) -> Tuple[ndarray, List[int]]:
     sub_region, slice_subregion = get_subregion_2d(seg_img2d, label)
 
     seg2d = dist_watershed(sub_region, h=2)
-    return keep_largest_label_unchange(max_label, seg2d, seg_img2d, slice_subregion)
+    labels = np.unique(seg2d)
+    labels_ = labels[labels!=0]
+    expected_labels = get_unused_labels_quick(used_labels, len(labels_))
+    for label_ori, label_tgt in zip(labels_, expected_labels):
+        seg_img2d[slice_subregion][seg2d == label_ori] = label_tgt
+    return seg_img2d, expected_labels
 
 
 def keep_largest_label_unchange(max_label, seg2d, seg_img2d, slice_subregion: Union[slice, BBox2D]=slice(None)):
