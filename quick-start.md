@@ -28,7 +28,7 @@ $ conda activate my-env
 ```
 
 {% hint style="info" %}
-The pip tool will automatically download and install the package seg2link and other prerequisite packages. Depending on your internet environment, this may take a short or long time.
+The pip tool will automatically download and install the package **seg2link** and other prerequisite packages. Depending on your internet speed, this may take a short or long time.
 {% endhint %}
 
 ## Prepare images for segmentation
