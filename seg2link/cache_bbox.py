@@ -28,6 +28,13 @@ class CacheBbox:
             self.refresh_bboxes()
             self.save_bbox(self.emseg2.labels_path)
 
+    def cal_unused_labels(self) -> Set[int]:
+        return set(get_unused_labels_quick(self.bbox.keys()))
+
+    @property
+    def unused_labels(self) -> str:
+        return str(f"{self.cal_unused_labels()}, and {np.max(list(self.bbox.keys())) + 1}...")
+
     def insert_label(self):
         new_label = get_unused_labels_quick(self.bbox.keys(), max_num=1)[0]
         self.bbox[new_label] = slice(0, None), slice(0, None), slice(0, None)
@@ -80,14 +87,15 @@ class CacheBbox:
 
     def get_subregion_3d(self, labels: Union[int, Set[int]]) \
             -> Optional[Tuple[Bbox, ndarray]]:
+        """Used this to get cached bbox and update it if necessary"""
         labels: Union[int, List[int]]= list(labels) if isinstance(labels, set) else labels
-        bbox_searched_in = self.get_bbox(labels)
+        bbox_searched_in = self._get_bbox(labels)
         subarray_bool = array_isin_labels_quick(labels, self.emseg2.labels[bbox_searched_in])
 
         need_update = self.need_update_bboxes(subarray_bool,)
         if np.any(need_update):
             self.update_bboxes(labels, need_update)
-            bbox_searched_in = self.get_bbox(labels)
+            bbox_searched_in = self._get_bbox(labels)
             subarray_bool = array_isin_labels_quick(labels, self.emseg2.labels[bbox_searched_in])
 
         bbox_relative = bbox_3D_quick(subarray_bool)
@@ -108,7 +116,7 @@ class CacheBbox:
 
     def bbox_expand(self, label: int, need_update: Tuple[bool,bool,bool,bool,bool,bool]):
         up_r, up_c, up_z = np.any(need_update[:2]), np.any(need_update[2:4]), np.any(need_update[4:])
-        bbox_searched_in = self.get_bbox(label)
+        bbox_searched_in = self._get_bbox(label)
         seg = self.emseg2.labels[bbox_searched_in]
         expand_r = (bbox_searched_in[0].start != 0 and np.any(seg[0, ...] == label)) or \
                    (bbox_searched_in[0].stop != self.seg_shape[0] and np.any(seg[-1, ...] == label))
@@ -135,7 +143,8 @@ class CacheBbox:
     def set_bbox(self, label: int, bbox: Bbox):
         self.bbox[label] = bbox
 
-    def get_bbox(self, labels: Union[int, List[int]]):
+    def _get_bbox(self, labels: Union[int, List[int]]):
+        """Use this only to get cached bbox"""
         if isinstance(labels, list):
             return merge_bbox([self.get_bbox_padded(label) for label in labels])
         else:

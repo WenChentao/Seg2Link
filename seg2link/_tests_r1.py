@@ -36,6 +36,7 @@ def test_merge_r1(emseg1: "Seg2LinkR1"):
                     else:
                         assert label in unused_labels_new or label > np.max(labels_new), \
                             f"label {label} should be in unused_labels_new"
+                print("Unused labels:", emseg1.labels.unused_labels)
                 print("Merge test was passed")
             else:
                 func(*args, **kwargs)
@@ -68,6 +69,7 @@ def test_delete_r1(emseg1: "Seg2LinkR1"):
                     assert label not in unused_labels_old, f"label {label} should not be in unused_labels_old"
                     assert label in unused_labels_new or label > np.max(labels_new), \
                         f"label {label} should be in unused_labels_new"
+                print("Unused labels:", emseg1.labels.unused_labels)
                 print("Delete test was passed")
             else:
                 func(*args, **kwargs)
@@ -90,7 +92,6 @@ def test_divide_r1(emseg1: "Seg2LinkR1"):
                 func(*args, **kwargs)
 
                 seg_new = emseg1.vis.viewer.layers["segmentation"].data[..., slice].copy()
-                labels_new = np.array(emseg1.labels._labels[-1])
                 unused_labels_new = emseg1.labels.cal_unused_labels()
                 labels_divided = np.unique(seg_new[seg_old == label_ori])
                 labels_divided_ = labels_divided[labels_divided != 0]
@@ -101,6 +102,7 @@ def test_divide_r1(emseg1: "Seg2LinkR1"):
                 assert label_ori not in unused_labels_old, f"label {label_ori} should not be in unused_labels_old"
                 for label in labels_divided_:
                     assert label not in unused_labels_new, f"label {label} should not be in unused_labels_new"
+                print("Unused labels:", emseg1.labels.unused_labels)
                 print("Divide test was passed")
             else:
                 func(*args, **kwargs)

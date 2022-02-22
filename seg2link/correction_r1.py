@@ -20,7 +20,7 @@ from skimage.segmentation import relabel_sequential
 from seg2link import config
 from seg2link.emseg_core import Labels, Segmentation, Alignment, Archive
 from seg2link.misc import print_information, TinyCells
-from seg2link._tests import test_merge_r1, test_delete_r1, test_divide_r1, test_link_r1
+from seg2link._tests_r1 import test_merge_r1, test_delete_r1, test_divide_r1, test_link_r1
 from seg2link.single_cell_division import separate_one_label_r1
 from seg2link.widgets_r1 import WidgetsR1
 
@@ -169,7 +169,6 @@ class Seg2LinkR1:
                 viewer_seg._all_vals[0] = 0
                 self.update("Divide")
                 viewer_seg.mode = "pick"
-            print("Unused labels:", self.labels.unused_labels)
 
         @viewer_seg.bind_key(config.pars.key_add)
         @print_information("Add labels to be processed")
@@ -202,7 +201,6 @@ class Seg2LinkR1:
                 self.labels.merge()
                 self.label_list.clear()
                 self.update("Merge labels")
-            print("Unused labels:", self.labels.unused_labels)
 
         @viewer_seg.bind_key(config.pars.key_delete)
         @print_information("Delete the selected label(s)")
@@ -219,7 +217,6 @@ class Seg2LinkR1:
                 self.label_list.clear()
                 self.update("Delete label(s)")
                 print(f"Label(s) {delete_list} were deleted")
-            print("Unused labels:", self.labels.unused_labels)
 
         @viewer_seg.bind_key(config.pars.key_undo)
         @print_information("Undo")

@@ -177,7 +177,7 @@ class Labels:
     def relabel(self):
         """Relabel all N cells with label from 1 to N and save the current state"""
         labels1d, label_nums = self._flatten()
-        labels1d_re = self.relabel_min_change(np.asarray(labels1d), labels1d[:-label_nums[-1]])
+        labels1d_re = relabel_min_change(np.asarray(labels1d), labels1d[:-label_nums[-1]])
         self._labels = self._to_labels2d(labels1d_re.tolist(), label_nums)
 
     def relabel_deprecated(self):
@@ -186,26 +186,26 @@ class Labels:
         labels1d_re, fw, _ = relabel_sequential(np.asarray(labels1d))
         self._labels = self._to_labels2d(labels1d_re.tolist(), label_nums)
 
-    @staticmethod
-    def relabel_min_change(labels_array: ndarray, labels_pre_1d: Iterable) -> ndarray:
-        """
-        Relabel the new labels with unused labels in previous slices
-        """
-        labels = np.unique(labels_array)
-        max_label_pre = np.max(labels_pre_1d)
-        labels_new = labels[labels > max_label_pre]
-        len_new = len(labels_new)
 
-        if len_new == 0:
-            return labels_array
+def relabel_min_change(labels_array: ndarray, used_labels_1d: Iterable) -> ndarray:
+    """
+    Relabel the new labels with unused labels
+    """
+    labels = np.unique(labels_array)
+    max_label_used = np.max(used_labels_1d)
+    labels_new = labels[labels > max_label_used]
+    len_new = len(labels_new)
 
-        ori = labels_new.tolist()
-        tgt = get_unused_labels_quick(labels_pre_1d, len_new)
+    if len_new == 0:
+        return labels_array
 
-        labels_result = labels_array.copy()
-        for i, j in zip(ori, tgt):
-            labels_result[labels_array == i] = j
-        return labels_result
+    ori = labels_new.tolist()
+    tgt = get_unused_labels_quick(used_labels_1d, len_new)
+
+    labels_result = labels_array.copy()
+    for i, j in zip(ori, tgt):
+        labels_result[labels_array == i] = j
+    return labels_result
 
 
 class Segmentation:

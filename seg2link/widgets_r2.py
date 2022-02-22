@@ -100,7 +100,7 @@ class WidgetsR2:
         else:
             self.choose_box.max = 1
             self.divide_msg.value = ""
-        self.label_list_msg.value = tuple(self.emseg2.label_set)
+        self.label_list_msg.value = tuple(self.emseg2.label_list)
         if self.label_max is not None:
             self.max_label_info.value = str(self.label_max)
             self.locate_cell_button.selected_label_.max = self.label_max

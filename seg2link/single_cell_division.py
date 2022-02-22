@@ -7,6 +7,7 @@ import skimage as ski
 from numpy import ndarray
 from scipy.spatial import KDTree
 from skimage.measure import regionprops
+from skimage.segmentation import relabel_sequential
 
 from seg2link.misc import get_unused_labels_quick
 from seg2link.cache_bbox import array_isin_labels_quick, NoLabelError
@@ -58,18 +59,14 @@ def separate_one_label_r1(seg_img2d: ndarray, label: int, used_labels: List[int]
     return seg_img2d, expected_labels
 
 
-def keep_largest_label_unchange(max_label, seg2d, seg_img2d, slice_subregion: Union[slice, BBox2D]=slice(None)):
-    seg2d, other_labels = _suppress_largest_label(seg2d)
-    smaller_regions = seg2d > 0
-    seg_img2d[slice_subregion][smaller_regions] = seg2d[smaller_regions] + max_label
-    return seg_img2d, other_labels
+
 
 
 def separate_one_cell_3d(sub_region: ndarray) -> ndarray:
     return ski.measure.label(sub_region, connectivity=3)
 
 
-def _suppress_largest_label(seg: ndarray) -> Tuple[ndarray, List[int]]:
+def suppress_largest_label(seg: ndarray) -> Tuple[ndarray, List[int]]:
     """Revise the _labels: largest label (of area): l = 0; _labels > largest label: l = l - 1"""
     regions = regionprops(seg)
     max_idx = max(range(len(regions)), key=lambda k: regions[k].area)
@@ -97,26 +94,27 @@ def merge_tiny_labels(seg2d: ndarray, max_division: int) -> ndarray:
     sorted_regions = SortedRegion(sorted_coords, seg2d)
     for i in range(num_labels_remove):
         sorted_regions.remove_tiny()
-    return sorted_regions.seg2d
+    return relabel_sequential(sorted_regions.seg2d)[0]
 
 
 class SortedRegion():
-    def __init__(self, coords: Dict[int, ndarray], seg2d: ndarray):
-        self.coords = coords  # OrderedDict: sorted coords from small region to big region
+    def __init__(self, sorted_coords: Dict[int, ndarray], seg2d: ndarray):
+        self.sorted_coords = sorted_coords  # OrderedDict: sorted coords from small region to big region
         self.seg2d = seg2d
 
     def remove_tiny(self):
-        coords = iter(self.coords.items())
-        label_ini, smallest_coord = next(coords)
-        label_tgt = label_ini
+        coords = iter(self.sorted_coords.items())
+        label_ori, smallest_coord = next(coords)
+        label_tgt = label_ori
         dist_min = np.inf
         for label, coord in coords:
             dist = min_dist_knn_scipy(smallest_coord, coord)
             if dist < dist_min:
                 dist_min = dist
                 label_tgt = label
-        self.coords[label_tgt] = np.vstack((self.coords[label_tgt], self.coords.pop(label_ini)))
-        self.seg2d[self.seg2d == label_ini] = label_tgt
+        self.sorted_coords[label_tgt] = np.vstack((self.sorted_coords[label_tgt],
+                                                   self.sorted_coords.pop(label_ori)))
+        self.seg2d[self.seg2d == label_ori] = label_tgt
 
 
 def min_dist_knn_scipy(coord1, coord2):
