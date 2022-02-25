@@ -1,4 +1,4 @@
-# Seg2Link
+# ![icon](./Pic/icon.png)
 
 **Seg2Link** is a software designed to semi-automatically segment 3D EM images. 
 
