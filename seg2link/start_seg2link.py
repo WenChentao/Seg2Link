@@ -1,17 +1,20 @@
+from pathlib import Path
+
 from magicgui import magicgui
 
 from seg2link.seg2link_r1 import start_r1
 from seg2link.seg2link_r2 import start_r2
 
+logo = Path(__file__).parent / '../Pic/icon_small.png'
 
 @magicgui(
     auto_call=True,
     layout="verticapl",
-    title={"widget_type": "Label", "label": "Seg2Link:"},
-    round1={"widget_type": "PushButton", "label": "Round #1: Segment and link"},
-    round2={"widget_type": "PushButton", "label": "Round #2: Overall correction"},
+    title={"widget_type": "Label", "label": f'<h1><img src="{logo}"></h1>'},
+    round1={"widget_type": "PushButton", "label": "Round #1 - Seg2DLink"},
+    round2={"widget_type": "PushButton", "label": "Round #2 - 3D_Correction"},
 )
-def widget_entry(title="Please select a round",round1=False, round2=False):
+def widget_entry(title, round1=False, round2=False):
     return None
 
 
