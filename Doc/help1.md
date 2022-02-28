@@ -2,11 +2,15 @@
 
 ## How to start the first round
 1. Start Seg2Link from terminal
+   
    <img src="./pictures/start.png" width="600">
 2. Choose the first round and set the parameters
+   
    <img src="./pictures/select_round.png.png" width="600">
+   
    <img src="./pictures/round1_set_para.png" width="600">
 3. Start the first round
+   
    <img src="./pictures/round1.png" width="600">
    
 ## Workflow in the first round
