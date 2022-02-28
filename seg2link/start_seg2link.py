@@ -11,7 +11,7 @@ logo = Path(__file__).parent / '../Pic/icon_small.png'
     auto_call=True,
     layout="verticapl",
     title={"widget_type": "Label", "label": f'<h1><img src="{logo}"></h1>'},
-    round1={"widget_type": "PushButton", "label": "Round #1 - Seg2DLink"},
+    round1={"widget_type": "PushButton", "label": "Round #1 - Seg2D + Link"},
     round2={"widget_type": "PushButton", "label": "Round #2 - 3D_Correction"},
 )
 def widget_entry(title, round1=False, round2=False):

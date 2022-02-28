@@ -41,7 +41,7 @@ class WidgetsR1:
                                   '\n[Q]: Switch: Viewing one label | all labels' \
                                   '\n ---------------' \
                                   '\n[U]: Undo     [F]: Redo' \
-                                  '\n[L]:  Picker   [E]: Eraser' \
+                                  '\n[L]:  Picker   [E]: Eraser   [P]: Painter' \
                                   '\n[H]: Online Help'
 
         self.hotkeys_info = widgets.Label(value=self.hotkeys_info_value)
