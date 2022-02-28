@@ -54,8 +54,6 @@
    
    <img title="" src="./pictures/delete.png" alt="" width="800">
 
-# 
-
 ### 3. *Division*
 
 1. Select a cell in **Pick Mode** in the last slice i
@@ -83,7 +81,13 @@ Apply it in previous slices is unsupported.
 
 ### 4. *Next slice*
 
-Press ****Shift + N**** to segment the next slice *i+1* and link the segmentation to previous slices {*1, 2, 3, ..., i* }
+1. After correcting all mistakes in slice i, it is time to go to the next slice
+   
+   <img title="" src="./pictures/next_before.png" alt="" width="800">
+
+2. Press ****Shift + N**** to segment the next slice *i+1*, the segmentation in i + 1 will be automatically linked to the segmentations to previous slices {*1, 2, 3, ..., i* }
+   
+   <img title="" src="./pictures/next_after.png" alt="" width="800">
 
 ### 5. *Re-Link*
 
