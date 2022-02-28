@@ -5,6 +5,7 @@
    ![start_seg2link](./pictures/start.png)
 2. Choose the first round and set the parameters
    
+   <img src="./pictures/start.png" width="400">
 3. Start the first round
 
 ## Workflow in the first round
