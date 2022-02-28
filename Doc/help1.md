@@ -11,7 +11,7 @@
    <img src="./pictures/round1_set_para.png" width="500">
 3. Start the first round
    
-   <img src="./pictures/round1.png" width="600">
+   <img src="./pictures/round1.png" width="800">
    
 ## Workflow in the first round
 1. Correct the segmentation in slice **1**
