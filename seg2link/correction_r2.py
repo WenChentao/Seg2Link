@@ -375,7 +375,7 @@ class Seg2LinkR2:
 
         @viewer_seg.bind_key(config.pars.key_online_help)
         def help(viewer_seg):
-            html_path = "file://" + os.path.abspath("../Help/help2.html")
+            html_path = "file://" + os.path.abspath("../Doc/help2.html")
             print(html_path)
             webbrowser.open(html_path)
 

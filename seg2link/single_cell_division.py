@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Tuple, List, Union, Dict, Optional, Set
+from typing import Tuple, List, Union, Dict, Optional
 
 import numpy as np
 import skimage as ski
@@ -9,14 +9,15 @@ from scipy.spatial import KDTree
 from skimage.measure import regionprops
 from skimage.segmentation import relabel_sequential
 
-from seg2link.misc import get_unused_labels_quick
-from seg2link.cache_bbox import array_isin_labels_quick, NoLabelError
 from seg2link import config
+from seg2link.cache_bbox import array_isin_labels_quick, NoLabelError
 from seg2link.link_by_overlap import match_return_seg_img
+from seg2link.misc import get_unused_labels_quick
 from seg2link.watersheds import dist_watershed
 
 if config.DEBUG:
     pass
+
 
 @dataclass
 class DivideMode:
@@ -28,8 +29,10 @@ class DivideMode:
 class NoDivisionError(Exception):
     pass
 
+
 BBox2D = Tuple[slice, slice]
 BBox = Tuple[slice, slice, slice]
+
 
 def segment_link(label_subregion: ndarray, max_division: int, pre_region: Optional[ndarray], max_label: int):
     seg = segment_one_cell_2d_watershed(label_subregion, max_division)
@@ -52,14 +55,11 @@ def separate_one_label_r1(seg_img2d: ndarray, label: int, used_labels: List[int]
 
     seg2d = dist_watershed(sub_region, h=2)
     labels = np.unique(seg2d)
-    labels_ = labels[labels!=0]
+    labels_ = labels[labels != 0]
     expected_labels = get_unused_labels_quick(used_labels, len(labels_))
     for label_ori, label_tgt in zip(labels_, expected_labels):
         seg_img2d[slice_subregion][seg2d == label_ori] = label_tgt
     return seg_img2d, expected_labels
-
-
-
 
 
 def separate_one_cell_3d(sub_region: ndarray) -> ndarray:
@@ -143,7 +143,7 @@ def bbox_2D_quick(img_2d: ndarray) -> BBox2D:
     c = np.any(img_2d[rmin:rmax + 1, :], axis=0)
     cmin, cmax = np.where(c)[0][[0, -1]]
 
-    return slice(rmin, rmax+1), slice(cmin, cmax+1)
+    return slice(rmin, rmax + 1), slice(cmin, cmax + 1)
 
 
 def get_subregion_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -> Tuple[
@@ -153,7 +153,3 @@ def get_subregion_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -> Tup
     subregion = array_isin_labels_quick(label, labels_img2d)
     bbox = bbox_2D_quick(subregion)
     return subregion[bbox], bbox
-
-
-
-
