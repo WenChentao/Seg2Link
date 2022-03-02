@@ -20,13 +20,20 @@ class CacheBbox:
         self.seg_shape = self.emseg2.labels.shape
         self.pad = (50, 50, 5)
         self.new_labels = set()
-        bbox_path = self.get_bbox_path(emseg2.labels_path)
         self.bbox: Dict[int, Bbox] = {}
+        self.load_or_generate_bbox(emseg2.labels_path)
+
+    def load_or_generate_bbox(self, labels_path: Path):
+        bbox_path = self.generate_bbox_path(labels_path)
         if bbox_path.exists():
-            self.load_bbox(emseg2.labels_path)
+            self.load_bbox(bbox_path)
         else:
             self.refresh_bboxes()
-            self.save_bbox(self.emseg2.labels_path)
+            self._save_bbox(bbox_path)
+
+    def load_bbox(self, bbox_path: Path):
+        with open(bbox_path, 'rb') as f:
+            self.bbox = pickle.load(f)
 
     def cal_unused_labels(self) -> Set[int]:
         return set(get_unused_labels_quick(self.bbox.keys()))
@@ -47,20 +54,18 @@ class CacheBbox:
         self.bbox: Dict[int, Bbox] = {label + 1: bbox for label, bbox in enumerate(_subregions) if bbox is not None}
         self.emseg2.vis.widgets.show_state_info("Bboxes were calculated")
 
-    def save_bbox(self, labels_path: Path):
-        bbox_path = self.get_bbox_path(labels_path)
+    def _save_bbox(self, bbox_path: Path):
         bbox_path.parent.mkdir(parents=True, exist_ok=True)
         with open(bbox_path, 'wb') as f:
             pickle.dump(self.bbox, f, pickle.HIGHEST_PROTOCOL)
 
-    @staticmethod
-    def get_bbox_path(labels_path: Path):
-        return labels_path.parent / "cache_bbox" / (labels_path.stem + ".pickle")
+    def save_bbox(self, labels_path: Path):
+        bbox_path = self.generate_bbox_path(labels_path)
+        self._save_bbox(bbox_path)
 
-    def load_bbox(self, labels_path: Path):
-        bbox_path = self.get_bbox_path(labels_path)
-        with open(bbox_path, 'rb') as f:
-            self.bbox = pickle.load(f)
+    @staticmethod
+    def generate_bbox_path(labels_path: Path):
+        return labels_path.parent / "cache_bbox" / (labels_path.stem + ".pickle")
 
     def update_bbox_for_division(self, seg_subregion: ndarray, label_ori: int, divide_list: List[int], bbox_with_division: Bbox):
         """Add new divided labels, update changed labels, and delete the removed label after division"""

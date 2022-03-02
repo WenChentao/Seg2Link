@@ -10,8 +10,6 @@
    
    <img src="./pictures/select_round.png" width="300">
    
-   
-   
    <img src="./pictures/round1_set_para.png" width="500">
 
 3. Start the first round
@@ -93,9 +91,20 @@ Apply it in previous slices is unsupported.
 
 ### 5. *Re-Link*
 
-1. Move to the last slice *i* that has been segmented.
-2. Modify the segmentation in slice *i*
-3. Press **R** to link the modifed segmentation in slice *i* to the previous slices
+Sometimes, we found mistakes in slice i and corrected them. Seg2Link allow users to re-link the slice i with previous slices in an easy way. See below for an example:
+
+1. Slice 1 has been correctly segmented, while slice 2 includes a mistake.
+   
+   <img title="" src="./pictures/re_link_before_s1.png" alt="" width="800">
+   
+   <img title="" src="./pictures/re_link_before_s2.png" alt="" width="800">
+2. Correct the segmentation in slice 2 (here by division). This generated two new labels.
+   
+   <img title="" src="./pictures/re_link_divide_s2.png" alt="" width="800">
+3. Press **R**. Now the two new labels have been correctly linked to previous labels.
+   
+   <img title="" src="./pictures/re_link_after_s2.png" alt="" width="800">
+4. 
    
    ```
    Notes: 

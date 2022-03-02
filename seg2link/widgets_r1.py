@@ -60,7 +60,7 @@ class WidgetsR1:
     def add_widgets(self):
         container_states = Container(widgets=[self.image_size, self.max_label, self.cached_action, self.label_list_msg])
         container_export = Container(widgets=[self.export_button])
-        container_states.min_height = 300
+        container_states.min_height = 310
         self.viewer.window.add_dock_widget(container_states, name="States", area="right")
         self.viewer.window.add_dock_widget([self.hotkeys_info], name="HotKeys", area="right")
         self.viewer.window.add_dock_widget(container_export, name="Save/Export", area="right")

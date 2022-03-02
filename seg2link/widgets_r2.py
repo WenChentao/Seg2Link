@@ -246,7 +246,7 @@ class WidgetsR2:
             )
             if labels_path:
                 self.emseg2.reset_labels(np.load(labels_path))
-                self.emseg2.cache_bbox.load_bbox(Path(labels_path))
+                self.emseg2.cache_bbox.load_or_generate_bbox(Path(labels_path))
                 self.update_info()
 
 
