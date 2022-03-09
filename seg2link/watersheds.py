@@ -3,14 +3,13 @@ from typing import Tuple, List, Optional
 import numpy as np
 from numpy import ndarray
 from scipy import ndimage as ndi
-from scipy.ndimage import measurements
+from scipy.ndimage import measurements, grey_dilation
 from skimage import measure
 from skimage.filters import gaussian
 from skimage.morphology import h_maxima, local_maxima
 from skimage.segmentation import watershed, find_boundaries
 
 from seg2link import config
-from seg2link.misc import dilation_scipy
 if config.DEBUG:
     from seg2link.config import lprofile
 
@@ -36,9 +35,7 @@ def _dist_watershed_3d(cell_img3d: ndarray):
     seg_connectivity: ndarray = measure.label(cell_img3d, connectivity=1)
     maxima_final: ndarray = maxima_combine_3d(distance_f, seg_connectivity, maxima_filtered)
     markers: ndarray = ndi.label(maxima_final)[0]
-    seg = watershed(-distance_f, markers=markers, mask=cell_img3d)
-    np.save("../seg3d.npy", seg)
-
+    return watershed(-distance_f, markers=markers, mask=cell_img3d)
 
 
 def maxima_combine(distance: ndarray, seg_connectivity: ndarray, maxima_filtered: ndarray) -> ndarray:
@@ -65,15 +62,19 @@ def maxima_combine_3d(distance: ndarray, seg_connectivity: ndarray, maxima_filte
 
 
 def labels_with_boundary(labels: ndarray) -> ndarray:
-    result = find_boundaries(labels, mode="outer", connectivity=3)
+    if config.pars.add_boundary_mode != "2D":
+        result = find_boundaries(labels, mode="outer", connectivity=3)
+    else:
+        result = np.zeros_like(labels)
+        for z in range(result.shape[2]):
+            result[..., z] = find_boundaries(labels[..., z], mode="outer", connectivity=2)
     result = np.logical_not(result)
-    result = result * labels
-    return result
+    return result * labels
 
 
 def remove_boundary_scipy(labels: ndarray) -> ndarray:
     """Faster than using skimage"""
-    labels_dilate = dilation_scipy(labels, config.pars.labels_dilate_kernel_r2)
+    labels_dilate = grey_dilation(labels, config.pars.labels_dilate_kernel_r2)
     labels_dilate *= (labels == 0)
     labels += labels_dilate
     return labels

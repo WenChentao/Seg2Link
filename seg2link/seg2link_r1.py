@@ -57,7 +57,7 @@ def show_error_msg(widget_error_state, msg):
 
 
 @magicgui(
-    call_button="Start Seg2Link (Round #1)",
+    call_button="Start Round #1 - Seg2D + Link",
     layout="vertical",
     load_para={"widget_type": "PushButton", "text": "Load parameters (*.ini)"},
     save_para={"widget_type": "PushButton", "text": "Save parameters (*.ini)"},

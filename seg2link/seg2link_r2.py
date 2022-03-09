@@ -16,7 +16,7 @@ USR_CONFIG = UserConfig()
 
 
 @magicgui(
-    call_button="Start Seg2Link (Round #2)",
+    call_button="Start Round #2 - 3D_Correction",
     layout="vertical",
     load_para={"widget_type": "PushButton", "text": "Load parameters (*.ini)"},
     save_para={"widget_type": "PushButton", "text": "Save parameters (*.ini)"},

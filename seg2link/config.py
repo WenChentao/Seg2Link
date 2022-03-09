@@ -30,6 +30,8 @@ class Seg2LinkPara:
 
     # Segmentation
     h_watershed: int = 5
+    # For adding boundary. '2D' or '3D'
+    add_boundary_mode: str = '2D'
     # For removing boundary. Kernel along x, y, z axis. unit: voxels
     labels_dilate_kernel_r2: Tuple[int, int, int] = (3, 3, 1)
     # Used for dilation of the mask image along x, y and z axis. if None, skip the dilation.
