@@ -5,7 +5,8 @@ from magicgui import magicgui
 from seg2link.seg2link_r1 import start_r1
 from seg2link.seg2link_r2 import start_r2
 
-logo = Path(__file__).parent / '../Pic/icon_small.png'
+logo = Path(__file__).parent / 'icon_small.png'
+print(logo)
 
 @magicgui(
     auto_call=True,
