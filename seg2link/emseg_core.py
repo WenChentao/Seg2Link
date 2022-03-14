@@ -13,16 +13,16 @@ import skimage as ski
 from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
-from seg2link import config
+from seg2link import parameters
 from seg2link.link_by_overlap import match_return_label_list
 from seg2link.misc import make_folder, replace, mask_cells, flatten_2d_list, get_unused_labels_quick
 from seg2link.watersheds import dist_watershed
 
 if TYPE_CHECKING:
-    from seg2link.correction_r1 import Seg2LinkR1
+    from seg2link.seg2link_round1 import Seg2LinkR1
 
-if config.DEBUG:
-    from seg2link.config import lprofile
+if parameters.DEBUG:
+    from seg2link.parameters import lprofile
 
 class Labels:
     """Labels are stored as a python list corresponding to the values in the segmented images"""
@@ -222,7 +222,7 @@ class Segmentation:
     def watershed(self, layer_idx: int):
         """Segment a 2D label regions and save the result"""
         current_seg = dist_watershed(self.cell_region[..., layer_idx - 1].compute(),
-                                     h=config.pars.h_watershed)
+                                     h=parameters.pars.h_watershed)
         if self.enable_mask:
             self.current_seg = mask_cells(current_seg, self.mask[..., layer_idx - 1].compute(), self.ratio_mask)
         else:
@@ -301,10 +301,10 @@ class Archive:
         """Return the latest slice of the label stored in the hard disk"""
         if not self._path_labels.exists():
             return 0
-        list_files = self.get_file_list(config.re_filename_v2)
+        list_files = self.get_file_list(parameters.re_filename_v2)
 
         if len(list_files) == 0:
-            list_files = self.get_file_list(config.re_filename_v1)
+            list_files = self.get_file_list(parameters.re_filename_v1)
 
         regex_slice_nums = re.compile(r'\d+')
         list_slice_nums = [int(num) for fn in list_files for num in regex_slice_nums.findall(fn)]
@@ -325,7 +325,7 @@ class Archive:
         """Save the labels"""
         labels = self.emseg1.labels
         if labels.current_slice >= 1:
-            with open(self._path_labels / (config.label_filename_v2 % labels.current_slice), 'wb') as f:
+            with open(self._path_labels / (parameters.label_filename_v2 % labels.current_slice), 'wb') as f:
                 pickle.dump(labels._labels, f, pickle.HIGHEST_PROTOCOL)
 
     def save_seg_img(self):
@@ -336,7 +336,7 @@ class Archive:
     @staticmethod
     def append_seg(seg_img_cache: OrderedDict, seg: ndarray, z: int):
         seg_img_cache[z] = seg
-        if len(seg_img_cache) > config.pars.max_draw_layers_r1 // 2:
+        if len(seg_img_cache) > parameters.pars.max_draw_layers_r1 // 2:
             print(f"pop {seg_img_cache.popitem(last=False)[0]}")
             print(f"len: {len(seg_img_cache)}")
 
@@ -362,21 +362,21 @@ class Archive:
         return labels
 
     def load_labels_v1(self, slice_num: int) -> Labels:
-        with open(self._path_labels / (config.label_filename_v1 % slice_num), 'rb') as f:
+        with open(self._path_labels / (parameters.label_filename_v1 % slice_num), 'rb') as f:
             return pickle.load(f)
 
     def load_labels_v2(self, slice_num: int) -> List[List[int]]:
-        with open(self._path_labels / (config.label_filename_v2 % slice_num), 'rb') as f:
+        with open(self._path_labels / (parameters.label_filename_v2 % slice_num), 'rb') as f:
             return pickle.load(f)
 
     def transform_v1_to_v2(self, slice_num: int):
         for i in range(1, slice_num + 1):
-            with open(self._path_labels / (config.label_filename_v2 % i), 'wb') as f:
+            with open(self._path_labels / (parameters.label_filename_v2 % i), 'wb') as f:
                 pickle.dump(self.load_labels_v1(i)._labels, f, pickle.HIGHEST_PROTOCOL)
 
     def del_label_files(self, current_slice_num: int, latest_slice_num: int):
         for s in range(current_slice_num + 1, latest_slice_num + 1):
-            os.remove(self._path_labels / (config.label_filename_v2 % s))
+            os.remove(self._path_labels / (parameters.label_filename_v2 % s))
 
     def read_seg_img(self, seg_img_cache: OrderedDict, layer_idx: int) -> Optional[ndarray]:
         """Load a 2D segmentation result"""

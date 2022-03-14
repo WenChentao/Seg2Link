@@ -2,8 +2,8 @@ from pathlib import Path
 
 from magicgui import magicgui
 
-from seg2link.seg2link_r1 import start_r1
-from seg2link.seg2link_r2 import start_r2
+from seg2link.start_round1 import start_r1
+from seg2link.start_round2 import start_r2
 
 logo = Path(__file__).parent / 'icon_small.png'
 print(logo)

@@ -4,14 +4,14 @@ from PyQt5.QtWidgets import QApplication
 from magicgui import widgets
 from magicgui.widgets import Container
 
-from seg2link import config
+from seg2link import parameters
 from seg2link.misc import add_blank_lines
 
-if config.DEBUG:
+if parameters.DEBUG:
     pass
 
 if TYPE_CHECKING:
-    from seg2link.correction_r1 import VisualizePartial
+    from seg2link.seg2link_round1 import VisualizePartial
 
 
 class WidgetsR1:
@@ -23,7 +23,7 @@ class WidgetsR1:
         self.image_size = widgets.LineEdit(label="Image shape", value=shape_str, enabled=False)
         self.max_label = widgets.LineEdit(label="Largest label", enabled=False)
         self.cached_action = widgets.TextEdit(label="Cached actions",
-                                              tooltip=f"Less than {config.pars.cache_length_r1} action can be cached",
+                                              tooltip=f"Less than {parameters.pars.cache_length_r1} action can be cached",
                                               enabled=False)
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
 
@@ -69,6 +69,6 @@ class WidgetsR1:
     def update_info(self):
         self.max_label.value = str(self.emseg1.labels.max_label)
         self.cached_action.value = add_blank_lines("".join(self.emseg1.cache.cached_actions),
-                                                   config.pars.cache_length_r1 + 1)
+                                                   parameters.pars.cache_length_r1 + 1)
         self.label_list_msg.value = tuple(self.emseg1.label_list)
         return None

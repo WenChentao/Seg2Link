@@ -3,11 +3,11 @@ from typing import Tuple, Dict
 import numpy as np
 from numpy import ndarray
 
-from seg2link import config
+from seg2link import parameters
 
-if config.DEBUG:
+if parameters.DEBUG:
     from seg2link.misc import qprofile
-    from seg2link.config import lprofile
+    from seg2link.parameters import lprofile
 
 
 def match_return_seg_img(seg_s1: ndarray, seg_s2: ndarray, max_label: int, ratio_overlap: float) -> ndarray:

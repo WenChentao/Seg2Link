@@ -10,15 +10,15 @@ from magicgui import widgets, use_app
 from magicgui.types import FileDialogMode
 from magicgui.widgets import Container
 
-from seg2link import config
+from seg2link import parameters
 from seg2link.misc import TinyCells, make_folder
-from seg2link.msg_windows_r2 import sort_remove_window
+from seg2link.message_windows_round2 import sort_remove_window
 from seg2link.single_cell_division import DivideMode
 from seg2link.cache_bbox import NoLabelError
 from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
 
 if TYPE_CHECKING:
-    from seg2link.correction_r2 import VisualizeAll
+    from seg2link.seg2link_round2 import VisualizeAll
 
 
 class WidgetsR2:
@@ -47,7 +47,7 @@ class WidgetsR2:
         # Label/cache panel
         self.max_label_info = widgets.LineEdit(label="Largest label", enabled=False)
         self.cached_action = widgets.TextEdit(label="Cached actions",
-                                              tooltip=(f"Less than {config.pars.cache_length_r2} action can be cached"),
+                                              tooltip=(f"Less than {parameters.pars.cache_length_r2} action can be cached"),
                                               value="", enabled=False)
         self.locate_cell_button = LocateSelectedCellButton(label="Select label")
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
@@ -197,8 +197,8 @@ class WidgetsR2:
 
         @save_button.changed.connect
         def save_overwrite():
-            if self.viewer.layers["segmentation"].data.dtype != config.pars.dtype_r2:
-                self.show_state_info(f"Warning: dtype should be {config.pars.dtype_r2}!")
+            if self.viewer.layers["segmentation"].data.dtype != parameters.pars.dtype_r2:
+                self.show_state_info(f"Warning: dtype should be {parameters.pars.dtype_r2}!")
             elif self.emseg2.labels_path.parent.exists():
                 labels_path = self.emseg2.labels_path.parent / "seg-modified.npy"
                 self.show_state_info("Saving segmentation as .npy file... Please wait")
@@ -211,8 +211,8 @@ class WidgetsR2:
 
         @save_as_button.changed.connect
         def save_as():
-            if self.viewer.layers["segmentation"].data.dtype != config.pars.dtype_r2:
-                self.show_state_info(f"Warning: dtype should be {config.pars.dtype_r2}!")
+            if self.viewer.layers["segmentation"].data.dtype != parameters.pars.dtype_r2:
+                self.show_state_info(f"Warning: dtype should be {parameters.pars.dtype_r2}!")
             elif self.emseg2.labels_path.parent.exists():
                 labels_path = select_file()
                 if labels_path:

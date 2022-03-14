@@ -9,46 +9,35 @@ from skimage.filters import gaussian
 from skimage.morphology import h_maxima, local_maxima
 from skimage.segmentation import watershed, find_boundaries
 
-from seg2link import config
-if config.DEBUG:
-    from seg2link.config import lprofile
+from seg2link import parameters
+if parameters.DEBUG:
+    from seg2link.parameters import lprofile
 
 
 def dist_watershed(cell_img2d: ndarray, h: int) -> ndarray:
-    distance: ndarray = ndi.distance_transform_edt(cell_img2d)
+    distance_map: ndarray = ndi.distance_transform_edt(cell_img2d)
     # Without this gaussian filtering, the h_maxima will generate multiple neighbouring maximum with the same distance,
-    # and leading to over-segmentation
-    distance_f = gaussian(distance, 1, preserve_range=True)
-    maxima_filtered: ndarray = h_maxima(distance_f, h=h)
-    seg_connectivity: ndarray = measure.label(cell_img2d, connectivity=1)
-    maxima_final: ndarray = maxima_combine(distance_f, seg_connectivity, maxima_filtered)
-
-    # use this structure so that neighbouring pixels with the same distance is assigned as the same marker
-    markers: ndarray = ndi.label(maxima_final)[0]
-    return watershed(-distance, markers=markers, mask=cell_img2d)
+    # leading to over-segmentation
+    distance_map_smooth = gaussian(distance_map, 1, preserve_range=True)
+    h_maxima_of_distance_map: ndarray = h_maxima(distance_map_smooth, h=h)
+    labels_by_connectivity: ndarray = measure.label(cell_img2d, connectivity=1)
+    maxima_combined: ndarray = maxima_combine(h_maxima_of_distance_map, labels_by_connectivity, distance_map_smooth)
+    markers_of_maxima: ndarray = ndi.label(maxima_combined)[0]
+    return watershed(-distance_map, markers=markers_of_maxima, mask=cell_img2d)
 
 
-def _dist_watershed_3d(cell_img3d: ndarray):
-    distance: ndarray = ndi.distance_transform_edt(cell_img3d, sampling = config.pars.scale_xyz)
-    distance_f = gaussian(distance, 1, preserve_range=True)
-    maxima_filtered: ndarray = h_maxima(distance_f, h=config.pars.h_watershed)
-    seg_connectivity: ndarray = measure.label(cell_img3d, connectivity=1)
-    maxima_final: ndarray = maxima_combine_3d(distance_f, seg_connectivity, maxima_filtered)
-    markers: ndarray = ndi.label(maxima_final)[0]
-    return watershed(-distance_f, markers=markers, mask=cell_img3d)
-
-
-def maxima_combine(distance: ndarray, seg_connectivity: ndarray, maxima_filtered: ndarray) -> ndarray:
+def maxima_combine(h_maxima_of_distance: ndarray, labels_by_connectivity: ndarray, distance_map: ndarray) -> ndarray:
     """Combine following maxima points to avoid over-segmentation and loss of tiny regions:
     1. Maxima in each subregions based on connectivity (at least one point in each subregion will be kept)
     2. Maxima filtered by e.g. h_maxima (all kept)"""
-    centers: List[Tuple[int, int]] = \
-        measurements.maximum_position(distance, seg_connectivity, range(1, np.max(seg_connectivity)+1))
-    maxima_h1: ndarray = local_maxima(distance)
-    for pos_x, pos_y in centers:
-        if maxima_h1[pos_x, pos_y]:
-            maxima_filtered[pos_x, pos_y] = 1
-    return maxima_filtered
+    center_positions_of_labels: List[Tuple[int, int]] = measurements.maximum_position(
+            distance_map, labels_by_connectivity, range(1, np.max(labels_by_connectivity) + 1)
+        )
+    local_maxima_of_distance: ndarray = local_maxima(distance_map)
+    for pos_x, pos_y in center_positions_of_labels:
+        if local_maxima_of_distance[pos_x, pos_y]:
+            h_maxima_of_distance[pos_x, pos_y] = 1
+    return h_maxima_of_distance
 
 
 def maxima_combine_3d(distance: ndarray, seg_connectivity: ndarray, maxima_filtered: ndarray) -> ndarray:
@@ -62,7 +51,7 @@ def maxima_combine_3d(distance: ndarray, seg_connectivity: ndarray, maxima_filte
 
 
 def labels_with_boundary(labels: ndarray) -> ndarray:
-    if config.pars.add_boundary_mode != "2D":
+    if parameters.pars.add_boundary_mode != "2D":
         result = find_boundaries(labels, mode="outer", connectivity=3)
     else:
         result = np.zeros_like(labels)
@@ -74,7 +63,7 @@ def labels_with_boundary(labels: ndarray) -> ndarray:
 
 def remove_boundary_scipy(labels: ndarray) -> ndarray:
     """Faster than using skimage"""
-    labels_dilate = grey_dilation(labels, config.pars.labels_dilate_kernel_r2)
+    labels_dilate = grey_dilation(labels, parameters.pars.labels_dilate_kernel_r2)
     labels_dilate *= (labels == 0)
     labels += labels_dilate
     return labels

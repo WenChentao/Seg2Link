@@ -1,6 +1,6 @@
 from magicgui import magicgui
 
-from seg2link import config
+from seg2link import parameters
 
 
 @magicgui(

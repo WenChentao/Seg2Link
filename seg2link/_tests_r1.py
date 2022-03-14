@@ -3,18 +3,18 @@ from typing import Callable, TYPE_CHECKING
 
 import numpy as np
 
-from seg2link import config
+from seg2link import parameters
 from seg2link.misc import flatten_2d_list, get_unused_labels_quick
 
 if TYPE_CHECKING:
-    from seg2link.correction_r1 import Seg2LinkR1
+    from seg2link.seg2link_round1 import Seg2LinkR1
 
 
 def test_merge_r1(emseg1: "Seg2LinkR1"):
     """Merge will generate unused_labels except for the minimum (target) label"""
     def deco(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            if config.DEBUG:
+            if parameters.DEBUG:
                 seg_old = emseg1.vis.viewer.layers["segmentation"].data.copy()
                 labels_old = np.array(flatten_2d_list(emseg1.labels._labels)[0])
                 merge_list = copy.deepcopy(emseg1.label_list)
@@ -48,7 +48,7 @@ def test_delete_r1(emseg1: "Seg2LinkR1"):
     """Delete label(s) will generate new unused_labels"""
     def deco(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            if config.DEBUG:
+            if parameters.DEBUG:
                 seg_old = emseg1.vis.viewer.layers["segmentation"].data.copy()
                 labels_old = np.array(flatten_2d_list(emseg1.labels._labels)[0])
                 unused_labels_old = emseg1.labels.cal_unused_labels()
@@ -81,7 +81,7 @@ def test_divide_r1(emseg1: "Seg2LinkR1"):
     """The divided labels should use the unused labels"""
     def deco(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            if config.DEBUG:
+            if parameters.DEBUG:
                 label_ori = emseg1.vis.viewer.layers["segmentation"].selected_label
 
                 slice = emseg1.current_slice - emseg1.vis.get_slice(emseg1.current_slice).start - 1
@@ -114,7 +114,7 @@ def test_link_r1(emseg1: "Seg2LinkR1"):
     """Link will use the unused_labels"""
     def deco(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            if config.DEBUG:
+            if parameters.DEBUG:
                 labels_old = np.array(flatten_2d_list(emseg1.labels._labels)[0])
                 func(*args, **kwargs)
                 labels_new = np.array(flatten_2d_list(emseg1.labels._labels)[0])

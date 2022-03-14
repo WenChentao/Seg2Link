@@ -5,7 +5,7 @@ from pathlib import Path
 from magicgui import use_app
 from magicgui.types import FileDialogMode
 
-from seg2link import config
+from seg2link import parameters
 
 CURRENT_DIR = Path.home()
 
@@ -20,7 +20,7 @@ class Pars:
 @dataclass
 class UserConfig:
     ini_path: str = None
-    pars: Pars = Pars({}, {}, config.pars.all_attributes)
+    pars: Pars = Pars({}, {}, parameters.pars.all_attributes)
 
     def load_ini(self, current_dir):
         mode_ = FileDialogMode.EXISTING_FILE

@@ -9,7 +9,7 @@ from scipy import ndimage
 from seg2link.misc import get_unused_labels_quick
 
 if TYPE_CHECKING:
-    from seg2link.correction_r2 import Seg2LinkR2
+    from seg2link.seg2link_round2 import Seg2LinkR2
 
 Bbox = Tuple[slice, slice, slice]
 

@@ -3,18 +3,18 @@ from typing import Callable, TYPE_CHECKING
 
 import numpy as np
 
-from seg2link import config
+from seg2link import parameters
 from seg2link.misc import get_unused_labels_quick
 
 if TYPE_CHECKING:
-    from seg2link.correction_r2 import Seg2LinkR2
+    from seg2link.seg2link_round2 import Seg2LinkR2
 
 
 def test_merge_r2(emseg2: "Seg2LinkR2"):
     """Merge will generate unused_labels except for the minimum (target) label"""
     def deco(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            if config.DEBUG:
+            if parameters.DEBUG:
                 merge_list = copy.deepcopy(emseg2.label_list)
                 unused_labels_old = emseg2.cache_bbox.cal_unused_labels()
 
@@ -41,7 +41,7 @@ def test_delete_r2(emseg2: "Seg2LinkR2"):
     """Delete label(s) will generate new unused_labels"""
     def deco(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            if config.DEBUG:
+            if parameters.DEBUG:
                 unused_labels_old = emseg2.cache_bbox.cal_unused_labels()
                 if emseg2.label_list:
                     delete_list = copy.deepcopy(emseg2.label_list)
@@ -67,7 +67,7 @@ def test_divide_r2(emseg2: "Seg2LinkR2"):
     """The divided labels should use the unused labels"""
     def deco(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
-            if config.DEBUG:
+            if parameters.DEBUG:
                 label_ori = emseg2.vis.viewer.layers["segmentation"].selected_label
                 labels_old = list(emseg2.cache_bbox.bbox.keys())
                 bbox_label_ori = emseg2.cache_bbox.get_subregion_3d(label_ori)[0]

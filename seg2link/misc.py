@@ -16,10 +16,10 @@ from skimage.segmentation import relabel_sequential
 from dask import delayed
 import dask.array as da
 
-from seg2link.config import DEBUG
-from seg2link import config
+from seg2link.parameters import DEBUG
+from seg2link import parameters
 
-if config.DEBUG:
+if parameters.DEBUG:
     pass
 
 def load_image_pil(path: Path) -> ndarray:

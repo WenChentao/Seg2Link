@@ -5,9 +5,9 @@ import numpy as np
 from magicgui import magicgui
 from numpy import ndarray
 
-from seg2link import config
+from seg2link import parameters
 from seg2link.emseg_core import Archive
-from seg2link.correction_r1 import Seg2LinkR1
+from seg2link.seg2link_round1 import Seg2LinkR1
 from seg2link.misc import load_image_pil, dilation_scipy, load_image_lazy, load_array_lazy
 from seg2link.userconfig import UserConfig
 
@@ -43,11 +43,11 @@ def load_cells(cell_value, path_cells):
 @cache_images_lazy
 def load_mask(mask_value: int, path_mask: Path) -> ndarray:
     mask_images = load_image_pil(path_mask) == mask_value
-    if config.pars.mask_dilate_kernel is None:
+    if parameters.pars.mask_dilate_kernel is None:
         return mask_images
     else:
         print("Dilating mask image... Please wait")
-        return dilation_scipy(mask_images, filter_size=config.pars.mask_dilate_kernel)
+        return dilation_scipy(mask_images, filter_size=parameters.pars.mask_dilate_kernel)
 
 
 def show_error_msg(widget_error_state, msg):
@@ -165,7 +165,7 @@ def _on_load_para_changed():
     except ValueError:
         return
     parameters_r1 = USR_CONFIG.pars.r1
-    config.pars.set_from_dict(USR_CONFIG.pars.advanced)
+    parameters.pars.set_from_dict(USR_CONFIG.pars.advanced)
     start_r1.path_cells.value = parameters_r1["path_cells"]
     start_r1.path_raw.value = parameters_r1["path_raw"]
     start_r1.path_mask.value = parameters_r1["path_mask"]

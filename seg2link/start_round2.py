@@ -5,10 +5,10 @@ import numpy as np
 from magicgui import magicgui
 
 from seg2link.misc import load_image_pil
-from seg2link import config
-from seg2link.seg2link_r1 import load_cells, load_mask, _npy_name, check_existence_path, show_error_msg, \
+from seg2link import parameters
+from seg2link.start_round1 import load_cells, load_mask, _npy_name, check_existence_path, show_error_msg, \
     load_raw_lazy
-from seg2link.correction_r2 import Seg2LinkR2
+from seg2link.seg2link_round2 import Seg2LinkR2
 from seg2link.userconfig import UserConfig
 
 CURRENT_DIR = Path.home()
@@ -85,9 +85,9 @@ def load_segmentation(path_seg: Path):
     else:
         segmentation = np.load(str(path_seg))
 
-    if segmentation.dtype != config.pars.dtype_r2:
-        warnings.warn(f"segmentation should has dtype {config.pars.dtype_r2}. Transforming...")
-        segmentation = segmentation.astype(config.pars.dtype_r2, copy=False)
+    if segmentation.dtype != parameters.pars.dtype_r2:
+        warnings.warn(f"segmentation should has dtype {parameters.pars.dtype_r2}. Transforming...")
+        segmentation = segmentation.astype(parameters.pars.dtype_r2, copy=False)
     label_shape = segmentation.shape
     start_r2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
     print("Segmentation shape:", label_shape, "dtype:", segmentation.dtype)
@@ -130,7 +130,7 @@ def _on_load_para_changed():
         USR_CONFIG.load_ini(CURRENT_DIR)
     except ValueError:
         return
-    config.pars.set_from_dict(USR_CONFIG.pars.advanced)
+    parameters.pars.set_from_dict(USR_CONFIG.pars.advanced)
 
     if USR_CONFIG.pars.r2:
         set_pars_r2(USR_CONFIG.pars.r2)

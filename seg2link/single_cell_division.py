@@ -9,13 +9,13 @@ from scipy.spatial import KDTree
 from skimage.measure import regionprops
 from skimage.segmentation import relabel_sequential
 
-from seg2link import config
+from seg2link import parameters
 from seg2link.cache_bbox import array_isin_labels_quick, NoLabelError
 from seg2link.link_by_overlap import match_return_seg_img
 from seg2link.misc import get_unused_labels_quick
 from seg2link.watersheds import dist_watershed
 
-if config.DEBUG:
+if parameters.DEBUG:
     pass
 
 

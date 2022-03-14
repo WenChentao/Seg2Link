@@ -11,17 +11,17 @@ from numpy import ndarray
 
 from seg2link.emseg_core import relabel_min_change
 from seg2link._tests_r2 import test_merge_r2, test_delete_r2, test_divide_r2
-from seg2link import config
-from seg2link.correction_r1 import Cache, VisualizeBase
+from seg2link import parameters
+from seg2link.seg2link_round1 import Cache, VisualizeBase
 from seg2link.misc import print_information, replace, get_unused_labels_quick
-from seg2link.msg_windows_r2 import message_delete_labels
+from seg2link.message_windows_round2 import message_delete_labels
 from seg2link.cache_bbox import NoLabelError, CacheBbox, merge_bbox, Bbox
-from seg2link.widgets_r2 import WidgetsR2
+from seg2link.widgets_round2 import WidgetsR2
 from seg2link.single_cell_division import DivideMode, get_subregion2d_and_preslice, NoDivisionError, \
     separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed, suppress_largest_label
 
-if config.DEBUG:
-    from seg2link.config import lprofile
+if parameters.DEBUG:
+    from seg2link.parameters import lprofile
 
 BiState = namedtuple("BiState", ["array", "bboxes"])
 
@@ -120,7 +120,7 @@ class Seg2LinkR2:
         self.message_delete_labels.show(run=True)
         self.message_delete_labels.info.value = \
             f"Please reduce cell number! (Current: {self.vis.widgets.label_max}, " \
-            f"Limitation: {config.pars.upper_limit_labels_r2})\n" \
+            f"Limitation: {parameters.pars.upper_limit_labels_r2})\n" \
             f"Do it by pressing [Sort labels and remove tiny cells] button"
         self.message_delete_labels.ok_button.changed.connect(self.hide_warning_delete_cells)
 
@@ -131,7 +131,7 @@ class Seg2LinkR2:
         """Set the hotkeys for user's operations"""
         viewer_seg = self.vis.viewer.layers['segmentation']
 
-        @viewer_seg.bind_key(config.pars.key_add)
+        @viewer_seg.bind_key(parameters.pars.key_add)
         @print_information("Add a label to be processed")
         def append_label_list(viewer_seg):
             """Add label to be merged into a list"""
@@ -144,7 +144,7 @@ class Seg2LinkR2:
                 print("Labels to be processed: ", self.label_list)
                 self.update_info()
 
-        @viewer_seg.bind_key(config.pars.key_clean)
+        @viewer_seg.bind_key(parameters.pars.key_clean)
         @print_information("Clean the label list")
         def clear_label_list(viewer_seg):
             """Clear labels in the merged list"""
@@ -152,7 +152,7 @@ class Seg2LinkR2:
             print(f"Cleaned the label list: {self.label_list}")
             self.update_info()
 
-        @viewer_seg.bind_key(config.pars.key_merge)
+        @viewer_seg.bind_key(parameters.pars.key_merge)
         @print_information("Merge labels")
         @test_merge_r2(self)
         def _merge(viewer_seg):
@@ -175,7 +175,7 @@ class Seg2LinkR2:
                 self.update(state)
                 self.vis.widgets.show_state_info("Multiple labels were merged")
 
-        @viewer_seg.bind_key(config.pars.key_delete)
+        @viewer_seg.bind_key(parameters.pars.key_delete)
         @print_information("Delete the selected label(s)")
         @test_delete_r2(self)
         def del_label(viewer_seg):
@@ -204,12 +204,12 @@ class Seg2LinkR2:
                 except NoLabelError:
                     self.vis.widgets.show_state_info(f"Tried to delete label(s) but not found")
 
-        @viewer_seg.bind_key(config.pars.key_separate)
+        @viewer_seg.bind_key(parameters.pars.key_separate)
         @print_information("Divide")
         @test_divide_r2(self)
         def separate_label(viewer_seg):
             viewer_seg.mode = "pick"
-            if config.pars.dtype_r2==np.uint16 and self.vis.widgets.label_max >= config.pars.upper_limit_labels_r2:
+            if parameters.pars.dtype_r2==np.uint16 and self.vis.widgets.label_max >= parameters.pars.upper_limit_labels_r2:
                 self.show_warning_delete_cells()
                 return
             if viewer_seg.selected_label == 0:
@@ -241,7 +241,7 @@ class Seg2LinkR2:
 
                     self.vis.widgets.locate_label_divided()
 
-        @viewer_seg.bind_key(config.pars.key_insert)
+        @viewer_seg.bind_key(parameters.pars.key_insert)
         @print_information("Insert")
         def insert_label(viewer_seg):
             self.cache_bbox.update_new_labels()
@@ -338,7 +338,7 @@ class Seg2LinkR2:
             else:
                 return str(list_)
 
-        @viewer_seg.bind_key(config.pars.key_undo)
+        @viewer_seg.bind_key(parameters.pars.key_undo)
         @print_information()
         def undo(viewer_seg):
             """Undo one keyboard command"""
@@ -352,7 +352,7 @@ class Seg2LinkR2:
             self._update_segmentation()
             self.update_info()
 
-        @viewer_seg.bind_key(config.pars.key_redo)
+        @viewer_seg.bind_key(parameters.pars.key_redo)
         @print_information()
         def redo(viewer_seg):
             """Redo one keyboard command"""
@@ -366,14 +366,14 @@ class Seg2LinkR2:
             self._update_segmentation()
             self.update_info()
 
-        @viewer_seg.bind_key(config.pars.key_switch_one_label_all_labels)
+        @viewer_seg.bind_key(parameters.pars.key_switch_one_label_all_labels)
         @print_information("Switch showing one label/all labels")
         def switch_showing_one_or_all_labels(viewer_seg):
             """Show the selected label"""
             self.vis.viewer.layers["segmentation"].show_selected_label = \
                 not self.vis.viewer.layers["segmentation"].show_selected_label
 
-        @viewer_seg.bind_key(config.pars.key_online_help)
+        @viewer_seg.bind_key(parameters.pars.key_online_help)
         def help(viewer_seg):
             html_path = "https://github.com/WenChentao/Seg2Link/blob/master/Doc/help2.md"
             print(html_path)
@@ -433,7 +433,7 @@ class CacheR2(Cache):
 
 class CacheSubArray:
     def __init__(self, emseg2: Seg2LinkR2):
-        self.cache = CacheR2(maxlen=config.pars.cache_length_r2)
+        self.cache = CacheR2(maxlen=parameters.pars.cache_length_r2)
         self.emseg2 = emseg2
 
     def cache_state(self, state: StateR2):
