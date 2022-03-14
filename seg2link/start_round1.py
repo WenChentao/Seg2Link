@@ -6,7 +6,7 @@ from magicgui import magicgui
 from numpy import ndarray
 
 from seg2link import parameters
-from seg2link.emseg_core import Archive
+from seg2link.seg2dlink_core import Archive
 from seg2link.seg2link_round1 import Seg2LinkR1
 from seg2link.misc import load_image_pil, dilation_scipy, load_image_lazy, load_array_lazy
 from seg2link.userconfig import UserConfig

@@ -18,7 +18,7 @@ from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
 from seg2link import parameters
-from seg2link.emseg_core import Labels, Segmentation, Alignment, Archive
+from seg2link.seg2dlink_core import Labels, Segmentation, Alignment, Archive
 from seg2link.misc import print_information, TinyCells
 from seg2link._tests_r1 import test_merge_r1, test_delete_r1, test_divide_r1, test_link_r1
 from seg2link.single_cell_division import separate_one_label_r1

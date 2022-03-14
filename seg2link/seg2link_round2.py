@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication
 from napari.utils.colormaps import low_discrepancy_image
 from numpy import ndarray
 
-from seg2link.emseg_core import relabel_min_change
+from seg2link.seg2dlink_core import relabel_min_change
 from seg2link._tests_r2 import test_merge_r2, test_delete_r2, test_divide_r2
 from seg2link import parameters
 from seg2link.seg2link_round1 import Cache, VisualizeBase
