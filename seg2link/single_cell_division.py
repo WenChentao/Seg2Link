@@ -50,16 +50,19 @@ def segment_one_cell_2d_watershed(labels_img3d: ndarray, max_division: int = 2) 
     return result
 
 
-def separate_one_label_r1(seg_img2d: ndarray, label: int, used_labels: List[int]) -> Tuple[ndarray, List[int]]:
-    sub_region, slice_subregion = get_subregion_2d(seg_img2d, label)
+def separate_one_label_r1(seg_img2d: ndarray, selected_label: int, used_labels: List[int]) -> ndarray:
+    subarray_2d_bool, bbox_2d = get_subregion_2d(seg_img2d, selected_label)
 
-    seg2d = dist_watershed(sub_region, h=2)
+    seg2d = dist_watershed(subarray_2d_bool, h=2)
     labels = np.unique(seg2d)
     labels_ = labels[labels != 0]
+    if labels_.size == 1:
+        return seg_img2d
+
     expected_labels = get_unused_labels_quick(used_labels, len(labels_))
     for label_ori, label_tgt in zip(labels_, expected_labels):
-        seg_img2d[slice_subregion][seg2d == label_ori] = label_tgt
-    return seg_img2d, expected_labels
+        seg_img2d[bbox_2d][seg2d == label_ori] = label_tgt
+    return seg_img2d
 
 
 def separate_one_cell_3d(sub_region: ndarray) -> ndarray:
@@ -150,6 +153,6 @@ def get_subregion_2d(labels_img2d: ndarray, label: Union[int, List[int]]) -> Tup
     ndarray, BBox2D]:
     """Get the subregion (bbox) and the corresponding slice for the subregion in a 2d label image
     """
-    subregion = array_isin_labels_quick(label, labels_img2d)
-    bbox = bbox_2D_quick(subregion)
-    return subregion[bbox], bbox
+    subregion_bool = array_isin_labels_quick(label, labels_img2d)
+    bbox = bbox_2D_quick(subregion_bool)
+    return subregion_bool[bbox], bbox

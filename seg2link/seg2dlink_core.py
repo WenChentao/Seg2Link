@@ -49,11 +49,11 @@ class Labels:
         self.current_slice = 0
 
     def cal_unused_labels(self) -> Set[int]:
-        return set(get_unused_labels_quick(self._flatten()[0]))
+        return set(get_unused_labels_quick(self.flatten()[0]))
 
     @property
     def unused_labels(self) -> str:
-        return str(f"{self.cal_unused_labels()}, and {np.max(self._flatten()[0])+1}...")
+        return str(f"{self.cal_unused_labels()}, and {np.max(self.flatten()[0]) + 1}...")
 
     def rollback(self):
         if len(self._labels) > 0:
@@ -64,19 +64,19 @@ class Labels:
                 self._labels = labels
             self.current_slice -= 1
 
-    def _flatten(self) -> Tuple[List[int], List[int]]:
+    def flatten(self) -> Tuple[List[int], List[int]]:
         return flatten_2d_list(self._labels)
 
     def delete(self, delete_list: Union[int, Set[int]]):
         """Delete a label (modify the value in self._labels to 0)"""
-        labels1d, label_nums = self._flatten()
+        labels1d, label_nums = self.flatten()
         labels1d_array = np.asarray(labels1d, dtype=int)
         labels1d_array = replace(delete_list, 0, labels1d_array)
         self._labels = self._to_labels2d(labels1d_array.tolist(), label_nums)
 
     def merge(self):
         """Merge the cells in the label_list and modify the transformation list"""
-        labels1d, label_nums = self._flatten()
+        labels1d, label_nums = self.flatten()
         labels1d_array = np.asarray(labels1d, dtype=int)
 
         target = min(self.emseg1.label_list)
@@ -123,7 +123,7 @@ class Labels:
         """Prepare the segmentations and label for linking"""
         seg_pre = self.to_labels_img(self.current_slice, self.emseg1.seg_img_cache)
 
-        labels1d, self._label_nums = self._flatten()
+        labels1d, self._label_nums = self.flatten()
         labels_pre_1d = np.asarray(labels1d)
 
         seg_post = self.emseg1.seg.current_seg.copy()
@@ -165,13 +165,13 @@ class Labels:
 
     def relabel(self):
         """Relabel all N cells with label from 1 to N and save the current state"""
-        labels1d, label_nums = self._flatten()
+        labels1d, label_nums = self.flatten()
         labels1d_re = relabel_min_change(np.asarray(labels1d), labels1d[:-label_nums[-1]])
         self._labels = self._to_labels2d(labels1d_re.tolist(), label_nums)
 
     def relabel_deprecated(self):
         """Relabel all N cells with label from 1 to N and save the current state (use skimage.relabel_sequential)"""
-        labels1d, label_nums = self._flatten()
+        labels1d, label_nums = self.flatten()
         labels1d_re, fw, _ = relabel_sequential(np.asarray(labels1d))
         self._labels = self._to_labels2d(labels1d_re.tolist(), label_nums)
 

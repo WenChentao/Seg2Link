@@ -66,7 +66,7 @@ class Seg2LinkR1:
         if isinstance(labels, Labels):
             self.labels = copy.deepcopy(labels)
         else:
-            self.labels._labels = labels
+            self.labels._labels = copy.deepcopy(labels)
             self.labels.current_slice = len(labels)
 
     def retrieve_or_restart(self, target_slice: int):
@@ -112,8 +112,7 @@ class Seg2LinkR1:
 
     def divide_one_cell(self, modified_label: ndarray, selected_label: int):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        current_seg, divided_labels = separate_one_label_r1(modified_label[..., z], selected_label,
-                                                            self.labels._flatten()[0])
+        current_seg = separate_one_label_r1(modified_label[..., z], selected_label, self.labels.flatten()[0])
         _labels = np.unique(current_seg)
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]
@@ -154,7 +153,11 @@ class Seg2LinkR1:
                 self.save_and_refresh("Divide")
                 viewer_seg.mode = "pick"
 
+            print_labels_seg()
+
+        def print_labels_seg():
             print(f"labels: {self.labels._labels}")
+            print(f"current_seg: {np.unique(self.seg.current_seg)}")
 
         @viewer_seg.bind_key(parameters.pars.key_separate_link)
         @print_information("Divide a label and re-link")
@@ -224,10 +227,13 @@ class Seg2LinkR1:
         @print_information("Undo")
         def undo(viewer_seg):
             """Undo one keyboard command"""
+            print(f"before undo: {self.cache.cache}")
             state: StateR1 = self.cache.load_cache("undo")
             self._set_labels(state.labels)
             self._set_seg2d_and_slice(state.seg_img)
             self.save_and_refresh()
+            print_labels_seg()
+            print(f"after undo: {self.cache.cache}")
 
         @viewer_seg.bind_key(parameters.pars.key_redo)
         @print_information("Redo")
@@ -253,7 +259,6 @@ class Seg2LinkR1:
 
     def widget_binding(self):
         export_button = self.vis.widgets.export_button
-        state_info = self.vis.widgets.state_info
 
         @export_button.changed.connect
         def export_array():
@@ -368,7 +373,7 @@ class Cache:
         self.future: deque = deque(maxlen=maxlen)
 
     def __repr__(self):
-        return f"Cached history: {len(self.history)}; Cached future: {len(self.future)}"
+        return f"Cached history: {self.history}; Cached future: {self.future}"
 
     def undo(self):
         raise NotImplementedError
@@ -382,6 +387,10 @@ class Cache:
 
 
 class CacheR1(Cache):
+    def __repr__(self):
+        return f"Cached history: {[h[0] for h in self.history]}; " \
+               f"Cached future: {[f[0] for f in self.future]}"
+
     def undo(self):
         if len(self.history) == 1:
             print("No earlier cached state!")
