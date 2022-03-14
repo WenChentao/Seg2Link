@@ -74,13 +74,11 @@ def show_error_msg(widget_error_state, msg):
     path_mask={"label": "Open image sequences: Mask images (*.tiff):", "mode": "d", "visible": False},
     path_cache={"label": "Select a folder for storing results:", "mode": "d"},
     enable_mask={"label": "Use the Mask images"},
-    enable_align={"label": "Use the affine alignment", "visible": False}, # fobidden to use it
 )
 def start_r1(
         load_para,
         save_para,
         enable_mask=False,
-        enable_align=False,
         path_cells=CURRENT_DIR / "Cells",
         path_raw=CURRENT_DIR / "Raw",
         path_mask=CURRENT_DIR / "Mask",
@@ -110,7 +108,7 @@ def start_r1(
         layer_num = cells.shape[2]
         print("Initiating the soft... Please wait")
         Seg2LinkR1(images, cells, mask_dilated, enable_mask, layer_num, path_cache, threshold_link, threshold_mask,
-                   start_r1.retrieve_slice.value, enable_align)
+                   start_r1.retrieve_slice.value)
         print("The soft was started")
         start_r1.close()
         return None

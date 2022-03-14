@@ -45,7 +45,7 @@ class Seg2LinkPara:
     key_undo: str = 'u'
     key_redo: str = 'f'
     key_next_r1: str = 'Shift-n'
-    key_reseg_link_r1: str = 'r'
+    key_separate_link: str = 'r'
     key_separate: str = 'k'
     key_insert: str = 'i'
     key_switch_one_label_all_labels: str = 'q'

@@ -66,7 +66,7 @@ class WidgetsR1:
         self.viewer.window.add_dock_widget(container_export, name="Save/Export", area="right")
         self.viewer.window.add_dock_widget([self.state_info], name="State info", area="right")
 
-    def update_info(self):
+    def update_max_actions_labelslist(self):
         self.max_label.value = str(self.emseg1.labels.max_label)
         self.cached_action.value = add_blank_lines("".join(self.emseg1.cache.cached_actions),
                                                    parameters.pars.cache_length_r1 + 1)

@@ -146,33 +146,22 @@ class Labels:
                 break
         return labels_img.transpose((1, 2, 0))
 
-    def link_next_slice(self, reset_align: bool) -> ndarray:
+    def link_next_slice(self) -> ndarray:
         """Link current label with the segmentation in next slice"""
         if self.current_slice == 0:
             self.append_labels(self.emseg1.seg)
             return self.emseg1.seg.cell_region[..., 0]
 
-        list_post, list_pre_1d, seg_post, seg_pre = self.prepare_data_for_link(reset_align)
-        list_pre_1d_linked, list_post_linked = match_return_label_list(seg_pre, seg_post, list_pre_1d, list_post,
-                                                                       self.ratio_overlap)
+        list_post, list_pre_1d, seg_post, seg_pre = self.prepare_data_for_link()
+        list_pre_1d_linked, list_post_linked = match_return_label_list(
+            seg_pre, seg_post, list_pre_1d, list_post, self.ratio_overlap)
         self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
         self.current_slice += 1
 
-    def prepare_data_for_link(self, reset_align):
+    def prepare_data_for_link(self):
         seg_pre, seg_post, list_post, list_pre_1d = self._get_images_tolink()
-        cells_aligned, seg_post = self._align_slice_post(seg_post, reset_align)
-        self.emseg1.cells_aligned = np.array(cells_aligned, dtype=np.uint8)
         return list_post, list_pre_1d, seg_post, seg_pre
 
-    def _align_slice_post(self, seg_post: ndarray, reset_align: bool) -> Tuple[Optional[ndarray], ndarray]:
-        cells = self.emseg1.seg.cell_region
-        z = self.current_slice + 1
-        if self.emseg1.enable_align:
-            cells_aligned, seg_aligned = self.emseg1.align.align_(cells[:, :, z - 2], cells[:, :, z - 1], seg_post, reset_align)
-        else:
-            cells_aligned = cells[:, :, z - 1]
-            seg_aligned = seg_post
-        return cells_aligned, seg_aligned
 
     def relabel(self):
         """Relabel all N cells with label from 1 to N and save the current state"""
@@ -237,42 +226,6 @@ class Segmentation:
             self.current_seg = current_seg
 
 
-class Alignment:
-    __slots__ = ['cells_fix', 'cells_move', 'aligned_cells', 'fitted_para', 'init_para']
-
-    def __init__(self, should_align: bool):
-        self.aligned_cells = None
-        self.fitted_para = None
-        if should_align:
-            self.init_para = self._init_para()
-
-    def align_(self, cells_fix: ndarray, cells_mov: ndarray, seg: ndarray, reset_align: bool):
-        import itk
-        cells_fix_, cells_move_, seg_ = self._transform_format(cells_fix, cells_mov, seg)
-        if reset_align:
-            self.aligned_cells, self.fitted_para = itk.elastix_registration_method(
-                cells_fix_, cells_move_, parameter_object=self.init_para, log_to_console=False)
-        aligned_seg = itk.transformix_filter(seg_, self.fitted_para, log_to_console=False)
-        return self.aligned_cells, aligned_seg
-
-    @staticmethod
-    def _transform_format(*images: ndarray):
-        import itk
-        return [itk.image_view_from_array(img.astype(np.float32)) for img in images]
-
-    @staticmethod
-    def _init_para():
-        import itk
-        parameter_object = itk.ParameterObject.New()
-        # Here used the multi-scale (=7) image pyramid to improve the robustness
-        default_affine_parameter_map = parameter_object.GetDefaultParameterMap('affine', 7)
-        # Final BSpline Interpolation Order: possible values are 0-5
-        default_affine_parameter_map['FinalBSplineInterpolationOrder'] = ['0']
-        default_affine_parameter_map['MaximumNumberOfIterations'] = ["500"]
-        parameter_object.AddParameterMap(default_affine_parameter_map)
-        return parameter_object
-
-
 class Archive:
     def __init__(self, emseg1: "Seg2LinkR1", path_save: Path):
         self.emseg1 = emseg1
@@ -316,7 +269,7 @@ class Archive:
     def get_file_list(self, re_filename):
         return list(filter(re.compile(re_filename).search, os.listdir(self._path_labels)))
 
-    def archive_state(self):
+    def archive_labels_and_seg2d(self):
         """Archive the label and segmented image"""
         self.save_labels_v2()
         self.save_seg_img()

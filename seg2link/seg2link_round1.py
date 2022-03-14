@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import datetime
-import os
 import webbrowser
 from collections import deque, OrderedDict, namedtuple
 from pathlib import Path
@@ -18,16 +17,16 @@ from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
 from seg2link import parameters
-from seg2link.seg2dlink_core import Labels, Segmentation, Alignment, Archive
+from seg2link.seg2dlink_core import Labels, Segmentation, Archive
 from seg2link.misc import print_information, TinyCells
 from seg2link._tests_r1 import test_merge_r1, test_delete_r1, test_divide_r1, test_link_r1
 from seg2link.single_cell_division import separate_one_label_r1
 from seg2link.widgets_round1 import WidgetsR1
 
 if parameters.DEBUG:
-    from seg2link.parameters import lprofile
+    pass
 
-StateR1 = namedtuple("StateR1", ["labels", "seg_img", "aligned_img", "action"])
+StateR1 = namedtuple("StateR1", ["labels", "seg_img", "action"])
 
 
 class Seg2LinkR1:
@@ -35,13 +34,11 @@ class Seg2LinkR1:
 
     def __init__(self, raw: ndarray, cell_region: ndarray, mask: Optional[ndarray], enable_mask: bool,
                  layer_num: int, path_save: Path, ratio_overlap: float, ratio_mask: float,
-                 target_slice: int, enable_align: bool):
+                 target_slice: int):
         self.current_slice = 0
         self.layer_num = layer_num
         self.seg_img_cache = OrderedDict()
-        self.enable_align = enable_align
         self.label_list: Set[int] = set()
-        self.cells_aligned = np.array([], dtype=np.uint8)
         self.cache = CacheState(self)
         self.archive = Archive(self, path_save)
         self.archive.make_folders()
@@ -49,24 +46,19 @@ class Seg2LinkR1:
         self.seg = Segmentation(cell_region, enable_mask, mask, ratio_mask)
         self.vis = VisualizePartial(self, raw, cell_region, mask)
         self.labels = Labels(self, ratio_overlap)
-        self.align = Alignment(enable_align)
         self.keys_binding()
         self.widget_binding()
         self.retrieve_or_restart(target_slice)
 
     def initialize(self):
         self.next_slice()
-        self.archive_state()
+        self.archive.archive_labels_and_seg2d()
         self.vis.show_segmentation_r1()
         self.cache.cache_state(f"Next slice ({self.current_slice})")
-        self.vis.update_info()
+        self.vis.update_max_actions_labelslist()
 
-    def archive_state(self):
-        self.archive.archive_state()
-
-    def _update_state(self, current_seg: ndarray, cells_aligned: ndarray):
+    def _set_seg2d_and_slice(self, current_seg: ndarray):
         self.seg.current_seg = current_seg.copy()
-        self.cells_aligned = cells_aligned
         self.current_slice = self.labels.current_slice
 
     def _set_labels(self, labels: Union[List[List[int]], Labels]):
@@ -84,19 +76,18 @@ class Seg2LinkR1:
         else:
             labels, seg_img = history
             self._set_labels(labels)
-            self._update_state(seg_img, self.seg.cell_region[..., self.labels.current_slice - 1])
+            self._set_seg2d_and_slice(seg_img)
             print(f"Retrieved the slice {self.labels.current_slice}")
             self.vis.show_segmentation_r1()
             self.cache.cache_state(f"Retrieve ({self.current_slice})")
-            self.vis.update_info()
+            self.vis.update_max_actions_labelslist()
 
-    def _link_and_relabel(self, reset_align: bool):
+    def _link_and_relabel(self):
         @test_link_r1(self)
         def link_relabel():
-            self.labels.link_next_slice(reset_align)
+            self.labels.link_next_slice()
             if self.current_slice > 1:
                 self.labels.relabel()
-
         link_relabel()
 
     def next_slice(self):
@@ -105,7 +96,7 @@ class Seg2LinkR1:
         self.vis.widgets.show_state_info(f"Segmenting slice {self.current_slice} by watershed... Please wait")
         self.seg.watershed(self.current_slice)
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
-        self._link_and_relabel(reset_align=True)
+        self._link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")
 
     def reseg_link(self, modified_label: ndarray):
@@ -116,7 +107,7 @@ class Seg2LinkR1:
         else:
             self.labels.rollback()
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
-        self._link_and_relabel(reset_align=False)
+        self._link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")
 
     def divide_one_cell(self, modified_label: ndarray, selected_label: int):
@@ -127,37 +118,47 @@ class Seg2LinkR1:
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]
 
-    def update(self, cache_action: Optional[str] = None):
-        self.archive_state()
+    def save_and_refresh(self, cache_action: Optional[str] = None):
+        self.archive.archive_labels_and_seg2d()
         self.vis.show_segmentation_r1()
         if cache_action:
             self.cache.cache_state(cache_action)
-        self.vis.update_info()
+        self.vis.update_max_actions_labelslist()
 
     def keys_binding(self):
         """Set the hotkeys for user's operations"""
         viewer_seg = self.vis.viewer.layers["segmentation"]
 
-        @viewer_seg.bind_key(parameters.pars.key_reseg_link_r1)
-        @print_information("Re-segmentation and link")
-        def re_seg_link(viewer_seg):
-            """Re-segment current slice"""
-            print(f"Resegment slice {self.current_slice}")
-            self.reseg_link(viewer_seg.data)
-            self.update("Re-segment")
-            viewer_seg.mode = "pick"
 
         @viewer_seg.bind_key(parameters.pars.key_next_r1)
         @print_information("\nTo next slice")
         def _next_slice(viewer_seg):
             """To the next slice"""
             self.next_slice()
-            self.update(f"Next slice ({self.current_slice})")
+            self.save_and_refresh(f"Next slice ({self.current_slice})")
+            print(f"labels: {self.labels._labels}")
 
         @viewer_seg.bind_key(parameters.pars.key_separate)
         @print_information("Divide a label")
         @test_divide_r1(self)
-        def re_divide_2d(viewer_seg):
+        def divide_2d(viewer_seg):
+            """Divide the selected label"""
+            if viewer_seg.selected_label == 0:
+                print("\nLabel 0 should not be divided!")
+            else:
+                self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
+
+                viewer_seg._all_vals = low_discrepancy_image(
+                    np.arange(self.labels.max_label + 1), viewer_seg._seed)
+                viewer_seg._all_vals[0] = 0
+                self.save_and_refresh("Divide")
+                viewer_seg.mode = "pick"
+
+            print(f"labels: {self.labels._labels}")
+
+        @viewer_seg.bind_key(parameters.pars.key_separate_link)
+        @print_information("Divide a label and re-link")
+        def re_seg_link(viewer_seg):
             """Re-segment current slice"""
             if viewer_seg.selected_label == 0:
                 print("\nLabel 0 should not be divided!")
@@ -167,7 +168,8 @@ class Seg2LinkR1:
                 viewer_seg._all_vals = low_discrepancy_image(
                     np.arange(self.labels.max_label + 1), viewer_seg._seed)
                 viewer_seg._all_vals[0] = 0
-                self.update("Divide")
+                self.reseg_link(viewer_seg.data)
+                self.save_and_refresh("Divide-Relink")
                 viewer_seg.mode = "pick"
 
         @viewer_seg.bind_key(parameters.pars.key_add)
@@ -181,7 +183,7 @@ class Seg2LinkR1:
             else:
                 self.label_list.add(viewer_seg.selected_label)
                 print("Labels to be processed: ", self.label_list)
-                self.vis.update_info()
+                self.vis.update_max_actions_labelslist()
 
         @viewer_seg.bind_key(parameters.pars.key_clean)
         @print_information("Clean the label list")
@@ -189,7 +191,7 @@ class Seg2LinkR1:
             """Clear labels in the merged list"""
             self.label_list.clear()
             print(f"Cleaned the label list: {self.label_list}")
-            self.vis.update_info()
+            self.vis.update_max_actions_labelslist()
 
         @viewer_seg.bind_key(parameters.pars.key_merge)
         @print_information("Merge labels")
@@ -200,7 +202,7 @@ class Seg2LinkR1:
             else:
                 self.labels.merge()
                 self.label_list.clear()
-                self.update("Merge labels")
+                self.save_and_refresh("Merge labels")
 
         @viewer_seg.bind_key(parameters.pars.key_delete)
         @print_information("Delete the selected label(s)")
@@ -215,7 +217,7 @@ class Seg2LinkR1:
                 delete_list = self.label_list if self.label_list else viewer_seg.selected_label
                 self.labels.delete(delete_list)
                 self.label_list.clear()
-                self.update("Delete label(s)")
+                self.save_and_refresh("Delete label(s)")
                 print(f"Label(s) {delete_list} were deleted")
 
         @viewer_seg.bind_key(parameters.pars.key_undo)
@@ -224,8 +226,8 @@ class Seg2LinkR1:
             """Undo one keyboard command"""
             state: StateR1 = self.cache.load_cache("undo")
             self._set_labels(state.labels)
-            self._update_state(state.seg_img, state.aligned_img)
-            self.update()
+            self._set_seg2d_and_slice(state.seg_img)
+            self.save_and_refresh()
 
         @viewer_seg.bind_key(parameters.pars.key_redo)
         @print_information("Redo")
@@ -233,8 +235,8 @@ class Seg2LinkR1:
             """Undo one keyboard command"""
             state: StateR1 = self.cache.load_cache("redo")
             self._set_labels(state.labels)
-            self._update_state(state.seg_img, state.aligned_img)
-            self.update()
+            self._set_seg2d_and_slice(state.seg_img)
+            self.save_and_refresh()
 
         @viewer_seg.bind_key(parameters.pars.key_switch_one_label_all_labels)
         @print_information("Switch showing one label/all labels")
@@ -325,12 +327,12 @@ class VisualizePartial(VisualizeBase):
         super().__init__(raw, cell_region, cell_mask)
         self.emseg1 = emseg1
         self.layer_num = cell_region.shape[-1]
-        self.add_layers()
+        self.viewer.title = "Seg2Link 1st round"
         self.widgets = WidgetsR1(self, cell_region.shape)
 
-    def update_info(self):
+    def update_max_actions_labelslist(self):
         s = self.get_slice(self.emseg1.current_slice)
-        self.widgets.update_info()
+        self.widgets.update_max_actions_labelslist()
         self.viewer.dims.set_axis_label(axis=2, label=f"Slice ({s.start + 1}-{s.stop})")
 
     def get_slice(self, current_layer: int) -> slice:
@@ -339,14 +341,6 @@ class VisualizePartial(VisualizeBase):
         start = max(current_layer - parameters.pars.max_draw_layers_r1 // 2, 0)
         stop = min(start + parameters.pars.max_draw_layers_r1, self.layer_num)
         return slice(start, stop)
-
-    def add_layers(self):
-        """Initialize the napari viewer"""
-        self.viewer.title = "Seg2Link 1st round"
-        if self.emseg1.enable_align:
-            putative_data = np.zeros((2, *self.cell_region.shape[:2]), dtype=np.uint8)
-            self.viewer.add_labels(putative_data, name="cell_region_aligned", color={0: "k", 1: "w"}, visible=False)
-        return None
 
     def show_segmentation_r1(self, reset_focus: bool = True):
         """Update the segmentation results and other images/label"""
@@ -360,21 +354,12 @@ class VisualizePartial(VisualizeBase):
         if self.cell_region is not None:
             self.viewer.layers['cell_region'].data = self.cell_region[..., slice_layers]
         self.viewer.layers['segmentation'].data = labels
-        if self.emseg1.enable_align:
-            self.viewer.layers['cell_region_aligned'].data = \
-                self._expand_align_to_3d(slice_layers, current_slice)
 
         current_layer_relative = current_slice - slice_layers.start - 1
         if reset_focus:
             self.viewer.dims.set_current_step(axis=2, value=current_layer_relative)
 
         QApplication.processEvents()
-
-    def _expand_align_to_3d(self, layers: slice, current_layer: int) -> ndarray:
-        aligned_img = self.emseg1.cells_aligned
-        aligned_cell_3d = np.tile(np.zeros_like(aligned_img), reps=(layers.stop - layers.start, 1, 1))
-        aligned_cell_3d[current_layer - layers.start - 1, ...] = aligned_img
-        return aligned_cell_3d
 
 
 class Cache:
@@ -419,11 +404,10 @@ class CacheState:
 
     def cache_state(self, action: str):
         """Cache the current state"""
-        state = StateR1(copy.deepcopy(self.emseg1.labels._labels), self.emseg1.seg.current_seg.copy(),
-                        self.emseg1.cells_aligned.copy(), action)
+        state = StateR1(copy.deepcopy(self.emseg1.labels._labels), self.emseg1.seg.current_seg.copy(), action)
         self.cache.append(state)
 
-    def load_cache(self, method: str) -> Tuple[Labels, ndarray, ndarray, str]:
+    def load_cache(self, method: str) -> Tuple[Labels, ndarray, str]:
         """load the cache of the emseg1 states"""
         if method == "undo":
             return self.cache.undo()
