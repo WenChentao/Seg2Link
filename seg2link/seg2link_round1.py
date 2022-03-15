@@ -59,7 +59,7 @@ class Seg2LinkR1:
 
     def _set_seg2d_and_slice(self, current_seg: ndarray):
         self.seg.current_seg = current_seg.copy()
-        self.current_slice = self.labels.current_slice
+        self.current_slice = self.labels.emseg1.current_slice
 
     def _set_labels(self, labels: Union[List[List[int]], Labels]):
         """Used for setting two types of possible stored labels: list or Labels object"""
@@ -67,7 +67,7 @@ class Seg2LinkR1:
             self.labels = copy.deepcopy(labels)
         else:
             self.labels._labels = copy.deepcopy(labels)
-            self.labels.current_slice = len(labels)
+            self.labels.emseg1.current_slice = len(labels)
 
     def retrieve_or_restart(self, target_slice: int):
         history = self.archive.retrieve_history(target_slice, self.seg_img_cache)
@@ -77,16 +77,16 @@ class Seg2LinkR1:
             labels, seg_img = history
             self._set_labels(labels)
             self._set_seg2d_and_slice(seg_img)
-            print(f"Retrieved the slice {self.labels.current_slice}")
+            print(f"Retrieved the slice {self.current_slice}")
             self.vis.show_segmentation_r1()
             self.cache.cache_state(f"Retrieve ({self.current_slice})")
             self.vis.update_max_actions_labelslist()
 
-    def _link_and_relabel(self):
+    def link_and_relabel(self):
         @test_link_r1(self)
         def link_relabel():
-            self.labels.link_next_slice()
-            if self.current_slice > 1:
+            self.labels.link_or_append_labels()
+            if self.current_slice >= 2:
                 self.labels.relabel()
         link_relabel()
 
@@ -96,7 +96,7 @@ class Seg2LinkR1:
         self.vis.widgets.show_state_info(f"Segmenting slice {self.current_slice} by watershed... Please wait")
         self.seg.watershed(self.current_slice)
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
-        self._link_and_relabel()
+        self.link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")
 
     def reseg_link(self, modified_label: ndarray):
@@ -107,7 +107,7 @@ class Seg2LinkR1:
         else:
             self.labels.rollback()
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
-        self._link_and_relabel()
+        self.link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")
 
     def divide_one_cell(self, modified_label: ndarray, selected_label: int):

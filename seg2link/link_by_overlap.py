@@ -1,4 +1,4 @@
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 import numpy as np
 from numpy import ndarray
@@ -6,40 +6,70 @@ from numpy import ndarray
 from seg2link import parameters
 
 if parameters.DEBUG:
-    from seg2link.misc import qprofile
-    from seg2link.parameters import lprofile
+    pass
 
 
-def match_return_seg_img(seg_s1: ndarray, seg_s2: ndarray, max_label: int, ratio_overlap: float) -> ndarray:
+def link_round2(seg_s1: ndarray, seg_s2: ndarray, max_label: int, minimum_ratio_overlap: float) -> ndarray:
     """Match the segmentation in slice 2 with slice 1 and only return the modified slice 2
 
     Notes
     -----
-    The modifed slice 1 will be discarded.
+    The segmentation of slice 1 will not be modified.
     The labels in s1 not corresponding to slice 1 will be assigned with values > max_label
     """
     seg_s2[seg_s2!=0] += max_label
-    seg_s1, seg_s2, _, _ = match_by_overlap(seg_s1, seg_s2, ratio_overlap)
-    return seg_s2
+
+    labels_and_area_s1 = {label1: area for label1, area in zip(*labels_and_areas(seg_s1))}
+    labels_and_area_s2 = {label1: area for label1, area in zip(*labels_and_areas(seg_s2))}
+    links_between_s1_and_s2 = extract_links_from_matching(seg_s1, seg_s2, labels_and_area_s1, labels_and_area_s2, minimum_ratio_overlap)
+
+    original_and_transformed_labels_s2 = {label1: label1 for label1 in labels_and_area_s2.keys()}
+    for label_i_in_s1, label_in_s2 in links_between_s1_and_s2:
+        target_post_ori = original_and_transformed_labels_s2[label_in_s2]
+        target_new = update_target(target_post_ori, label_i_in_s1, labels_and_area_s1)
+        original_and_transformed_labels_s2[label_in_s2] = target_new
+
+    targets_s2 = np.arange(np.max(seg_s2) + 1)
+    for label, target in original_and_transformed_labels_s2.items():
+        targets_s2[label] = target
+    return targets_s2[seg_s2]
 
 
-def match_return_label_list(seg_s1: ndarray, seg_s2: ndarray, labels_pre: ndarray, labels_post: ndarray,
-                            ratio_overlap: float):
+def link_previous_slices_round1(seg_s1: ndarray, seg_s2: ndarray, labels_s1: ndarray, labels_s2: ndarray,
+                                minimum_ratio_overlap: float):
     """Match the segmentation in slice 2 with slice 1 and return the modified label list in s1 and s2
 
     Notes
     -----
-    The seg_s1 and seg_s2 will not be returned
     The labels in s2 should have been modified to values higher than all labels in previous slices
+    Note: Any value of seg_s2 should be higher than values in seg_s1
     """
-    _, _, targets_post, targets_pre = match_by_overlap(seg_s1, seg_s2, ratio_overlap)
+    labels_and_area_s1 = {label1: area for label1, area in zip(*labels_and_areas(seg_s1))}
+    labels_and_area_s2 = {label1: area for label1, area in zip(*labels_and_areas(seg_s2))}
+    links_between_s1_and_s2 = extract_links_from_matching(seg_s1, seg_s2, labels_and_area_s1, labels_and_area_s2,
+                                                          minimum_ratio_overlap)
 
-    labels_pre = targets_pre[labels_pre]
-    labels_post = targets_post[labels_post]
-    return labels_pre.tolist(), labels_post.tolist()
+    original_and_transformed_labels_s1 = {label1: label1 for label1 in labels_and_area_s1.keys()}
+    original_and_transformed_labels_s2 = {label1: label1 for label1 in labels_and_area_s2.keys()}
+    for label_i_in_s1, label_in_s2 in links_between_s1_and_s2:
+        target_post_ori = original_and_transformed_labels_s2[label_in_s2]
+        target_new = update_target(target_post_ori, label_i_in_s1, labels_and_area_s1)
+        original_and_transformed_labels_s1[label_i_in_s1] = target_new
+        original_and_transformed_labels_s2[label_in_s2] = target_new
+
+    targets_s1 = np.arange(np.max(seg_s1) + 1)
+    for label, target in original_and_transformed_labels_s1.items():
+        targets_s1[label] = target
+    targets_s2 = np.arange(np.max(seg_s2) + 1)
+    for label, target in original_and_transformed_labels_s2.items():
+        targets_s2[label] = target
+
+    labels_s1 = targets_s1[labels_s1]
+    labels_s2 = targets_s2[labels_s2]
+    return labels_s1.tolist(), labels_s2.tolist()
 
 
-def _labels_areas(label_img: ndarray) -> Tuple[ndarray, ndarray]:
+def labels_and_areas(label_img: ndarray) -> Tuple[ndarray, ndarray]:
     labels, areas = np.unique(label_img, return_counts=True)
     return labels[labels!=0], areas[labels!=0]
 
@@ -57,42 +87,19 @@ def _overlapped_labels(label_s1_i: int, seg_1: ndarray, seg_2: ndarray) -> Tuple
     return _del0(labels_s2_overlap, areas_overlap)
 
 
-def match_by_overlap(seg_s1, seg_s2, ratio_overlap: float):
-    """Note: Any value of seg_s2 should be higher than values in seg_s1"""
-    labels_pre_area = {label: area for label, area in zip(*_labels_areas(seg_s1))}
-    labels_post_area = {label: area for label, area in zip(*_labels_areas(seg_s2))}
-    labels_pre_target = {label: label for label in labels_pre_area.keys()}
-    labels_post_target = {label: label for label in labels_post_area.keys()}
-    for label_i_pre, area_i_pre in labels_pre_area.items():
-        overlapped_areas = {label: area for label, area in zip(
-            *_overlapped_labels(label_i_pre, seg_s1, seg_s2))}
-
-        if not overlapped_areas:
+def extract_links_from_matching(seg_s1, seg_s2, labels_and_area_s1: Dict[int, int],
+                                labels_and_area_s2: Dict[int, int], minimum_ratio_overlap: float) -> List[Tuple[int, int]]:
+    links_between_s1_and_s2: List[Tuple[int, int]] = []
+    for label_i_in_s1 in labels_and_area_s1.keys():
+        labels_s2_overlap_with_i_and_area = {label: area for label, area in
+                                             zip(*_overlapped_labels(label_i_in_s1, seg_s1, seg_s2))}
+        if not labels_s2_overlap_with_i_and_area:
             continue
-        update_targets(labels_pre_target, labels_post_target, overlapped_areas, label_i_pre,
-                       labels_pre_area, labels_post_area, ratio_overlap)
-
-    targets_pre = np.arange(np.max(seg_s1) + 1)
-    for label, target in labels_pre_target.items():
-        targets_pre[label] = target
-    seg_s1 = targets_pre[seg_s1]
-    targets_post = np.arange(np.max(seg_s2) + 1)
-    for label, target in labels_post_target.items():
-        targets_post[label] = target
-    seg_s2 = targets_post[seg_s2]
-    return seg_s1, seg_s2, targets_post, targets_pre
-
-
-def update_targets(labels_pre_target: Dict[int, int], labels_post_target: Dict[int, int],
-                   overlapped_areas: Dict[int, int], label_i_pre: int, labels_pre_area: Dict[int, int],
-                   labels_post_area: Dict[int, int], ratio_overlap: float):
-    label_i_area = labels_pre_area[label_i_pre]
-    for label_post, area_overlap in overlapped_areas.items():
-        if area_overlap > ratio_overlap * min(label_i_area, labels_post_area[label_post]):
-            target_post_ori = labels_post_target[label_post]
-            target_new = update_target(target_post_ori, label_i_pre, labels_pre_area)
-            labels_pre_target[label_i_pre] = target_new
-            labels_post_target[label_post] = target_new
+        label_i_area = labels_and_area_s1[label_i_in_s1]
+        for label_in_s2, area_overlap_with_i in labels_s2_overlap_with_i_and_area.items():
+            if area_overlap_with_i > minimum_ratio_overlap * min(label_i_area, labels_and_area_s2[label_in_s2]):
+                links_between_s1_and_s2.append((label_i_in_s1, label_in_s2))
+    return links_between_s1_and_s2
 
 
 def update_target(target_post_ori: int, label_pre: int, labels_pre_area: Dict[int, int]):

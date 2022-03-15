@@ -18,7 +18,7 @@ from seg2link.message_windows_round2 import message_delete_labels
 from seg2link.cache_bbox import NoLabelError, CacheBbox, merge_bbox, Bbox
 from seg2link.widgets_round2 import WidgetsR2
 from seg2link.single_cell_division import DivideMode, get_subregion2d_and_preslice, NoDivisionError, \
-    separate_one_cell_3d, segment_link, segment_one_cell_2d_watershed, suppress_largest_label
+    separate_one_cell_3d, divide_link, segment_one_cell_2d_watershed, suppress_largest_label
 
 if parameters.DEBUG:
     from seg2link.parameters import lprofile
@@ -218,7 +218,7 @@ class Seg2LinkR2:
                 self.layer_selected = self.vis.viewer.dims.current_step[-1]
                 try:
                     self.vis.widgets.show_state_info("Dividing... Please wait")
-                    subarray_old, subarray_new, bbox_divided, labels_post = separate_one_label()
+                    subarray_old, subarray_new, bbox_divided, labels_post = divide_and_relabel()
                 except NoDivisionError:
                     self.vis.widgets.show_state_info("")
                     self.vis.widgets.divide_msg.value = f"Label {viewer_seg.selected_label} was not separated"
@@ -250,9 +250,9 @@ class Seg2LinkR2:
             self.vis.viewer.layers["segmentation"].mode = "paint"
             self.vis.widgets.show_state_info(f"Inserted a new label: {label}. Please draw with it.")
 
-        def separate_one_label() -> Tuple[ndarray, ndarray, Bbox, List[int]]:
+        def divide_and_relabel() -> Tuple[ndarray, ndarray, Bbox, List[int]]:
             max_label = max(self.cache_bbox.bbox)
-            pre_region, seg_subregion, slice_subregion = segment(max_label)
+            pre_region, seg_subregion, slice_subregion = divide(max_label)
 
             divided_labels = np.unique(seg_subregion)
             divided_labels = divided_labels[divided_labels > 0]
@@ -267,7 +267,7 @@ class Seg2LinkR2:
 
             return subregion_old, subregion_new, slice_subregion, labels
 
-        def segment(max_label):
+        def divide(max_label):
             mode = self.vis.widgets.divide_mode.value
             if mode == DivideMode._3D:
                 # 3D mode
@@ -279,7 +279,7 @@ class Seg2LinkR2:
                     self.labels, viewer_seg.selected_label, self.layer_selected)
                 if mode == DivideMode._2D_Link:
                     # 2D link mode
-                    segmented_subregion = segment_link(
+                    segmented_subregion = divide_link(
                         subarray_bool, self.vis.widgets.max_division.value, pre_region, max_label)
                 else:
                     # 2D mode

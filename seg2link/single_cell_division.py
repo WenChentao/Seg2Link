@@ -11,7 +11,7 @@ from skimage.segmentation import relabel_sequential
 
 from seg2link import parameters
 from seg2link.cache_bbox import array_isin_labels_quick, NoLabelError
-from seg2link.link_by_overlap import match_return_seg_img
+from seg2link.link_by_overlap import link_round2
 from seg2link.misc import get_unused_labels_quick
 from seg2link.watersheds import dist_watershed
 
@@ -34,12 +34,12 @@ BBox2D = Tuple[slice, slice]
 BBox = Tuple[slice, slice, slice]
 
 
-def segment_link(label_subregion: ndarray, max_division: int, pre_region: Optional[ndarray], max_label: int):
+def divide_link(label_subregion: ndarray, max_division: int, pre_region: Optional[ndarray], max_label: int):
     seg = segment_one_cell_2d_watershed(label_subregion, max_division)
     if pre_region is None:
         return seg
     else:
-        return match_return_seg_img(pre_region, seg[..., 0], max_label, ratio_overlap=0.5)[..., np.newaxis]
+        return link_round2(pre_region, seg[..., 0], max_label, minimum_ratio_overlap=0.5)[..., np.newaxis]
 
 
 def segment_one_cell_2d_watershed(labels_img3d: ndarray, max_division: int = 2) -> ndarray:

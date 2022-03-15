@@ -14,7 +14,7 @@ from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
 from seg2link import parameters
-from seg2link.link_by_overlap import match_return_label_list
+from seg2link.link_by_overlap import link_previous_slices_round1
 from seg2link.misc import make_folder, replace, mask_cells, flatten_2d_list, get_unused_labels_quick
 from seg2link.watersheds import dist_watershed
 
@@ -27,26 +27,22 @@ if parameters.DEBUG:
 class Labels:
     """Labels are stored as a python list corresponding to the values in the segmented images"""
 
-    __slots__ = ['emseg1', '_labels', '_voxels', 'current_slice', 'ratio_overlap', '_label_nums']
+    __slots__ = ['emseg1', '_labels', 'ratio_overlap', '_label_nums']
 
     _labels: List[List[int]]
     _label_nums: List[int]
-    current_slice: int
 
     def __init__(self, emseg1: "Seg2LinkR1", ratio_overlap: float = 0.5):
         self._labels = []
-        self._voxels = {}  # Unused and will be removed in future
-        self.current_slice = 0
         self.emseg1 = emseg1
         self.ratio_overlap = ratio_overlap
         self._label_nums = []
 
     def __repr__(self):
-        return "Current slice number: " + str(self.current_slice) + ";   Current label number: " + str(self._cell_num)
+        return "Current slice number: " + str(self.emseg1.current_slice) + ";   Current label number: " + str(self._cell_num)
 
     def reset(self):
         self._labels.clear()
-        self.current_slice = 0
 
     def cal_unused_labels(self) -> Set[int]:
         return set(get_unused_labels_quick(self.flatten()[0]))
@@ -57,12 +53,11 @@ class Labels:
 
     def rollback(self):
         if len(self._labels) > 0:
-            labels = self.emseg1.archive.read_labels(self.current_slice - 1)
+            labels = self.emseg1.archive.read_labels(self.emseg1.current_slice - 1)
             if isinstance(labels, Labels):
                 self._labels = labels._labels
             else:
                 self._labels = labels
-            self.current_slice -= 1
 
     def flatten(self) -> Tuple[List[int], List[int]]:
         return flatten_2d_list(self._labels)
@@ -108,20 +103,19 @@ class Labels:
         _labels = np.unique(initial_seg.current_seg)
         labels = _labels[_labels != 0].tolist()
         self._labels.append(labels)
-        self.current_slice += 1
 
     def to_labels_img(self, layer: int, seg_img_cache: OrderedDict) -> ndarray:
         try:
-            _labels = np.asarray([0] + self._labels[layer - 1])
+            labels_pre_slice = np.asarray([0] + self._labels[layer - 1])
             seg_img = self.emseg1.archive.read_seg_img(seg_img_cache, layer)
-            return _labels[seg_img]
+            return labels_pre_slice[seg_img]
         except IndexError:
-            raise IndexError(f"{_labels.max()=}, {seg_img.max()=}, {layer=}")
+            raise IndexError(f"{labels_pre_slice.max()=}, {seg_img.max()=}, {layer=}")
 
-    def _get_images_tolink(self) \
+    def get_images_tolink(self) \
             -> Tuple[ndarray, ndarray, ndarray, ndarray]:
         """Prepare the segmentations and label for linking"""
-        seg_pre = self.to_labels_img(self.current_slice, self.emseg1.seg_img_cache)
+        seg_pre = self.to_labels_img(self.emseg1.current_slice - 1, self.emseg1.seg_img_cache)
 
         labels1d, self._label_nums = self.flatten()
         labels_pre_1d = np.asarray(labels1d)
@@ -140,26 +134,24 @@ class Labels:
         h, w = self.emseg1.seg.current_seg.shape
         labels_img = np.zeros((layer_num, h, w), dtype=np.uint32)
         for i, z in enumerate(range(layers.start, layers.stop)):
-            if (z + 1) <= self.current_slice:
+            if (z + 1) <= self.emseg1.current_slice:
                 labels_img[i, ...] = self.to_labels_img(z + 1, self.emseg1.seg_img_cache)
             else:
                 break
         return labels_img.transpose((1, 2, 0))
 
-    def link_next_slice(self) -> ndarray:
-        """Link current label with the segmentation in next slice"""
-        if self.current_slice == 0:
+    def link_or_append_labels(self):
+        if self.emseg1.current_slice == 1:
             self.append_labels(self.emseg1.seg)
-            return self.emseg1.seg.cell_region[..., 0]
+            return
 
         list_post, list_pre_1d, seg_post, seg_pre = self.prepare_data_for_link()
-        list_pre_1d_linked, list_post_linked = match_return_label_list(
+        list_pre_1d_linked, list_post_linked = link_previous_slices_round1(
             seg_pre, seg_post, list_pre_1d, list_post, self.ratio_overlap)
         self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
-        self.current_slice += 1
 
     def prepare_data_for_link(self):
-        seg_pre, seg_post, list_post, list_pre_1d = self._get_images_tolink()
+        seg_pre, seg_post, list_post, list_pre_1d = self.get_images_tolink()
         return list_post, list_pre_1d, seg_post, seg_pre
 
 
@@ -277,14 +269,14 @@ class Archive:
     def save_labels_v2(self):
         """Save the labels"""
         labels = self.emseg1.labels
-        if labels.current_slice >= 1:
-            with open(self._path_labels / (parameters.label_filename_v2 % labels.current_slice), 'wb') as f:
+        if labels.emseg1.current_slice >= 1:
+            with open(self._path_labels / (parameters.label_filename_v2 % labels.emseg1.current_slice), 'wb') as f:
                 pickle.dump(labels._labels, f, pickle.HIGHEST_PROTOCOL)
 
     def save_seg_img(self):
-        np.savez_compressed(self._path_seg / ('segmentation_slice%04i.npz' % self.emseg1.labels.current_slice),
+        np.savez_compressed(self._path_seg / ('segmentation_slice%04i.npz' % self.emseg1.current_slice),
                             segmentation=self.emseg1.seg.current_seg)
-        self.append_seg(self.emseg1.seg_img_cache, self.emseg1.seg.current_seg, self.emseg1.labels.current_slice)
+        self.append_seg(self.emseg1.seg_img_cache, self.emseg1.seg.current_seg, self.emseg1.current_slice)
 
     @staticmethod
     def append_seg(seg_img_cache: OrderedDict, seg: ndarray, z: int):
@@ -329,7 +321,10 @@ class Archive:
 
     def del_label_files(self, current_slice_num: int, latest_slice_num: int):
         for s in range(current_slice_num + 1, latest_slice_num + 1):
-            os.remove(self._path_labels / (parameters.label_filename_v2 % s))
+            try:
+                os.remove(self._path_labels / (parameters.label_filename_v2 % s))
+            except FileNotFoundError:
+                pass
 
     def read_seg_img(self, seg_img_cache: OrderedDict, layer_idx: int) -> Optional[ndarray]:
         """Load a 2D segmentation result"""
