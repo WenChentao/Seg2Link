@@ -20,13 +20,21 @@ from seg2link import parameters
 from seg2link.seg2dlink_core import Labels, Segmentation, Archive
 from seg2link.misc import print_information, TinyCells
 from seg2link._tests_r1 import test_merge_r1, test_delete_r1, test_divide_r1, test_link_r1
-from seg2link.single_cell_division import separate_one_label_r1
+from seg2link.single_cell_division import separate_one_label_r1, NoDivisionError
 from seg2link.widgets_round1 import WidgetsR1
 
 if parameters.DEBUG:
     pass
 
 StateR1 = namedtuple("StateR1", ["labels", "seg_img", "action"])
+
+
+class NoHistoryError(Exception):
+    pass
+
+
+class NoFutureError(Exception):
+    pass
 
 
 class Seg2LinkR1:
@@ -39,6 +47,7 @@ class Seg2LinkR1:
         self.layer_num = layer_num
         self.seg_img_cache = OrderedDict()
         self.label_list: Set[int] = set()
+        self.labels_divided: List[int] = []
         self.cache = CacheState(self)
         self.archive = Archive(self, path_save)
         self.archive.make_folders()
@@ -77,7 +86,7 @@ class Seg2LinkR1:
             labels, seg_img = history
             self._set_labels(labels)
             self._set_seg2d_and_slice(seg_img)
-            print(f"Retrieved the slice {self.current_slice}")
+            self.vis.widgets.show_state_info(f"Retrieved the slice {self.current_slice}")
             self.vis.show_segmentation_r1()
             self.cache.cache_state(f"Retrieve ({self.current_slice})")
             self.vis.update_max_actions_labelslist()
@@ -99,20 +108,15 @@ class Seg2LinkR1:
         self.link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")
 
-    def reseg_link(self, modified_label: ndarray):
-        z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        self.seg.reseg(modified_label[..., z], self.current_slice)
-        if self.current_slice == 1:
-            self.labels.reset()
-        else:
-            self.labels.rollback()
-        self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
-        self.link_and_relabel()
-        self.vis.widgets.show_state_info(f"Linking was done")
+    def relink(self, modified_label: ndarray):
+        self.labels.relink_or_append_labels()
+        self.labels.relabel()
+
 
     def divide_one_cell(self, modified_label: ndarray, selected_label: int):
         z = self.current_slice - self.vis.get_slice(self.current_slice).start - 1
-        current_seg = separate_one_label_r1(modified_label[..., z], selected_label, self.labels.flatten()[0])
+        current_seg, self.labels_divided = separate_one_label_r1(
+            modified_label[..., z], selected_label, self.labels.flatten()[0])
         _labels = np.unique(current_seg)
         self.labels._labels[-1] = _labels[_labels != 0].tolist()
         self.seg.current_seg = relabel_sequential(current_seg)[0]
@@ -128,14 +132,14 @@ class Seg2LinkR1:
         """Set the hotkeys for user's operations"""
         viewer_seg = self.vis.viewer.layers["segmentation"]
 
-
         @viewer_seg.bind_key(parameters.pars.key_next_r1)
         @print_information("\nTo next slice")
         def _next_slice(viewer_seg):
             """To the next slice"""
+            self.vis.widgets.show_state_info(f"Segmenting and linking... Please wait")
             self.next_slice()
             self.save_and_refresh(f"Next slice ({self.current_slice})")
-            print(f"labels: {self.labels._labels}")
+            self.vis.widgets.show_state_info(f"Segmenting and linking were done")
 
         @viewer_seg.bind_key(parameters.pars.key_separate)
         @print_information("Divide a label")
@@ -143,67 +147,73 @@ class Seg2LinkR1:
         def divide_2d(viewer_seg):
             """Divide the selected label"""
             if viewer_seg.selected_label == 0:
-                print("\nLabel 0 should not be divided!")
+                self.vis.widgets.show_state_info("Warning: Label 0 should not be divided!")
             else:
-                self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
-
+                try:
+                    self.vis.widgets.show_state_info(f"Dividing... Please wait")
+                    self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
+                except NoDivisionError:
+                    self.vis.widgets.show_state_info("The selected cell was not divided")
+                    return
                 viewer_seg._all_vals = low_discrepancy_image(
                     np.arange(self.labels.max_label + 1), viewer_seg._seed)
                 viewer_seg._all_vals[0] = 0
                 self.save_and_refresh("Divide")
                 viewer_seg.mode = "pick"
-
-            print_labels_seg()
-
-        def print_labels_seg():
-            print(f"labels: {self.labels._labels}")
-            print(f"current_seg: {np.unique(self.seg.current_seg)}")
+                self.vis.widgets.show_state_info(f"Dividing was done")
 
         @viewer_seg.bind_key(parameters.pars.key_separate_link)
         @print_information("Divide a label and re-link")
         def re_seg_link(viewer_seg):
             """Re-segment current slice"""
             if viewer_seg.selected_label == 0:
-                print("\nLabel 0 should not be divided!")
+                self.vis.widgets.show_state_info("Label 0 should not be divided!")
             else:
-                self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
-
+                try:
+                    self.vis.widgets.show_state_info(f"Dividing and Relinking... Please wait")
+                    self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
+                except NoDivisionError:
+                    self.vis.widgets.show_state_info("The selected cell was not divided")
+                    return
                 viewer_seg._all_vals = low_discrepancy_image(
                     np.arange(self.labels.max_label + 1), viewer_seg._seed)
                 viewer_seg._all_vals[0] = 0
-                self.reseg_link(viewer_seg.data)
+                if self.current_slice >= 2:
+                    self.relink(viewer_seg.data)
                 self.save_and_refresh("Divide-Relink")
                 viewer_seg.mode = "pick"
+                self.vis.widgets.show_state_info(f"Divide-Relink was done")
 
         @viewer_seg.bind_key(parameters.pars.key_add)
         @print_information("Add labels to be processed")
         def append_label_list(viewer_seg):
             """Add label to be merged into a list"""
             if viewer_seg.mode != "pick":
-                print("\nPlease switch to pick mode in segmentation layer to merge label")
+                self.vis.widgets.show_state_info("Warning: Please switch to pick mode")
             elif viewer_seg.selected_label == 0:
-                print("\nLabel 0 should not be merged!")
+                self.vis.widgets.show_state_info("Warning: Label 0 should not be added!")
             else:
                 self.label_list.add(viewer_seg.selected_label)
-                print("Labels to be processed: ", self.label_list)
                 self.vis.update_max_actions_labelslist()
+                self.vis.widgets.show_state_info(f"Label list: {self.label_list}")
 
         @viewer_seg.bind_key(parameters.pars.key_clean)
         @print_information("Clean the label list")
         def clear_label_list(viewer_seg):
             """Clear labels in the merged list"""
             self.label_list.clear()
-            print(f"Cleaned the label list: {self.label_list}")
             self.vis.update_max_actions_labelslist()
+            self.vis.widgets.show_state_info(f"Cleaned the label list")
 
         @viewer_seg.bind_key(parameters.pars.key_merge)
         @print_information("Merge labels")
         @test_merge_r1(self)
         def _merge(viewer_seg):
             if not self.label_list:
-                print("No labels were merged")
+                self.vis.widgets.show_state_info("Warning: label list is null!")
             else:
                 self.labels.merge()
+                self.vis.widgets.show_state_info(f"Merged the labels in: {self.label_list}")
                 self.label_list.clear()
                 self.save_and_refresh("Merge labels")
 
@@ -213,36 +223,41 @@ class Seg2LinkR1:
         def del_label(viewer_seg):
             """Delete the selected label"""
             if viewer_seg.mode != "pick":
-                print("\nPlease switch to pick mode in segmentation layer")
+                self.vis.widgets.show_state_info("Please switch to pick mode")
             elif viewer_seg.selected_label == 0:
-                print("\nLabel 0 should not be deleted!")
+                self.vis.widgets.show_state_info("Label 0 should not be deleted!")
             else:
                 delete_list = self.label_list if self.label_list else viewer_seg.selected_label
                 self.labels.delete(delete_list)
                 self.label_list.clear()
                 self.save_and_refresh("Delete label(s)")
-                print(f"Label(s) {delete_list} were deleted")
+                self.vis.widgets.show_state_info(f"Label(s) {delete_list} were deleted")
 
         @viewer_seg.bind_key(parameters.pars.key_undo)
         @print_information("Undo")
         def undo(viewer_seg):
             """Undo one keyboard command"""
-            print(f"before undo: {self.cache.cache}")
-            state: StateR1 = self.cache.load_cache("undo")
-            self._set_labels(state.labels)
-            self._set_seg2d_and_slice(state.seg_img)
-            self.save_and_refresh()
-            print_labels_seg()
-            print(f"after undo: {self.cache.cache}")
+            try:
+                state: StateR1 = self.cache.load_cache("undo")
+                self._set_labels(state.labels)
+                self._set_seg2d_and_slice(state.seg_img)
+                self.save_and_refresh()
+                self.vis.widgets.show_state_info("Undo was applied")
+            except NoHistoryError:
+                self.vis.widgets.show_state_info("Warning: No earlier state!")
 
         @viewer_seg.bind_key(parameters.pars.key_redo)
         @print_information("Redo")
         def redo(viewer_seg):
             """Undo one keyboard command"""
-            state: StateR1 = self.cache.load_cache("redo")
-            self._set_labels(state.labels)
-            self._set_seg2d_and_slice(state.seg_img)
-            self.save_and_refresh()
+            try:
+                state: StateR1 = self.cache.load_cache("redo")
+                self._set_labels(state.labels)
+                self._set_seg2d_and_slice(state.seg_img)
+                self.save_and_refresh()
+                self.vis.widgets.show_state_info("Redo was applied")
+            except NoFutureError:
+                self.vis.widgets.show_state_info("Warning: No later states!")
 
         @viewer_seg.bind_key(parameters.pars.key_switch_one_label_all_labels)
         @print_information("Switch showing one label/all labels")
@@ -393,14 +408,14 @@ class CacheR1(Cache):
 
     def undo(self):
         if len(self.history) == 1:
-            print("No earlier cached state!")
+            raise NoHistoryError
         else:
             self.future.append(self.history.pop())
         return self.history[-1]
 
     def redo(self):
         if not self.future:
-            print("No later state!")
+            raise NoFutureError
         else:
             self.history.append(self.future.pop())
         return self.history[-1]

@@ -31,7 +31,7 @@ class WidgetsR1:
                                   '\n---------------' \
                                   '\n[K]:  Divide a label in the last slice (LS)' \
                                   '\n---------------' \
-                                  '\n[R]:  Re-link LS to the previous slice LS-1' \
+                                  '\n[R]:  Divide + Re-link a label in slice LS' \
                                   '\n---------------' \
                                   '\n[A]: Add a label into the label list (LL)' \
                                   '\n[C]: Clear LL' \

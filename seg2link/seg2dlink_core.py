@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import itertools
 import os
 import pickle
@@ -14,7 +15,7 @@ from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
 from seg2link import parameters
-from seg2link.link_by_overlap import link_previous_slices_round1
+from seg2link.link_by_overlap import link_previous_slices_round1, link_a_divided_label_round1
 from seg2link.misc import make_folder, replace, mask_cells, flatten_2d_list, get_unused_labels_quick
 from seg2link.watersheds import dist_watershed
 
@@ -58,6 +59,7 @@ class Labels:
                 self._labels = labels._labels
             else:
                 self._labels = labels
+            self.emseg1.current_slice -= 1
 
     def flatten(self) -> Tuple[List[int], List[int]]:
         return flatten_2d_list(self._labels)
@@ -112,7 +114,7 @@ class Labels:
         except IndexError:
             raise IndexError(f"{labels_pre_slice.max()=}, {seg_img.max()=}, {layer=}")
 
-    def get_images_tolink(self) \
+    def get_seg_and_labels_tolink(self) \
             -> Tuple[ndarray, ndarray, ndarray, ndarray]:
         """Prepare the segmentations and label for linking"""
         seg_pre = self.to_labels_img(self.emseg1.current_slice - 1, self.emseg1.seg_img_cache)
@@ -145,15 +147,29 @@ class Labels:
             self.append_labels(self.emseg1.seg)
             return
 
-        list_post, list_pre_1d, seg_post, seg_pre = self.prepare_data_for_link()
+        seg_pre, seg_post, list_post, list_pre_1d = self.get_seg_and_labels_tolink()
         list_pre_1d_linked, list_post_linked = link_previous_slices_round1(
             seg_pre, seg_post, list_pre_1d, list_post, self.ratio_overlap)
         self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
 
-    def prepare_data_for_link(self):
-        seg_pre, seg_post, list_post, list_pre_1d = self.get_images_tolink()
-        return list_post, list_pre_1d, seg_post, seg_pre
+    def relink_or_append_labels(self):
+        labels_pre_now, labels_s2_now, labels_pre_past, seg_s1_past, seg_s2_now = \
+            self.get_seg_and_labels_to_relink()
+        list_pre_1d_linked, list_post_linked = link_a_divided_label_round1(
+            labels_pre_now, labels_s2_now, labels_pre_past, seg_s1_past, seg_s2_now,
+            self.emseg1.labels_divided, self.ratio_overlap)
+        self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
 
+    def get_seg_and_labels_to_relink(self) -> Tuple[List[int], List[int], List[int], ndarray, ndarray]:
+        """Prepare the segmentations and label for relinking"""
+        current_labels_pre, _ = flatten_2d_list(self._labels[:-1])  # For linking by searching for same labels: (1)
+        current_labels_s2 = copy.deepcopy(self._labels[-1])  # (1)
+        current_seg_s2 = self.emseg1.seg.current_seg.copy()  # For linking by overlapping seg1 and seg2: (2)
+        self.rollback()
+        history_labels_pre, self._label_nums = self.flatten()  # (1) and (2)
+        history_seg_s1 = self.to_labels_img(self.emseg1.current_slice, self.emseg1.seg_img_cache)  # (2)
+        self.emseg1.current_slice += 1
+        return current_labels_pre, current_labels_s2, history_labels_pre, history_seg_s1, current_seg_s2
 
     def relabel(self):
         """Relabel all N cells with label from 1 to N and save the current state"""
@@ -294,15 +310,11 @@ class Archive:
     def read_labels(self, slice_num: int) -> Optional[Union[List[List[int]], Labels]]:
         """Load a state of the label"""
         if slice_num <= 0:
-            print("No label returned")
             return None
         try:
             labels = self.load_labels_v2(slice_num)
-            print("Loaded labels (v2), type=", type(labels), "slice_num", slice_num)
-            print("labels_len:", len(labels))
         except FileNotFoundError:
             labels = self.load_labels_v1(slice_num)
-            print("Loaded labels (v1), type=", type(labels))
             self.transform_v1_to_v2(slice_num)
         return labels
 
