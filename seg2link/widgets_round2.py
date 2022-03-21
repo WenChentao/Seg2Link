@@ -15,11 +15,14 @@ from seg2link.misc import TinyCells, make_folder
 from seg2link.message_windows_round2 import sort_remove_window
 from seg2link.single_cell_division import DivideMode
 from seg2link.cache_bbox import NoLabelError
-from seg2link.watersheds import labels_with_boundary, remove_boundary_scipy
 
 if TYPE_CHECKING:
     from seg2link.seg2link_round2 import VisualizeAll
 
+BOUNDARY_PROCESSING = False
+
+if BOUNDARY_PROCESSING:
+    from seg2link.boundary import labels_with_boundary, remove_boundary_scipy
 
 class WidgetsR2:
     def __init__(self, vis: "VisualizeAll"):
@@ -30,11 +33,12 @@ class WidgetsR2:
 
         # Hotkeys panel
         self.hotkeys_info_value = '[K]:  Divide one label' \
+                                  '\n[R]: Divide-Relink one label' \
                                   '\n---------------' \
-                                  '\n[A]: Add a label into the label list (ll)' \
-                                  '\n[C]: Clear ll' \
-                                  '\n[M]: Merge labels in ll' \
-                                  '\n[D]: Delete a selected label or labels in ll' \
+                                  '\n[A]: Add a label into the label list (LL)' \
+                                  '\n[C]: Clear LL' \
+                                  '\n[M]: Merge labels in LL' \
+                                  '\n[D]: Delete a selected label or labels in LL' \
                                   '\n---------------' \
                                   '\n[I]: Insert a new label' \
                                   '\n---------------' \
@@ -53,7 +57,7 @@ class WidgetsR2:
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
 
         # Divide panel
-        self.divide_mode = widgets.RadioButtons(choices=["2D","2D Link","3D"], value="2D",
+        self.divide_mode = widgets.RadioButtons(choices=["2D","3D"], value="2D",
                                                 orientation="horizontal", label='Mode')
         tooltip = "Avoid generating a label with too small area,\nused when dividing a single cell"
         self.max_division = widgets.RadioButtons(choices=[2, 4, 8, "Inf"], value=2, label="Max division",
@@ -68,7 +72,7 @@ class WidgetsR2:
         self.export_button = widgets.PushButton(text="Export segmentation as .tiff files")
         self.state_info = widgets.Label(value="")
         self.boundary_action = widgets.RadioButtons(choices=Boundary, value=Boundary.Default, label='Boundary',
-                                                    orientation="horizontal")
+                                                    orientation="horizontal", visible=BOUNDARY_PROCESSING)
 
         self.remove_sort_window = sort_remove_window
 

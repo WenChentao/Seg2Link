@@ -30,7 +30,6 @@ class WidgetsR1:
         self.hotkeys_info_value = '[Shift + N]: Go to the next slice' \
                                   '\n---------------' \
                                   '\n[K]:  Divide a label in the last slice (LS)' \
-                                  '\n---------------' \
                                   '\n[R]:  Divide + Re-link a label in slice LS' \
                                   '\n---------------' \
                                   '\n[A]: Add a label into the label list (LL)' \

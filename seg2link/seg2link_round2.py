@@ -35,6 +35,7 @@ class StateR2(NamedTuple):
 
 class Seg2LinkR2:
     """Segment the cells in 3D EM images"""
+    # TODO: The action insert now is not supported by undo/redo and this will be fixed in next version.
     def __init__(self, raw: ndarray, cell_region: ndarray, mask: ndarray, labels: ndarray, labels_path: Path):
         self.labels = labels
         self.divide_list = []
@@ -208,6 +209,10 @@ class Seg2LinkR2:
         @print_information("Divide")
         @test_divide_r2(self)
         def separate_label(viewer_seg):
+            mode = self.vis.widgets.divide_mode.value
+            separate_label_3_modes(viewer_seg, mode)
+
+        def separate_label_3_modes(viewer_seg, mode):
             viewer_seg.mode = "pick"
             if parameters.pars.dtype_r2==np.uint16 and self.vis.widgets.label_max >= parameters.pars.upper_limit_labels_r2:
                 self.show_warning_delete_cells()
@@ -218,7 +223,7 @@ class Seg2LinkR2:
                 self.layer_selected = self.vis.viewer.dims.current_step[-1]
                 try:
                     self.vis.widgets.show_state_info("Dividing... Please wait")
-                    subarray_old, subarray_new, bbox_divided, labels_post = divide_and_relabel()
+                    subarray_old, subarray_new, bbox_divided, labels_post = divide_and_relabel(mode)
                 except NoDivisionError:
                     self.vis.widgets.show_state_info("")
                     self.vis.widgets.divide_msg.value = f"Label {viewer_seg.selected_label} was not separated"
@@ -241,6 +246,11 @@ class Seg2LinkR2:
 
                     self.vis.widgets.locate_label_divided()
 
+        @viewer_seg.bind_key(parameters.pars.key_separate_link)
+        @print_information("Divide-Relink")
+        def separate_relink_label(viewer_seg):
+            separate_label_3_modes(viewer_seg, DivideMode._2D_Link)
+
         @viewer_seg.bind_key(parameters.pars.key_insert)
         @print_information("Insert")
         def insert_label(viewer_seg):
@@ -250,9 +260,9 @@ class Seg2LinkR2:
             self.vis.viewer.layers["segmentation"].mode = "paint"
             self.vis.widgets.show_state_info(f"Inserted a new label: {label}. Please draw with it.")
 
-        def divide_and_relabel() -> Tuple[ndarray, ndarray, Bbox, List[int]]:
+        def divide_and_relabel(mode) -> Tuple[ndarray, ndarray, Bbox, List[int]]:
             max_label = max(self.cache_bbox.bbox)
-            pre_region, seg_subregion, slice_subregion = divide(max_label)
+            pre_region, seg_subregion, slice_subregion = divide(max_label, mode)
 
             divided_labels = np.unique(seg_subregion)
             divided_labels = divided_labels[divided_labels > 0]
@@ -263,12 +273,11 @@ class Seg2LinkR2:
             subregion_new = self.labels[slice_subregion].copy()
 
             subregion_new, labels = assign_new_labels(
-                divided_labels, max_label, pre_region, seg_subregion, subregion_new)
+                divided_labels, max_label, pre_region, seg_subregion, subregion_new, mode)
 
             return subregion_old, subregion_new, slice_subregion, labels
 
-        def divide(max_label):
-            mode = self.vis.widgets.divide_mode.value
+        def divide(max_label, mode):
             if mode == DivideMode._3D:
                 # 3D mode
                 bbox_subregion, subarray_bool = self.cache_bbox.get_subregion_3d(viewer_seg.selected_label)
@@ -287,8 +296,7 @@ class Seg2LinkR2:
                         subarray_bool, self.vis.widgets.max_division.value)
             return pre_region, segmented_subregion, bbox_subregion
 
-        def assign_new_labels(divided_labels, max_label: int, pre_region, seg_subregion, subregion_ori):
-            mode = self.vis.widgets.divide_mode.value
+        def assign_new_labels(divided_labels, max_label: int, pre_region, seg_subregion, subregion_ori, mode):
             if mode == DivideMode._3D:
                 # 3D mode
                 return assign_new_labels_3d(max_label, seg_subregion, subregion_ori)

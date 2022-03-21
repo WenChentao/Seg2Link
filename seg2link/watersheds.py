@@ -1,17 +1,17 @@
-from typing import Tuple, List, Optional
+from typing import Tuple, List
 
 import numpy as np
 from numpy import ndarray
 from scipy import ndimage as ndi
-from scipy.ndimage import measurements, grey_dilation
+from scipy.ndimage import measurements
 from skimage import measure
 from skimage.filters import gaussian
 from skimage.morphology import h_maxima, local_maxima
-from skimage.segmentation import watershed, find_boundaries
+from skimage.segmentation import watershed
 
 from seg2link import parameters
 if parameters.DEBUG:
-    from seg2link.parameters import lprofile
+    pass
 
 
 def dist_watershed(cell_img2d: ndarray, h: int) -> ndarray:
@@ -48,24 +48,5 @@ def maxima_combine_3d(distance: ndarray, seg_connectivity: ndarray, maxima_filte
         if maxima_h1[pos_x, pos_y, pos_z]:
             maxima_filtered[pos_x, pos_y, pos_z] = 1
     return maxima_filtered
-
-
-def labels_with_boundary(labels: ndarray) -> ndarray:
-    if parameters.pars.add_boundary_mode != "2D":
-        result = find_boundaries(labels, mode="outer", connectivity=3)
-    else:
-        result = np.zeros_like(labels)
-        for z in range(result.shape[2]):
-            result[..., z] = find_boundaries(labels[..., z], mode="outer", connectivity=2)
-    result = np.logical_not(result)
-    return result * labels
-
-
-def remove_boundary_scipy(labels: ndarray) -> ndarray:
-    """Faster than using skimage"""
-    labels_dilate = grey_dilation(labels, parameters.pars.labels_dilate_kernel_r2)
-    labels_dilate *= (labels == 0)
-    labels += labels_dilate
-    return labels
 
 

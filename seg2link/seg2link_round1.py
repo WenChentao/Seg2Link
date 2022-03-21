@@ -16,6 +16,7 @@ from napari.utils.colormaps import low_discrepancy_image
 from numpy import ndarray
 from skimage.segmentation import relabel_sequential
 
+from seg2link.cache_bbox import NoLabelError
 from seg2link import parameters
 from seg2link.seg2dlink_core import Labels, Segmentation, Archive
 from seg2link.misc import print_information, TinyCells
@@ -148,41 +149,49 @@ class Seg2LinkR1:
             """Divide the selected label"""
             if viewer_seg.selected_label == 0:
                 self.vis.widgets.show_state_info("Warning: Label 0 should not be divided!")
-            else:
-                try:
-                    self.vis.widgets.show_state_info(f"Dividing... Please wait")
-                    self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
-                except NoDivisionError:
-                    self.vis.widgets.show_state_info("The selected cell was not divided")
-                    return
-                viewer_seg._all_vals = low_discrepancy_image(
-                    np.arange(self.labels.max_label + 1), viewer_seg._seed)
-                viewer_seg._all_vals[0] = 0
-                self.save_and_refresh("Divide")
-                viewer_seg.mode = "pick"
-                self.vis.widgets.show_state_info(f"Dividing was done")
+                return
+
+            try:
+                self.vis.widgets.show_state_info(f"Dividing... Please wait")
+                self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
+            except NoDivisionError:
+                self.vis.widgets.show_state_info("The selected cell was not divided")
+                return
+            except NoLabelError:
+                self.vis.widgets.show_state_info("The selected cell does not exist")
+                return
+            viewer_seg._all_vals = low_discrepancy_image(
+                np.arange(self.labels.max_label + 1), viewer_seg._seed)
+            viewer_seg._all_vals[0] = 0
+            self.save_and_refresh("Divide")
+            viewer_seg.mode = "pick"
+            self.vis.widgets.show_state_info(f"Dividing was done")
 
         @viewer_seg.bind_key(parameters.pars.key_separate_link)
         @print_information("Divide a label and re-link")
-        def re_seg_link(viewer_seg):
+        def divide_relink(viewer_seg):
             """Re-segment current slice"""
             if viewer_seg.selected_label == 0:
-                self.vis.widgets.show_state_info("Label 0 should not be divided!")
-            else:
-                try:
-                    self.vis.widgets.show_state_info(f"Dividing and Relinking... Please wait")
-                    self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
-                except NoDivisionError:
-                    self.vis.widgets.show_state_info("The selected cell was not divided")
-                    return
-                viewer_seg._all_vals = low_discrepancy_image(
-                    np.arange(self.labels.max_label + 1), viewer_seg._seed)
-                viewer_seg._all_vals[0] = 0
-                if self.current_slice >= 2:
-                    self.relink(viewer_seg.data)
-                self.save_and_refresh("Divide-Relink")
-                viewer_seg.mode = "pick"
-                self.vis.widgets.show_state_info(f"Divide-Relink was done")
+                self.vis.widgets.show_state_info("Warning: Label 0 should not be divided!")
+                return
+
+            try:
+                self.vis.widgets.show_state_info(f"Dividing and Relinking... Please wait")
+                self.divide_one_cell(viewer_seg.data, viewer_seg.selected_label)
+            except NoDivisionError:
+                self.vis.widgets.show_state_info("The selected cell was not divided")
+                return
+            except NoLabelError:
+                self.vis.widgets.show_state_info("The selected cell does not exist")
+                return
+            viewer_seg._all_vals = low_discrepancy_image(
+                np.arange(self.labels.max_label + 1), viewer_seg._seed)
+            viewer_seg._all_vals[0] = 0
+            if self.current_slice >= 2:
+                self.relink(viewer_seg.data)
+            self.save_and_refresh("Divide-Relink")
+            viewer_seg.mode = "pick"
+            self.vis.widgets.show_state_info(f"Divide-Relink was done")
 
         @viewer_seg.bind_key(parameters.pars.key_add)
         @print_information("Add labels to be processed")
