@@ -1,0 +1,25 @@
+site_name: Seg2Link
+site_url: https://example.com/
+repo_url: https://github.com/WenChentao/Seg2Link
+theme: readthedocs
+nav:
+    - Home: 'index.md'
+    - Quick start: 'quick_start.md'
+    - Screenshots: 'screenshots.md'
+    - Round1:
+      - Start round 1: 'Round1/start_r1.md'
+      - Next slice: 'Round1/next.md'
+      - Merge cells: 'Round1/merge.md'
+      - Delete cells: 'Round1/delete.md'
+      - Divide a cell: 'Round1/divide.md'
+      - Divide and link: 'Round1/divide_link.md'
+      - Export as 3D array: 'Round1/export.md'
+    - Round2:
+      - Start round 2: 'Round2/start_r2.md'
+      - Merge cells: 'Round2/merge.md'
+      - Delete cells: 'Round2/delete.md'
+      - Divide a cell: 'Round2/divide.md'
+      - Divide and link: 'Round2/divide_link.md'
+      - Search for a cell: 'Round2/search.md'
+      - Sort and remove tiny cells: 'Round2/sort_remove.md'
+      - Export as TIFF images: 'Round2/export.md'
