@@ -8,6 +8,22 @@ from magicgui.types import FileDialogMode
 from seg2link import parameters
 
 CURRENT_DIR = Path.home()
+CONFIG_PATH_FILE = Path.home() / ".seg2link_config_path.ini"
+
+
+def get_config_dir():
+    config_ = ConfigParser()
+    if not CONFIG_PATH_FILE.exists():
+        raise ValueError(".seg2link_config_path.ini was not found")
+    config_.read(CONFIG_PATH_FILE)
+    return Path(config_["PATH"]["config_folder"])
+
+
+def save_config_dir(path: str):
+    config_ = ConfigParser()
+    config_["PATH"] = {"config_folder": path}
+    with open(CONFIG_PATH_FILE, 'w') as configfile:
+        config_.write(configfile)
 
 
 @dataclass
@@ -24,10 +40,11 @@ class UserConfig:
 
     def load_ini(self, current_dir):
         mode_ = FileDialogMode.EXISTING_FILE
+        start_path = str(current_dir)
         path = use_app().get_obj("show_file_dialog")(
             mode_,
             caption="Load ini",
-            start_path=str(current_dir),
+            start_path=start_path,
             filter='*.ini'
         )
         if path:
@@ -70,6 +87,7 @@ class UserConfig:
         config_["advanced_parameters"] = self.pars.advanced
         with open(filename, 'w') as configfile:
             config_.write(configfile)
+        save_config_dir(str(filename.parent))
 
     def get_path_save(self, current_dir):
         seg_filename = "config.ini"

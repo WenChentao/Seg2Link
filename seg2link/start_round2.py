@@ -9,7 +9,12 @@ from seg2link import parameters
 from seg2link.start_round1 import load_cells, load_mask, _npy_name, check_existence_path, show_error_msg, \
     load_raw_lazy
 from seg2link.seg2link_round2 import Seg2LinkR2
-from seg2link.userconfig import UserConfig
+from seg2link.userconfig import UserConfig, get_config_dir
+
+try:
+    CONFIG_DIR = get_config_dir()
+except Exception:
+    CONFIG_DIR = Path.home()
 
 CURRENT_DIR = Path.home()
 USR_CONFIG = UserConfig()
@@ -127,7 +132,7 @@ def _on_save_para_changed():
 @start_r2.load_para.changed.connect
 def _on_load_para_changed():
     try:
-        USR_CONFIG.load_ini(CURRENT_DIR)
+        USR_CONFIG.load_ini(CONFIG_DIR)
     except ValueError:
         return
     parameters.pars.set_from_dict(USR_CONFIG.pars.advanced)

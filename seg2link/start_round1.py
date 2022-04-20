@@ -9,7 +9,12 @@ from seg2link import parameters
 from seg2link.seg2dlink_core import Archive
 from seg2link.seg2link_round1 import Seg2LinkR1
 from seg2link.misc import load_image_pil, dilation_scipy, load_image_lazy, load_array_lazy
-from seg2link.userconfig import UserConfig
+from seg2link.userconfig import UserConfig, get_config_dir
+
+try:
+    CONFIG_DIR = get_config_dir()
+except Exception:
+    CONFIG_DIR = Path.home()
 
 CURRENT_DIR = Path.home()
 USR_CONFIG = UserConfig()
@@ -159,7 +164,7 @@ def _on_save_para_changed():
 @start_r1.load_para.changed.connect
 def _on_load_para_changed():
     try:
-        USR_CONFIG.load_ini(CURRENT_DIR)
+        USR_CONFIG.load_ini(CONFIG_DIR)
     except ValueError:
         return
     parameters_r1 = USR_CONFIG.pars.r1
@@ -199,7 +204,6 @@ def _on_path_cells_changed():
         start_r1.path_cache.value = CURRENT_DIR / "Results"
     msg = check_existence_path(data_paths_r1())
     show_error_msg(start_r1.error_info, msg)
-
 
 
 def data_paths_r1():
