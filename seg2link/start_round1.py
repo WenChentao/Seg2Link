@@ -8,7 +8,7 @@ from numpy import ndarray
 from seg2link import parameters
 from seg2link.seg2dlink_core import Archive
 from seg2link.seg2link_round1 import Seg2LinkR1
-from seg2link.misc import load_image_pil, dilation_scipy, load_image_lazy, load_array_lazy
+from seg2link.misc import load_image_pil, load_image_lazy, load_array_lazy, fill_holes_scipy
 from seg2link.userconfig import UserConfig, get_config_dir
 
 try:
@@ -46,13 +46,12 @@ def load_cells(cell_value, path_cells):
 
 
 @cache_images_lazy
-def load_mask(mask_value: int, path_mask: Path) -> ndarray:
+def load_mask(mask_value: int, path_mask: Path, fill_holes: bool) -> ndarray:
     mask_images = load_image_pil(path_mask) == mask_value
-    if parameters.pars.mask_dilate_kernel is None:
-        return mask_images
+    if fill_holes:
+        return fill_holes_scipy(mask_images, filter_size=parameters.pars.mask_dilate_kernel)
     else:
-        print("Dilating mask image... Please wait")
-        return dilation_scipy(mask_images, filter_size=parameters.pars.mask_dilate_kernel)
+        return mask_images
 
 
 def show_error_msg(widget_error_state, msg):
@@ -79,11 +78,15 @@ def show_error_msg(widget_error_state, msg):
     path_mask={"label": "Open image sequences: Mask images (*.tiff):", "mode": "d", "visible": False},
     path_cache={"label": "Select a folder for storing results:", "mode": "d"},
     enable_mask={"label": "Use the Mask images"},
+    enable_fill_holes={"label": "Fill holes", "visible": False},
+    enable_update_mask={"label": "Update cache of mask", "visible": False},
 )
 def start_r1(
         load_para,
         save_para,
         enable_mask=False,
+        enable_fill_holes=False,
+        enable_update_mask=False,
         path_cells=CURRENT_DIR / "Cells",
         path_raw=CURRENT_DIR / "Raw",
         path_mask=CURRENT_DIR / "Mask",
@@ -107,7 +110,9 @@ def start_r1(
         images = load_raw_lazy(path_raw)
         if enable_mask:
             print("Loading mask image... Please wait")
-            mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask))
+            if enable_update_mask:
+                delete_npy(path_mask)
+            mask_dilated = load_mask(mask_value, path_mask, enable_fill_holes, file_cached=_npy_name(path_mask))
         else:
             mask_dilated = None
         layer_num = cells.shape[2]
@@ -117,6 +122,10 @@ def start_r1(
         print("The soft was started")
         start_r1.close()
         return None
+
+
+def delete_npy(path_folder):
+    _npy_name(path_folder).unlink(missing_ok=True)
 
 
 start_r1.error_info.min_height = 70
@@ -140,6 +149,8 @@ def _npy_name(path_cells: Path, addi_str: str = "") -> Path:
 @start_r1.enable_mask.changed.connect
 def use_mask():
     visible = start_r1.enable_mask.value
+    start_r1.enable_fill_holes.visible = visible
+    start_r1.enable_update_mask.visible = visible
     start_r1.path_mask.visible = visible
     start_r1.threshold_mask.visible = visible
     start_r1.mask_value.visible = visible

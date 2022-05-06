@@ -11,7 +11,7 @@ from PIL import Image
 import numpy as np
 from numpy import ndarray
 from scipy import ndimage as ndi
-from scipy.ndimage import grey_dilation
+from scipy.ndimage import grey_dilation, grey_closing, binary_fill_holes, binary_closing
 from skimage.segmentation import relabel_sequential
 from dask import delayed
 import dask.array as da
@@ -78,6 +78,16 @@ def shorten_filename(foldername: str, new_length: int):
 def dilation_scipy(label_image: ndarray, filter_size: Tuple[int, int, int]) -> ndarray:
     """3D dilation using scipy, quicker than dilation_opencv"""
     return grey_dilation(label_image, filter_size)
+
+
+def fill_holes_scipy(label_image: ndarray, filter_size: Tuple[int, int, int]) -> ndarray:
+    """fill holes after closing using scipy"""
+    print("Closing... Please wait")
+    closed_img = grey_closing(label_image, filter_size)
+    print("Filling holes... Please wait")
+    for z in range(closed_img.shape[2]):
+        closed_img[..., z] = binary_fill_holes(closed_img[..., z])
+    return closed_img
 
 
 def add_blank_lines(string: str, max_lines: int) -> str:
