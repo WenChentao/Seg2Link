@@ -37,9 +37,6 @@ def cache_images_lazy(func) -> Callable:
     return wrapper
 
 
-def load_raw_lazy(path_raw):
-    return load_image_lazy(path_raw)
-
 @cache_images_lazy
 def load_cells(cell_value, path_cells):
     return load_image_pil(path_cells) == cell_value
@@ -55,7 +52,6 @@ def load_mask(mask_value: int, path_mask: Path, fill_holes: bool) -> ndarray:
 
 
 def show_error_msg(widget_error_state, msg):
-    """For unknown reason, twice running are required to show message immediately"""
     widget_error_state.show()
     widget_error_state.value = msg
 
@@ -107,7 +103,7 @@ def start_r1(
         print("Loading cell image... Please wait")
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells))
         print("Loading raw image... Please wait")
-        images = load_raw_lazy(path_raw)
+        images = load_image_lazy(path_raw)
         if enable_mask:
             print("Loading mask image... Please wait")
             if enable_update_mask:
@@ -135,7 +131,7 @@ def check_existence_path(paths_list: List[Path]) -> str:
     msg = []
     for path in paths_list:
         if not path.exists():
-            if path.name[-4:]==".npy":
+            if path.name.endswith(".npy"):
                 msg.append(f'Warning: File "{path.name}" does not exist')
             else:
                 msg.append(f'Warning: Folder "{path.name}" does not exist')

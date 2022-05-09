@@ -4,10 +4,9 @@ from pathlib import Path
 import numpy as np
 from magicgui import magicgui
 
-from seg2link.misc import load_image_pil
+from seg2link.misc import load_image_pil, load_image_lazy
 from seg2link import parameters
-from seg2link.start_round1 import load_cells, load_mask, _npy_name, check_existence_path, show_error_msg, \
-    load_raw_lazy
+from seg2link.start_round1 import load_cells, load_mask, _npy_name, check_existence_path, show_error_msg
 from seg2link.seg2link_round2 import Seg2LinkR2
 from seg2link.userconfig import UserConfig, get_config_dir
 
@@ -60,7 +59,7 @@ def start_r2(
         show_error_msg(start_r2.error_info, msg)
     else:
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells)) if enable_cell else None
-        images = load_raw_lazy(path_raw)
+        images = load_image_lazy(path_raw)
         mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
         segmentation = load_segmentation(dir_seg) if load_seg_dir else load_segmentation(file_seg)
         Seg2LinkR2(images, cells, mask_dilated, segmentation, file_seg)
@@ -107,6 +106,7 @@ def use_mask():
 
     msg = check_existence_path(data_paths_r2())
     show_error_msg(start_r2.error_info, msg)
+
 
 @start_r2.load_seg_dir.changed.connect
 def load_seg_dir():
