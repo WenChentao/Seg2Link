@@ -1,4 +1,5 @@
 import pickle
+import os
 from pathlib import Path
 from typing import Tuple, List, Dict, Optional, Union, Set, Iterable, TYPE_CHECKING
 
@@ -25,7 +26,9 @@ class CacheBbox:
 
     def load_or_generate_bbox(self, labels_path: Path):
         bbox_path = self.generate_bbox_path(labels_path)
-        if bbox_path.exists():
+        last_modi_time_bbox = os.path.getmtime(str(bbox_path))
+        last_modi_time_labels = os.path.getmtime(str(labels_path))
+        if bbox_path.exists() and last_modi_time_bbox > last_modi_time_labels:
             self.load_bbox(bbox_path)
         else:
             self.refresh_bboxes()
@@ -49,6 +52,7 @@ class CacheBbox:
         return new_label
 
     def refresh_bboxes(self):
+        print("Refresh the bbox information")
         self.emseg2.vis.widgets.show_state_info("Calculating bboxes for all labels... Please wait")
         _subregions = get_all_subregions_3d(self.emseg2.labels)
         self.bbox: Dict[int, Bbox] = {label + 1: bbox for label, bbox in enumerate(_subregions) if bbox is not None}

@@ -28,6 +28,7 @@ def save_config_dir(path: str):
 
 @dataclass
 class Pars:
+    r1r2: dict
     r1: dict
     r2: dict
     advanced: dict
@@ -36,7 +37,7 @@ class Pars:
 @dataclass
 class UserConfig:
     ini_path: str = None
-    pars: Pars = Pars({}, {}, parameters.pars.all_attributes)
+    pars: Pars = Pars({}, {}, {}, parameters.pars.all_attributes)
 
     def load_ini(self, current_dir):
         mode_ = FileDialogMode.EXISTING_FILE
@@ -52,6 +53,7 @@ class UserConfig:
             config_.read(path)
 
             self.pars = Pars(
+                r1r2=dict(config_["parameters_r1r2"]),
                 r1=dict(config_["parameters_r1"]),
                 r2=dict(config_["parameters_r2"]),
                 advanced=dict(config_["advanced_parameters"])
@@ -62,16 +64,17 @@ class UserConfig:
 
     def save_ini_r1(self, pars_r1, current_dir):
         self.pars.r1 = pars_r1
-        if self.ini_path is None:
-            path = self.get_path_save(current_dir)
-            if path:
-                self.save_ini(Path(path))
-            self.ini_path = path
-        else:
-            self.save_ini(Path(self.ini_path))
+        self.save_or_save_as(current_dir)
 
     def save_ini_r2(self, pars_r2, current_dir):
         self.pars.r2 = pars_r2
+        self.save_or_save_as(current_dir)
+
+    def save_ini_r1r2(self, pars_r1r2, current_dir):
+        self.pars.r1r2 = pars_r1r2
+        self.save_or_save_as(current_dir)
+
+    def save_or_save_as(self, current_dir):
         if self.ini_path is None:
             path = self.get_path_save(current_dir)
             if path:
@@ -82,6 +85,7 @@ class UserConfig:
 
     def save_ini(self, filename: Path):
         config_ = ConfigParser()
+        config_["parameters_r1r2"] = self.pars.r1r2
         config_["parameters_r1"] = self.pars.r1
         config_["parameters_r2"] = self.pars.r2
         config_["advanced_parameters"] = self.pars.advanced

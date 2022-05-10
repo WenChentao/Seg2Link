@@ -45,6 +45,8 @@ def load_cells(cell_value, path_cells):
 @cache_images_lazy
 def load_mask(mask_value: int, path_mask: Path, fill_holes: bool) -> ndarray:
     mask_images = load_image_pil(path_mask) == mask_value
+    if not mask_images.any():
+        raise ValueError("No cell region found in Mask images. Check if the value for mask regions is correct!")
     if fill_holes:
         return fill_holes_scipy(mask_images, filter_size=parameters.pars.mask_dilate_kernel)
     else:
@@ -72,7 +74,7 @@ def show_error_msg(widget_error_state, msg):
     path_cells={"label": "Open image sequences: Cell regions (*.tiff):", "mode": "d"},
     path_raw={"label": "Open image sequences: Raw images (*.tiff):", "mode": "d"},
     path_mask={"label": "Open image sequences: Mask images (*.tiff):", "mode": "d", "visible": False},
-    path_cache={"label": "Select a folder for storing results:", "mode": "d"},
+    path_result={"label": "Select a folder for storing results:", "mode": "d"},
     enable_mask={"label": "Use the Mask images"},
     enable_fill_holes={"label": "Fill holes", "visible": False},
     enable_update_mask={"label": "Update cache of mask", "visible": False},
@@ -83,10 +85,10 @@ def start_r1(
         enable_mask=False,
         enable_fill_holes=False,
         enable_update_mask=False,
-        path_cells=CURRENT_DIR / "Cells",
-        path_raw=CURRENT_DIR / "Raw",
-        path_mask=CURRENT_DIR / "Mask",
-        path_cache=CURRENT_DIR / "Results",
+        path_cells=CURRENT_DIR,
+        path_raw=CURRENT_DIR,
+        path_mask=CURRENT_DIR,
+        path_result=CURRENT_DIR,
         historical_info="",
         retrieve_slice=0,
         cell_value=2,
@@ -96,10 +98,7 @@ def start_r1(
         error_info="",
 ):
     """Run some computation."""
-    msg = check_existence_path(data_paths_r1())
-    if msg:
-        show_error_msg(start_r1.error_info, msg)
-    else:
+    if test_paths_r1():
         print("Loading cell image... Please wait")
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells))
         print("Loading raw image... Please wait")
@@ -113,11 +112,24 @@ def start_r1(
             mask_dilated = None
         layer_num = cells.shape[2]
         print("Initiating the soft... Please wait")
-        Seg2LinkR1(images, cells, mask_dilated, enable_mask, layer_num, path_cache, threshold_link, threshold_mask,
+        Seg2LinkR1(images, cells, mask_dilated, enable_mask, layer_num, path_result, threshold_link, threshold_mask,
                    start_r1.retrieve_slice.value)
         print("The soft was started")
         start_r1.close()
-        return None
+
+
+def test_paths_r1() -> bool:
+    msg = check_existence_path(folders_r1())
+    if msg:
+        show_error_msg(start_r1.error_info, msg)
+        return False
+    else:
+        msg = check_tiff_existence(tiff_folders_r1())
+        if msg:
+            show_error_msg(start_r1.error_info, msg)
+            return False
+        show_error_msg(start_r1.error_info, "")
+        return True
 
 
 def delete_npy(path_folder):
@@ -138,6 +150,14 @@ def check_existence_path(paths_list: List[Path]) -> str:
     return "\n".join(msg)
 
 
+def check_tiff_existence(paths_list: List[Path]) -> str:
+    msg = []
+    for path in paths_list:
+        if not path.name.endswith(".npy") and not list(path.glob("*.tif*")):
+            msg.append(f'Warning: Folder "{path.name}" includes no TIFF files')
+    return "\n".join(msg)
+
+
 def _npy_name(path_cells: Path, addi_str: str = "") -> Path:
     return Path(*path_cells.parts[:-1], path_cells.parts[-1] + addi_str + ".npy")
 
@@ -151,21 +171,30 @@ def use_mask():
     start_r1.threshold_mask.visible = visible
     start_r1.mask_value.visible = visible
 
-    msg = check_existence_path(data_paths_r1())
-    show_error_msg(start_r1.error_info, msg)
+    test_paths_r1()
+
+
+def enable_update_mask():
+    start_r1.enable_update_mask.value = True
+
+
+start_r1.enable_fill_holes.changed.connect(enable_update_mask)
 
 
 @start_r1.save_para.changed.connect
 def _on_save_para_changed():
-    parameters_r1 = {"path_cells": start_r1.path_cells.value,
-                     "path_raw": start_r1.path_raw.value,
-                     "path_mask": start_r1.path_mask.value,
-                     "path_cache": start_r1.path_cache.value,
-                     "cell_value": start_r1.cell_value.value,
-                     "mask_value": start_r1.mask_value.value,
+    parameters_r1 = {"use_mask": start_r1.enable_mask.value,
+                     "use_fill_holes": start_r1.enable_fill_holes.value,
                      "threshold_link": start_r1.threshold_link.value,
                      "threshold_mask": start_r1.threshold_mask.value}
+    parameters_r1r2 = {"path_cells": start_r1.path_cells.value,
+                       "path_raw": start_r1.path_raw.value,
+                       "path_mask": start_r1.path_mask.value,
+                       "path_result": start_r1.path_result.value,
+                       "cell_value": start_r1.cell_value.value,
+                       "mask_value": start_r1.mask_value.value}
     USR_CONFIG.save_ini_r1(parameters_r1, CURRENT_DIR)
+    USR_CONFIG.save_ini_r1r2(parameters_r1r2, CURRENT_DIR)
 
 
 @start_r1.load_para.changed.connect
@@ -174,22 +203,35 @@ def _on_load_para_changed():
         USR_CONFIG.load_ini(CONFIG_DIR)
     except ValueError:
         return
-    parameters_r1 = USR_CONFIG.pars.r1
+
+    start_r1.enable_fill_holes.changed.disconnect()
+    set_pars_r1r2(start_r1, USR_CONFIG.pars.r1r2)
+    set_pars_r1(USR_CONFIG.pars.r1)
+    start_r1.enable_fill_holes.changed.connect(enable_update_mask)
+
     parameters.pars.set_from_dict(USR_CONFIG.pars.advanced)
-    start_r1.path_cells.value = parameters_r1["path_cells"]
-    start_r1.path_raw.value = parameters_r1["path_raw"]
-    start_r1.path_mask.value = parameters_r1["path_mask"]
-    start_r1.path_cache.value = parameters_r1["path_cache"]
-    start_r1.cell_value.value = int(parameters_r1["cell_value"])
-    start_r1.mask_value.value = int(parameters_r1["mask_value"])
+
+
+def set_pars_r1r2(mgui, parameters_r1r2: dict):
+    mgui.path_cells.value = parameters_r1r2["path_cells"]
+    mgui.path_raw.value = parameters_r1r2["path_raw"]
+    mgui.path_mask.value = parameters_r1r2["path_mask"]
+    mgui.path_result.value = parameters_r1r2["path_result"]
+    mgui.cell_value.value = int(parameters_r1r2["cell_value"])
+    mgui.mask_value.value = int(parameters_r1r2["mask_value"])
+
+
+def set_pars_r1(parameters_r1: dict):
+    start_r1.enable_mask.value = parameters_r1["use_mask"] == "True"
+    start_r1.enable_fill_holes.value = parameters_r1["use_fill_holes"] == "True"
     start_r1.threshold_link.value = float(parameters_r1["threshold_link"])
     start_r1.threshold_mask.value = float(parameters_r1["threshold_mask"])
 
 
-@start_r1.path_cache.changed.connect
-def _on_path_cache_changed():
-    if start_r1.path_cache.value.exists():
-        latest_slice = Archive(emseg1=None, path_save=start_r1.path_cache.value).latest_slice
+@start_r1.path_result.changed.connect
+def _on_path_result_changed():
+    if start_r1.path_result.value.exists():
+        latest_slice = Archive(emseg1=None, path_save=start_r1.path_result.value).latest_slice
         s1 = 1 if latest_slice >= 1 else 0
         start_r1.historical_info.value = f"Segmented slices: {s1}-{latest_slice} / Restart: 0"
         start_r1.historical_info.visible = True
@@ -197,8 +239,8 @@ def _on_path_cache_changed():
         start_r1.retrieve_slice.max = latest_slice
         start_r1.retrieve_slice.value = latest_slice
         start_r1.retrieve_slice.visible = True
-    msg = check_existence_path(data_paths_r1())
-    show_error_msg(start_r1.error_info, msg)
+    test_paths_r1()
+
 
 
 @start_r1.path_cells.changed.connect
@@ -206,32 +248,41 @@ def _on_path_cells_changed():
     if start_r1.path_cells.value.exists():
         global CURRENT_DIR
         CURRENT_DIR = start_r1.path_cells.value.parent
-        start_r1.path_raw.value = CURRENT_DIR / "Raw"
-        start_r1.path_mask.value = CURRENT_DIR / "Mask"
-        start_r1.path_cache.value = CURRENT_DIR / "Results"
-    msg = check_existence_path(data_paths_r1())
-    show_error_msg(start_r1.error_info, msg)
+        start_r1.path_raw.value = CURRENT_DIR
+        start_r1.path_mask.value = CURRENT_DIR
+        start_r1.path_result.value = CURRENT_DIR
+    test_paths_r1()
 
 
-def data_paths_r1():
+def folders_r1() -> List[Path]:
     if start_r1.enable_mask.value:
         return [start_r1.path_cells.value,
                 start_r1.path_raw.value,
                 start_r1.path_mask.value,
-                start_r1.path_cache.value]
+                start_r1.path_result.value]
     else:
         return [start_r1.path_cells.value,
                 start_r1.path_raw.value,
-                start_r1.path_cache.value]
+                start_r1.path_result.value]
+
+
+def tiff_folders_r1() -> List[Path]:
+    if start_r1.enable_mask.value:
+        return [start_r1.path_cells.value,
+                start_r1.path_raw.value,
+                start_r1.path_mask.value]
+    else:
+        return [start_r1.path_cells.value,
+                start_r1.path_raw.value]
 
 
 @start_r1.path_raw.changed.connect
 def _on_path_raw_changed():
-    msg = check_existence_path(data_paths_r1())
-    show_error_msg(start_r1.error_info, msg)
+    test_paths_r1()
 
 
 @start_r1.path_mask.changed.connect
 def _on_path_mask_changed():
-    msg = check_existence_path(data_paths_r1())
-    show_error_msg(start_r1.error_info, msg)
+    test_paths_r1()
+
+

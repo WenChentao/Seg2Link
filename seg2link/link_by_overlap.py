@@ -43,6 +43,7 @@ def link_previous_slices_round1(seg_s1: ndarray, seg_s2: ndarray, labels_s1: nda
 
     Notes
     -----
+    labels_s1 is the flatten label list of all previous slices.
     The labels in s2 should have been modified to values higher than all labels in previous slices
     Note: Any value of seg_s2 should be higher than values in seg_s1
     """
@@ -59,7 +60,7 @@ def link_previous_slices_round1(seg_s1: ndarray, seg_s2: ndarray, labels_s1: nda
         original_and_transformed_labels_s1[label_i_in_s1] = target_new
         original_and_transformed_labels_s2[label_in_s2] = target_new
 
-    targets_s1 = np.arange(np.max(seg_s1) + 1)
+    targets_s1 = np.arange(np.max(labels_s1) + 1)
     for label, target in original_and_transformed_labels_s1.items():
         targets_s1[label] = target
     targets_s2 = np.arange(np.max(seg_s2) + 1)

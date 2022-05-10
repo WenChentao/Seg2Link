@@ -105,6 +105,8 @@ class Seg2LinkR1:
         self.current_slice += 1
         self.vis.widgets.show_state_info(f"Segmenting slice {self.current_slice} by watershed... Please wait")
         self.seg.watershed(self.current_slice)
+        if self.current_slice == 1 and self.seg.current_seg.max() == 0:
+            raise ValueError("No cell was found in slice #1")
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
         self.link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")
