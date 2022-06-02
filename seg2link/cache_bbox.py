@@ -1,7 +1,7 @@
 import pickle
 import os
 from pathlib import Path
-from typing import Tuple, List, Dict, Optional, Union, Set, Iterable, TYPE_CHECKING
+from typing import Tuple, List, Dict, Optional, Union, Set, TYPE_CHECKING
 
 import numpy as np
 from numpy import ndarray
@@ -26,10 +26,11 @@ class CacheBbox:
 
     def load_or_generate_bbox(self, labels_path: Path):
         bbox_path = self.generate_bbox_path(labels_path)
-        last_modi_time_bbox = os.path.getmtime(str(bbox_path))
         last_modi_time_labels = os.path.getmtime(str(labels_path))
-        if bbox_path.exists() and last_modi_time_bbox > last_modi_time_labels:
-            self.load_bbox(bbox_path)
+        if bbox_path.exists():
+            last_modi_time_bbox = os.path.getmtime(str(bbox_path))
+            if last_modi_time_bbox > last_modi_time_labels:
+                self.load_bbox(bbox_path)
         else:
             self.refresh_bboxes()
             self._save_bbox(bbox_path)

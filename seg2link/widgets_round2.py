@@ -231,7 +231,7 @@ class WidgetsR2:
             self.emseg2.cache_bbox.save_bbox(labels_path)
 
         def select_file() -> str:
-            seg_filename = "seg-modified-" + datetime.datetime.now().strftime("%Y-%h-%d-%p%I") + ".npy"
+            seg_filename = "seg-modified-" + datetime.datetime.now().strftime("%Y-%h-%d-%p%I-%M") + ".npy"
             mode_ = FileDialogMode.OPTIONAL_FILE
             return use_app().get_obj("show_file_dialog")(
                 mode_,

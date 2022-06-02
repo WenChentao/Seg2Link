@@ -49,6 +49,10 @@ $ conda activate seg2link-env
 ```console
 $ pip install seg2link
 ```
+- Update to the latest version:
+```console
+$ pip install --update seg2link
+```
 
 ## Use the software
 - Activate the created environment by:

@@ -7,6 +7,7 @@ from seg2link.start_round2 import start_r2
 
 logo = Path(__file__).parent / 'icon_small.png'
 
+
 @magicgui(
     auto_call=True,
     layout="verticapl",

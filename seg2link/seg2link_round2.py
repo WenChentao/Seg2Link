@@ -1,4 +1,3 @@
-import os
 import webbrowser
 from collections import namedtuple
 from pathlib import Path
