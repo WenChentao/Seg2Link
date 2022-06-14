@@ -1,18 +1,15 @@
 ### *Merge cells*
 
-1. Click a cell in **Pick Mode** to select it, and then press **A** to add the selected cell into the label list (Shown in the "states" panel).
+1. In Pick Mode, click a cell with the left mouse button to select it. Then, press A to add the cell to the label list (in the *States* panel).
    
-    ![select_cell](pictures/add_label1.png)
+    ![select_cell](./pictures/merge_1_annotation.png)
 
 2. Repeat step 1 to add more cells. 
    
-    ![add_cell](pictures/add_label2.png)
+    ![add_cell](./pictures/merge_2_annotation.png)
 
 3. Press **M** to merge the cells in the label list
    
-    ![merge_cells](pictures/merge.png)
-   
-   ```
-   Note:
-   - To clear the label list, press C.
-   ```
+    ![merge_cells](./pictures/merge_done_annotation.png)
+
+   **Note**: To clean the label list before applying merge, press **C**.
