@@ -240,9 +240,9 @@ class Seg2LinkR1:
             else:
                 delete_list = self.label_list if self.label_list else viewer_seg.selected_label
                 self.labels.delete(delete_list)
+                self.vis.widgets.show_state_info(f"Label(s) {delete_list} were deleted")
                 self.label_list.clear()
                 self.save_and_refresh("Delete label(s)")
-                self.vis.widgets.show_state_info(f"Label(s) {delete_list} were deleted")
 
         @viewer_seg.bind_key(parameters.pars.key_undo)
         @print_information("Undo")
