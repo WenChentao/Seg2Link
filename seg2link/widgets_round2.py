@@ -273,6 +273,7 @@ class WidgetsR2:
         def save_sorted_labels():
             remove_save(self.remove_sort_window.max_cell_num.value)
             self.remove_sort_window.hide()
+            self.remove_sort_window.save_button.changed.disconnect()
 
         def remove_save(max_cell_num):
             if self.emseg2.labels_path.parent.exists():
