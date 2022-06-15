@@ -13,5 +13,8 @@
       1. Correct the segmentation in slice **i** with following operations:
           - [*Merge*](./merge.md) / [*Delete*](./delete.md) / [*Division*](./divide.md) / [*Division-Relink*](./divide_relink.md).
       2. Generate automatic segmentation in the [*Next slice*](./next.md) **i**.
+      
+         *Note*: The incorrect operations in 1 and 2 can be canceled with undo/redo (Press **U** or **F**).
+ 
       3. Repeat 1 and 2 until all slices are segmented and linked.
       4. [*Export*](./export.md) the segmentation as a .npy file.

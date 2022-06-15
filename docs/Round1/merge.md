@@ -1,6 +1,6 @@
 ### *Merge cells*
 
-1. In Pick Mode, click a cell with the left mouse button to select it. Then, press A to add the cell to the label list (in the *States* panel).
+1. In **Pick Mode**, click a cell with the left mouse button to select it. Then, press **A** to add the cell to the label list (in the *States* panel).
    
     ![select_cell](./pictures/merge_1_annotation.png)
 

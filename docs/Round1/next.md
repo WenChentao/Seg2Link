@@ -1,11 +1,15 @@
 ### *Next slice*
 
-1. Before go to the next slice, corrected all errors in current working slice *i*.
+Correct all errors in current working slice *i*. Then you can go to the next slice *i* + 1
+
+1. Before operation
 
     Slice 1
     ![slice1](./pictures/division_relink_preslice.png)
 
-2. Press **Shift + N**, then the next slice *i*+1 is automatically segmented and linked to slice *i*.
+2. Press **Shift + N**
    
     Slice 2
     ![slice2](./pictures/division_postslice.png)
+
+    ***Now the slice 2 has been automatically segmented and linked to slice 1.***

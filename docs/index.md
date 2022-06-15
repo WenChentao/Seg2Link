@@ -1,3 +1,13 @@
 # Welcome to Seg2Link
 
-[Quick start](./quick_start.md)
+Seg2Link is a program designed to semi-automatically segment 3D EM images. 
+It takes an inaccurate deep learning cell/non-cell prediction as input 
+and assists users in quickly transforming the prediction into accurate cell segmentation.
+
+[Install Seg2Link](./quick_start.md#install-seg2link)
+
+[Segment cells with Seg2Link](./quick_start.md#use-seg2link)
+
+[Frequently asked questions](./FAQ.md)
+
+[Repository in GitHub](https://github.com/WenChentao/Seg2Link)
