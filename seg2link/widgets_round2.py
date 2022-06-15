@@ -253,7 +253,6 @@ class WidgetsR2:
                 self.emseg2.cache_bbox.load_or_generate_bbox(Path(labels_path))
                 self.update_info()
 
-
         @remove_and_save.changed.connect
         def show_info_remove_cells():
             self.show_state_info("Sorting cells... Please wait")
