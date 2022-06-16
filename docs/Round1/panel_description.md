@@ -46,7 +46,10 @@ Export the 3D segmentation result.
 ### 9. Current state information
 Show information of current state such like:
 
-- The program is performing operation xxx;
-- Operation xxx was finished;
+- Performing operation xxx...;
+- Operation xxx was done;
 - Warning message: xxx;
 - etc.
+
+***IMPORTANT***: 
+Always confirm the previous operation has been finished before starting the next operation.

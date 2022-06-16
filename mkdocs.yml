@@ -6,7 +6,6 @@ nav:
     - Home: 'index.md'
     - Quick start: 'quick_start.md'
     - FAQ: 'FAQ.md'
-    - Screenshots: 'screenshots.md'
     - Round1 - Seg2D+Link:
       - Workflow: 'Round1/start_r1.md'
       - Parameters description: 'Round1/parameter_setting.md'
@@ -16,7 +15,7 @@ nav:
       - Divide a cell: 'Round1/divide.md'
       - Divide + Relink: 'Round1/divide_relink.md'
       - Next slice: 'Round1/next.md'
-      - Export as 3D array: 'Round1/export.md'
+      - Export as 3D array: 'Round1/save_load_export.md'
     - Round2 - 3D correction:
       - Start round 2: 'Round2/start_r2.md'
       - Panel description: 'Round2/panel_description.md'
@@ -27,4 +26,4 @@ nav:
       - Divide a cell (3D): 'Round2/divide_3d.md'
       - Insert a cell: 'Round2/insert.md'
       - Sort and remove tiny cells: 'Round2/sort_remove.md'
-      - Export as TIFF images: 'Round2/export.md'
+      - Save/Load/Export: 'Round2/save_load_export.md'

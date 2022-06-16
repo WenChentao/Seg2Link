@@ -15,5 +15,5 @@
           - [*Merge*](./merge.md) / [*Delete*](./delete.md) / [*Division*](./divide.md#division) / [*Division-Relink*](./divide.md#divisionrelink) 
          / [*3D Division*](./divide_3d.md) / [*Insert*](./insert.md)
       3. [*Sort*](./sort_remove.md#sort-cells) cells by sizes and [*Remove tiny cells*](./sort_remove.md#remove-tiny-cells).
-      4. [*Save and load*](./save_load.md) intermediate segmentation results.
-      5. [*Export*](./export.md) the segmentation as 2D Tiff images.
+      4. [*Save and load*](./save_load_export.md#saveload) intermediate segmentation results.
+      5. [*Export*](./save_load_export.md#export) the segmentation as 2D Tiff images.

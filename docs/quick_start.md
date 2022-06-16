@@ -31,9 +31,10 @@ $ conda activate seg2link-env
 ![start_seg2link](./Round1/pictures/launch.png)
 * Here we created and activated a custom environment called *seg2link* rather than *seg2link-env*.
 
+![choose_round](./Round1/pictures/select_round.png)
+
 ### Choose a module
 - Choose a proper module to perform:
     - the semi-automatic segmentation (in Module [Seg2D+Link](./Round1/start_r1.md))
     - or the comprehensive 3D inspection and corrections (in Module [3D correction](./Round2/start_r2.md))
 
-![choose_round](./Round1/pictures/select_round.png)
