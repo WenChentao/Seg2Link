@@ -1,5 +1,6 @@
 ### Insert a cell
 
+#### Procedure
 1. Suppose you want to paint a new cell in the background region.
 
     ![press-button](./pictures/insert_s1_1.png)
@@ -18,4 +19,7 @@
     And draw with the painter.
     ![press-button](./pictures/insert_s2_2_annotation.png)
 
+#### Note: How to cancel the insert
+Currently, the Insert operation cannot be cancelled with undo/redo. 
+If it is not required, you can delete it by pressing **D**.
 

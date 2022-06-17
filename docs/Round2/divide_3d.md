@@ -1,8 +1,8 @@
 ### Division (3D)
 
-The division 3D divide a cell based on 3D connectivity. It should be used in following two cases:
+Divide a cell based on 3D connectivity. It should be used in following two cases:
 
-#### Incorrect merge of spatially separated cells
+#### Divide incorrect merged cells that are spatially separated
 1. The cell 2 should be divided into two cells due to the careless incorrect merge operation by the user.
 
     ![slice1](./pictures/division_3d_1_annotation.png)
@@ -13,7 +13,7 @@ The division 3D divide a cell based on 3D connectivity. It should be used in fol
     - *The cell was correctly divided into two cells.*
 
 #### Divide two cells connected along z-axis
-1. Suppose we need to divide the cell 36 into two cells, with the slice 10 as boundary.
+1. Here are three slices of cell 36. Suppose we need to divide it into two cells, with slice 10 as the boundary.
 
     Slice 9
     ![slice1](./pictures/division_3d_s9_annotation.png)

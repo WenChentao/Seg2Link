@@ -28,7 +28,7 @@
 
 #### Notes: How to go back
 - After applying sorting/removing operation, the cache of the actions will be reset. Users cannot use undo/redo to cancel the operation.
-- The segmentations before/after the operation are automatically saved as two files:
+- Instead, the segmentations before/after the operation are automatically saved as two files:
     - seg-modified_before_sort_remove.npy
     - seg-modified_after_sort_remove.npy
 - If users are unsatisfied with the result, retrieve the previous state with [Load](./save_load_export.md#load) function.
