@@ -29,7 +29,6 @@ USR_CONFIG = UserConfig()
     cell_value={"label": "Value of the cell region"},
     mask_value={"label": "Value of the mask region", "visible": False},
     error_info={"widget_type": "TextEdit", "label": "Warnings:", "visible": False},
-    image_size={"label": "Image size (segmentation)", "enabled": False},
     path_cells={"label": "Open image sequence: Cell regions (*.tiff):", "mode": "d"},
     path_raw={"label": "Open image sequence: Raw images (*.tiff):", "mode": "d"},
     path_mask={"label": "Open image sequence: Mask images (*.tiff):", "mode": "d", "visible": False},
@@ -50,7 +49,6 @@ def start_r2(
         path_mask=CURRENT_DIR,
         path_result=CURRENT_DIR,
         seg_dir=CURRENT_DIR,
-        image_size="",
         cell_value=2,
         mask_value=2,
         error_info="",
@@ -127,7 +125,6 @@ def load_segmentation(path_seg: Path):
         warnings.warn(f"segmentation should has dtype {parameters.pars.dtype_r2}. Transforming...")
         segmentation = segmentation.astype(parameters.pars.dtype_r2, copy=False)
     label_shape = segmentation.shape
-    start_r2.image_size.value = f"H: {label_shape[0]}  W: {label_shape[1]}  D: {label_shape[2]}"
     print("Segmentation shape:", label_shape, "dtype:", segmentation.dtype)
     return segmentation
 
