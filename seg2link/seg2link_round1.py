@@ -309,8 +309,8 @@ class Seg2LinkR1:
 
     @staticmethod
     def sort_remove_tiny(seg_array):
-        tc = TinyCells(seg_array)
-        tc.sort_by_areas()
+        tc = TinyCells()
+        tc.sort_by_areas(seg_array)
         if parameters.pars.dtype_r2 == np.uint16 and seg_array.dtype == np.uint32:
             sorted_labels = tc.remove_and_relabel(seg_array, parameters.pars.upper_limit_export_r1).astype(np.uint16)
         elif parameters.pars.dtype_r2 == np.uint32:

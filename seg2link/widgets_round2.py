@@ -28,7 +28,7 @@ class WidgetsR2:
     def __init__(self, vis: "VisualizeAll"):
         self.viewer = vis.viewer
         self.emseg2 = vis.emseg2
-        self.tiny_cells = TinyCells(self.emseg2.labels)
+        self.tiny_cells = TinyCells()
         self.label_max = 0
 
         # Hotkeys panel
@@ -256,7 +256,8 @@ class WidgetsR2:
         @remove_and_save.changed.connect
         def show_info_remove_cells():
             self.show_state_info("Sorting cells... Please wait")
-            self.tiny_cells.sort_by_areas()
+            print(f"before removing, max label:{np.max(self.emseg2.labels)}")
+            self.tiny_cells.sort_by_areas(label_image=self.emseg2.labels)
             self.remove_sort_window.width = 400
             self.remove_sort_window.height = 200
             self.remove_sort_window.show(run=True)

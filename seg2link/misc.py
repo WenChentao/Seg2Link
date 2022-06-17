@@ -128,11 +128,11 @@ def make_folder(path_i: Path) -> Path:
 
 class TinyCells:
 
-    def __init__(self, image3d: ndarray):
-        self.label_image = image3d
+    def __init__(self):
+        pass
 
-    def sort_by_areas(self):
-        labels, areas = np.unique(self.label_image, return_counts=True)
+    def sort_by_areas(self, label_image: ndarray):
+        labels, areas = np.unique(label_image, return_counts=True)
         idxes_sorted = sorted(range(1, len(labels)), key=lambda i: areas[i], reverse=True)
         self.sorted_labels = labels[idxes_sorted]
         self.sorted_areas = areas[idxes_sorted]
