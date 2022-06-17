@@ -15,9 +15,10 @@ nav:
       - Divide a cell: 'Round1/divide.md'
       - Divide + Relink: 'Round1/divide_relink.md'
       - Next slice: 'Round1/next.md'
-      - Export as 3D array: 'Round1/save_load_export.md'
+      - Export as 3D array: 'Round1/export.md'
     - Round2 - 3D correction:
       - Start round 2: 'Round2/start_r2.md'
+      - Parameters description: 'Round2/parameter_setting.md'
       - Panel description: 'Round2/panel_description.md'
       - Localize a cell: 'Round2/localize.md'
       - Merge cells: 'Round2/merge.md'

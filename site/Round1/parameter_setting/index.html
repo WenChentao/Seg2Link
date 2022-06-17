@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/Round1/parameter_setting/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Parameters description - Seg2Link</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Parameters description";
+        var mkdocs_page_input_path = "Round1\\parameter_setting.md";
+        var mkdocs_page_url = "/Round1/parameter_setting/";
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Seg2Link
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quick_start/">Quick start</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../FAQ/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round1 - Seg2D+Link</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../start_r1/">Workflow</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Parameters description</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#parameter-panels">Parameter panels</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-paths-of-imagesresults">1. Paths of images/results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-parameters">2. Parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-saveload-the-pathsparameters">3. Save/Load the paths/parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-use-mask-images">4. Use Mask images</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-warning-information">5. Warning information</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-start-the-seg2dlink-module">6. Start the Seg2D+Link Module</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../panel_description/">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../merge/">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../delete/">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../divide/">Divide a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../divide_relink/">Divide + Relink</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../next/">Next slice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../export/">Export as 3D array</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round2 - 3D correction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/start_r2/">Start round 2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/parameter_setting/">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/panel_description/">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/localize/">Localize a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/merge/">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/delete/">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/divide/">Divide / Division-Relink (2D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/divide_3d/">Divide a cell (3D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/insert/">Insert a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/sort_remove/">Sort and remove tiny cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../Round2/save_load_export/">Save/Load/Export</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Seg2Link</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Round1 - Seg2D+Link &raquo;</li><li>Parameters description</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/Round1/parameter_setting.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="specify-imagesparameters-in-seg2dlink">Specify images/parameters in Seg2D+Link</h2>
+<h3 id="parameter-panels">Parameter panels</h3>
+<p><img alt="para_panels" src="../pictures/round1_set_para_description.png" /></p>
+<h3 id="1-paths-of-imagesresults">1. Paths of images/results</h3>
+<ul>
+<li>Users should specify three folders:<ol>
+<li>containing the cell/non-cell prediction images (2D Tiff images);</li>
+<li>containing the raw images (2D Tiff images);</li>
+<li>to store the segmentation results.</li>
+</ol>
+</li>
+</ul>
+<h3 id="2-parameters">2. Parameters</h3>
+<ul>
+<li>Users should specify following parameters:<ol>
+<li>Slice number to be retrieved. <ul>
+<li>Default value is the last slice that have been segmented.</li>
+<li>The segmentation results after the specified slice number will be deleted.</li>
+<li>If set it to 0, the program will restart the segmentation and remove all previous segmentation results.</li>
+</ul>
+</li>
+<li>Value of the cell region.<ul>
+<li>Set it according to the cell/non-cell images.</li>
+</ul>
+</li>
+<li>The minimal overlap coefficient.<ul>
+<li>This is a custom threshold used for linking cells across slices.</li>
+<li>Supposing there are two cells X and Y in two adjacent slices, their overlap coefficient = (Area(X ∩ Y) / min(Area(Y), Area(Y))</li>
+<li>If overlap(X, Y) &gt; the threshold, cells X and Y will be linked.</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<h3 id="3-saveload-the-pathsparameters">3. Save/Load the paths/parameters</h3>
+<ul>
+<li>Users can save the specified parameters in a .ini file and reload it later to avoid having to set the paths/parameters every time the software is launched.</li>
+</ul>
+<h3 id="4-use-mask-images">4. Use Mask images</h3>
+<p>This option allows users to segment cells in user-defined regions.
+When it is selected, the GUI will change as follows:
+<img alt="para_panels" src="../pictures/round1_set_para_mask.png" /></p>
+<p>Users should further specify following parameters:</p>
+<ol>
+<li>Fill holes.<ul>
+<li>Force the program to automatically fill the holes in the user-defined regions. The calculation will take a long time when processing large image (but only once).</li>
+</ul>
+</li>
+<li>Update cache of mask.<ul>
+<li>The cache is a .npy file of the original/holes-filled mask image. It was created to avoid repeated calculations after launching the software.</li>
+<li>Check this option will force the program to re-make the cache file, which will take a long time.</li>
+<li>If it is not checked, the program will try to load the mask data from the existed cache file.</li>
+</ul>
+</li>
+<li>Path for mask images.<ul>
+<li>Specify the folder containing the mask images (2D Tiff images);</li>
+</ul>
+</li>
+<li>Value of the mask region.<ul>
+<li>Set this to the value of the user-defined region in mask images.</li>
+</ul>
+</li>
+<li>The minimal overlap.<ul>
+<li>This is a custom threshold for ignoring cells outside of the user-defined regions..</li>
+<li>Assuming a cell A was partially located within the user-defined region, then the overlap = Area(A ∩ (the user-defined region)) / Area(A)</li>
+<li>If overlap(A) &lt;  the threshold, Cell A will be removed from the segmentation result.</li>
+</ul>
+</li>
+</ol>
+<h3 id="5-warning-information">5. Warning information</h3>
+<p>If the images or specified folders are not found, the warning information will be displayed here.</p>
+<h3 id="6-start-the-seg2dlink-module">6. Start the Seg2D+Link Module</h3>
+<p>Press this button to launch the Seg2D+Link module.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../start_r1/" class="btn btn-neutral float-left" title="Workflow"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../panel_description/" class="btn btn-neutral float-right" title="Panel description">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/WenChentao/Seg2Link" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../start_r1/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../panel_description/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
