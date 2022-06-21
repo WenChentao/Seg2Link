@@ -4,7 +4,7 @@
      
     ![set_para](./pictures/round2_set_para.png)
 
-2. Launch the main window of Seg2D+Link ([Panel descriptions](./panel_description.md))
+2. Launch the main window of 3D correction ([Panel descriptions](./panel_description.md))
    
     ![open_round2](./pictures/round2.png)
 

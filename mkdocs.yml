@@ -2,9 +2,13 @@ site_name: Seg2Link
 site_url: https://example.com/
 repo_url: https://github.com/WenChentao/Seg2Link
 theme: readthedocs
+markdown_extensions:
+  - attr_list
 nav:
     - Home: 'index.md'
-    - Quick start: 'quick_start.md'
+    - Overview: 'overview.md'
+    - Data preparation: 'seg2link-unet2d.md'
+    - Use Seg2Link: 'quick_start.md'
     - FAQ: 'FAQ.md'
     - Round1 - Seg2D+Link:
       - Workflow: 'Round1/start_r1.md'
