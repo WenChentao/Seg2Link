@@ -7,12 +7,12 @@
 See [descriptions of in round 1](../Round1/panel_description.md).
 
 ### 4. Current layer [cursor position] selected label
-Together with the [Localize](./localize.md) function, the **cursor position** can assist users in locating a cell.
+Together with the [Localize](./localize.md) function, the information of **cursor position** here can assist users in locating a cell.
 
 ### 6. States
-Four types of information/functions are supplied here:
+Four types of information/functions are shown here:
 
-1. The largest cell number in current segmentation result.
+1. The largest cell ID in current segmentation result.
 2. The cached states that can be retrieved with undo/redo.
 3. Select a cell ID and locate its position. See [Localize](./localize.md)
 4. The contents of the label list, used in [Merge](./merge.md) and [Delete](./delete.md)
@@ -29,7 +29,7 @@ Four types of information/functions are supplied here:
 - **Divide cell**
     - Show information of division result.
 - **Check it**
-    - Select a cell in the division result and jump to the slice of its center.
+    - Select a cell in the division result and jump to the slice containing its center.
     
 ### 10. Save/Export 
 - **Save segmentation**

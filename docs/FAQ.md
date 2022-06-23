@@ -13,14 +13,10 @@ A3: One possible reason is that your monitor's resolution is insufficient. We re
 
 The scale function in Windows could also cause problems. Try to modify or stop it to get an acceptable appearance.
 
-**Q4: How to prepare a cell/non-cell image**
 
-A4: You can train a deep neural network to predict cell/non-cell regions using either commercial software or a free program. 
-You can also try [the program we wrote for training and prediction with 2D U-Net](https://github.com/WenChentao/seg2link_unet2d).
+**Q4: Do I need a GPU to use Seg2Link?**
 
-**Q5: Do I need a GPU to use Seg2Link?**
-
-A5: No, the core functions of Seg2Link are realized using numpy and numpy-based libraries, which rely solely on the CPU.
+A4: No, the core functions of Seg2Link are realized using numpy and numpy-based libraries, which rely solely on the CPU.
 
 However, keep in mind that in order to train a deep neural network to predict cell/non-cell regions, you may require a GPU PC or free GPU resources from sites like Google Colab.
 

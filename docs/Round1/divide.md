@@ -2,7 +2,7 @@
 
 ####Defination/Notes
 
-- *Current working slice*: In Seg2D+Link Module, segmentation was generated and correctly sequentially.
+- *Current working slice*: In Seg2D+Link Module, segmentation was generated and corrected sequentially.
  At a specific time point, the slice i and the previous slices have been segmented, while slices after i have not been processed yet. 
  We define the slice i as the current working slice.
 - Because of the special data structure used in Seg2D+Link Module, the [Division]() and [Division+Relink](./divide_relink.md) can only be applied to current working slice. 
@@ -12,7 +12,7 @@
    
     ![select](./pictures/division_1_annotation.png)
 
-2. If necessary, zoom in (**Space + Mouse scroll wheel**) to view the details.
+2. If necessary, zoom in (**Space + Mouse scroll wheel**) to view the local regions.
    
     ![zoom](./pictures/division_2_annotation.png)
 

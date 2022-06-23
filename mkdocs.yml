@@ -3,7 +3,15 @@ site_url: https://example.com/
 repo_url: https://github.com/WenChentao/Seg2Link
 theme: readthedocs
 markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
   - attr_list
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
 nav:
     - Home: 'index.md'
     - Overview: 'overview.md'

@@ -18,4 +18,4 @@
    
     ![delete_cells](./pictures/delete_double_2_annotation.png)
 
-   **Note**: To clean the label list before applying merge, press **C**.
+   **Note**: To clean the label list before deleting, press **C**.

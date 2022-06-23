@@ -1,6 +1,6 @@
 ### Sort and remove tiny cells
 
-#### Sort cells
+#### Sort labels by their sizes
 1. Press the button "Sort labels and remove tiny cells". 
 
     ![press-button](./pictures/sort_1_annotation.png)
@@ -13,7 +13,7 @@
     ***The labels have been sorted according to their sizes!!***
 
 #### Remove tiny cells
-1. Press the button "Sort labels and remove tiny cells", and adjust the "Max cell number".
+1. Press the button "Sort labels and remove tiny cells", and adjust the "Max cell number" to 300.
 
     ![press-button](./pictures/sort_remove_1_annotation.png)
     ***The cells < 63 voxels will be removed!***
@@ -22,13 +22,14 @@
 
     ![press-button](./pictures/sort_remove_2_annotation.png)
 
-    ***Only 300 sorted larger cells were kept!!*** 
+    ***In the updated result, only 300 sorted larger cells were kept!!*** 
 
-    *You can inspect these larger cells with [*Localization*](./localize.md)*
+    *You can inspect these larger cells with [*Locate*](./localize.md)*
 
 #### Notes: How to go back
-- After applying sorting/removing operation, the cache of the actions will be reset. Users cannot use undo/redo to cancel the operation.
-- Instead, the segmentations before/after the operation are automatically saved as two files:
+- Because all of the voxels must be updated, caching the sorting operation requires a large amount of memory, which should be avoided.
+- To solve the problem, the segmentations before and after the operation are automatically saved as two files on the hard disk:
     - seg-modified_before_sort_remove.npy
     - seg-modified_after_sort_remove.npy
-- If users are unsatisfied with the result, retrieve the previous state with [Load](./save_load_export.md#load) function.
+- If users are unsatisfied with the result, reload the state before sorting/removing with [Load](./save_load_export.md#load) function.
+- After applying sorting/removing operation, the cache of the operations will be reset. Users cannot use undo/redo to return to even earlier states.

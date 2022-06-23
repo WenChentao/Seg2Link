@@ -6,6 +6,8 @@ and assists users in quickly transforming the prediction into accurate cell segm
 
 [Overview](./overview.md)
 
+[Data preparation](./seg2link-unet2d.md)
+
 [Install and use Seg2Link](./quick_start.md)
 
 [Frequently asked questions](./FAQ.md)

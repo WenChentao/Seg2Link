@@ -1,6 +1,6 @@
 ### Division+Relink
 
-When a label has been corrected segmented in slice i but not in slice i+1, you can use [**Division+Relink**]() to automatically link cells after Division, instead of apply [**Division**](./divide.md) and manually linking the results afterwards.
+When a label is correctly segmented in slice i but not in slice i+1, you can use [**Division+Relink**]() to divide and link cells automatically, which is much more efficient than [**Division**](./divide.md) + manual linking.
 
 1. Before operation:
 
@@ -10,7 +10,7 @@ When a label has been corrected segmented in slice i but not in slice i+1, you c
     Slice 2:
     ![select](./pictures/division_1_annotation.png)
 
-2. Correct the cell boundary in slice i+1 (See procedures 2 and 3 in [**Division**](./divide.md)). 
+2. Correct the cell boundary in slice 2 (See procedures 2 and 3 in [**Division**](./divide.md)). 
 
     ![edit](./pictures/division_3_annotation.png)
 
