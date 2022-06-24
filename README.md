@@ -1,4 +1,4 @@
-# ![icon](pic/icon.svg)
+# ![icon](docs/pics/icon.svg)
 
 **Seg2Link** is a software designed to semi-automatically segment 3D cell images, especially EM images. 
 
