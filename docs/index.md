@@ -1,10 +1,13 @@
 # Welcome to Seg2Link
 
-Seg2Link is a program designed to semi-automatically segment 3D EM images. 
-It takes an inaccurate deep learning cell/non-cell prediction as input 
-and assists users in quickly transforming the prediction into accurate cell segmentation.
+![icon](./pics/icon.svg)
 
-This user guide is corresponding to [*seg2link 0.1.2*]() and [*seg2link-unet2d 0.2.0*](https://pypi.org/project/seg2link-unet2d/)
+- Seg2Link is a program designed to semi-automatically segment 3D EM images. 
+It takes an inaccurate deep learning cell/non-cell prediction as input 
+and assists users in quickly transforming the prediction into accurate cell segmentation. 
+- To go along with it, we also provide Seg2Link-unet2d, a program for training deep neural networks to predict cellular/non-cellular regions.
+
+- This user guide applies to [*Seg2Link 0.1.2*]() and [*Seg2Link-unet2d 0.2.0*](https://pypi.org/project/seg2link-unet2d/)
 
 [Overview](./overview.md)
 
