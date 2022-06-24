@@ -69,6 +69,8 @@ $ conda activate unet2d
 ```
 
 ### 4. Launch the notebook for training
+Please select one of the two methods listed below based on the environment you are working in.
+
 #### 1) Launch the notebook in your local PC
 - Right click to download the notebook ([link](https://github.com/WenChentao/seg2link_unet2d/raw/master/Examples/Train%20and%20predict%20with%202D%20U-Net%20(clear).ipynb))
     - If the file is saved with .txt extension, change it to .ipynb.
@@ -147,7 +149,7 @@ root of your Google drive
 - Proceed to step 5 below for training.
 
 ### 5. Train 2D U-Net
-The steps below apply to both local PCs and Google Colab.
+The steps in 5 and 6 apply to both local PCs and Google Colab.
 
 - Run the code (Shift+Enter) to load packages.
 
