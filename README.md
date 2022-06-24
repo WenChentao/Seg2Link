@@ -2,14 +2,12 @@
 
 **Seg2Link** is a software designed to semi-automatically segment 3D cell images, especially EM images. 
 
-Check out this [**Online Guide**]() to learn how to install and use it.
+Read the documentation at [Seg2Link.io]().
 
 ## Features
-- Accept *imperfect* **cell/non-cell prediction** by machine learning as input.
-- Generate **automatic segmentation** in each slice.
-- Allows *easy* **inspection and manual corrections**. 
-- Allows *multiple-steps* of **undo/redo**
-- Can *efficiently* process **3D images with billions of voxels**.
+- **Utilize deep learning predictions** -- Seg2Link transforms inaccurate cell/non-cell predictions to accurate segmentation results of individual cells.
+- **Simplicity** -- Seg2Link generates segmentation automatically and allows for easy inspection and manual corrections.
+- **Efficient** -- Seg2Link is designed for the fast processing of medium-sized 3D images with billions of voxels.
   
 ## Workflow
 ```mermaid
