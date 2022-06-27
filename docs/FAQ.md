@@ -20,3 +20,10 @@ A4: No, the core functions of Seg2Link are realized using numpy and numpy-based 
 
 However, keep in mind that in order to train a deep neural network to predict cell/non-cell regions, you may require a GPU PC or free GPU resources from sites like Google Colab.
 
+**Q5: When I try to save the segmentation result, the software crashes with an OSError message. Why?**
+
+A5: The most likely cause is a lack of hard disk space to store the result. Please check the available space and increase it if necessary.
+
+**Q6: (In Round 1) I divided one cell into two cells with hotkey K/R, but they merged back into one after performing *Next slice*. Why?**
+
+A6: This is due to the fact that the two cells in the following slice are not well separated by a correct boundary. To solve it, correct the boundary in the new slice, then select the cell and press R. The merged cell will be separated.
