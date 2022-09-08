@@ -52,7 +52,7 @@ class WidgetsR2:
         self.max_label_info = widgets.LineEdit(label="Largest label", enabled=False)
         self.cached_action = widgets.TextEdit(label="Cached actions",
                                               tooltip=(f"Less than {parameters.pars.cache_length_r2} action can be cached"),
-                                              value="", enabled=False)
+                                              value="", enabled=True)
         self.locate_cell_button = LocateSelectedCellButton(label="Select label")
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
 

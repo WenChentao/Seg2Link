@@ -24,7 +24,7 @@ class WidgetsR1:
         self.max_label = widgets.LineEdit(label="Largest label", enabled=False)
         self.cached_action = widgets.TextEdit(label="Cached actions",
                                               tooltip=f"Less than {parameters.pars.cache_length_r1} action can be cached",
-                                              enabled=False)
+                                              enabled=True)
         self.label_list_msg = widgets.LineEdit(label="Label list", enabled=False)
 
         self.hotkeys_info_value = '[Shift + N]: Go to the next slice' \
