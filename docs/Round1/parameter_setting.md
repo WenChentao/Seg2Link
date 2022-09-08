@@ -25,6 +25,7 @@
 
 ### 3. Save/Load the paths/parameters
 - Users can save the specified parameters in a .ini file and reload it later to avoid having to set the paths/parameters every time the software is launched.
+- Users can modify other advanced parameters (e.g. the maximal number of steps of cached actions) in the saved .ini files ([Explanations](../advanced_parameters.md)).
 
 ### 4. Use Mask images
 This option allows users to segment cells in regions of interest (ROI) defined by users.

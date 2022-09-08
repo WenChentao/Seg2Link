@@ -6,6 +6,7 @@
 ### 1. Save/Load the configurations
 - Users can save the specified parameters in a configuration (.ini) file and reload it later to avoid having to set them every time the software is launched.
 - Users can load the same configuration file used in the Seg2D+Link module to reuse the shared parameters. 
+- Users can modify other advanced parameters (e.g. the maximal number of steps of cached actions) in the saved .ini files ([Explanations](../advanced_parameters.md)).
 
 ### 2. Use xxx images
 There are three options:
