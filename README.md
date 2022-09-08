@@ -13,7 +13,7 @@ Read the documentation at [Seg2Link.io]().
 ## Workflow
 ```mermaid
   flowchart TB
-  A[Raw Image]-->|DNN prediction|B1[Cell/NonCell]
+  A[Raw Image]-->|DNN prediction|B[Cell/NonCell]
 
   subgraph ide1 [Round #1: Seg2D+Link]
     B-->|Segment+Link|C[Linked 2D SEG. in layer i]
