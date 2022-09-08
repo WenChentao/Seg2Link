@@ -2,7 +2,7 @@
 
 ![icon](./pics/icon.svg)
 
-- Seg2Link is a program designed to semi-automatically segment 3D EM images. 
+- Seg2Link is a program designed to semi-automatically segment cells in 3D image stacks. 
 It takes an inaccurate deep learning cell/non-cell prediction as input 
 and assists users in quickly transforming the prediction into accurate cell segmentation. 
 - To go along with it, we also provide Seg2Link-unet2d, a program for training deep neural networks to predict cellular/non-cellular regions.
