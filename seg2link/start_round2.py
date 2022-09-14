@@ -58,8 +58,9 @@ def start_r2(
         cells = load_cells(cell_value, path_cells, file_cached=_npy_name(path_cells)) if enable_cell else None
         images = load_image_lazy(path_raw)
         mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
-        segmentation = load_segmentation(seg_dir) if load_seg_dir else load_segmentation(path_result)
-        Seg2LinkR2(images, cells, mask_dilated, segmentation, path_result)
+        path_labels = seg_dir if load_seg_dir else path_result
+        segmentation = load_segmentation(path_labels)
+        Seg2LinkR2(images, cells, mask_dilated, segmentation, path_labels)
         start_r2.close()
         return None
 
@@ -83,12 +84,13 @@ def test_paths_r2() -> bool:
 
 
 def check_seg_file() -> str:
+    if start_r2.load_seg_dir.value:
+        return ""
     if not start_r2.path_result.value.name.endswith(".npy"):
         return f'Warning: "{start_r2.path_result.value.name}" is not a .npy file'
-    elif not start_r2.path_result.value.exists():
+    if not start_r2.path_result.value.exists():
         return f'Warning: File "{start_r2.path_result.value.name}" does not exist'
-    else:
-        return ""
+    return ""
 
 
 def paths_r2() -> List[Path]:
@@ -96,7 +98,7 @@ def paths_r2() -> List[Path]:
     paths = [start_r2.path_raw.value, seg_dir]
     if start_r2.enable_mask.value:
         paths.insert(-1, start_r2.path_mask.value)
-    if start_r2.path_cells.value:
+    if start_r2.enable_cell.value:
         paths.insert(0, start_r2.path_cells.value)
     return paths
 
@@ -107,7 +109,7 @@ def tiff_folders_r2() -> List[Path]:
         paths.append(start_r2.seg_dir.value)
     if start_r2.enable_mask.value:
         paths.insert(-1, start_r2.path_mask.value)
-    if start_r2.path_cells.value:
+    if start_r2.enable_cell.value:
         paths.insert(0, start_r2.path_cells.value)
     return paths
 
@@ -118,6 +120,7 @@ def load_segmentation(path_seg: Path):
         segmentation = load_image_pil(path_seg)
         np.save(path_seg.parent / "seg_from_img_sequence.npy", segmentation)
         start_r2.path_result.value = path_seg.parent / "seg_from_img_sequence.npy"
+        _on_save_para_changed()
     else:
         segmentation = np.load(str(path_seg))
 
@@ -174,7 +177,7 @@ def _on_load_para_changed():
     start_r2.path_result.value = start_r2.path_result.value
     if USR_CONFIG.pars.r2:
         set_pars_r2(USR_CONFIG.pars.r2)
-    if USR_CONFIG.pars.r1["use_mask"]=="True":
+    if USR_CONFIG.pars.r1.get("use_mask") == "True":
         start_r2.enable_mask.visible = True
 
 
