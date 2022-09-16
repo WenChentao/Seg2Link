@@ -35,13 +35,13 @@ class StateR2(NamedTuple):
 class Seg2LinkR2:
     """Segment the cells in 3D EM images"""
     # TODO: The action insert now is not supported by undo/redo and this will be fixed in next version.
-    def __init__(self, raw: ndarray, cell_region: ndarray, mask: ndarray, labels: ndarray, labels_path: Path):
+    def __init__(self, raw: ndarray, cell_region: ndarray, mask: ndarray, labels: ndarray, labels_npy: Path):
         self.labels = labels
         self.divide_list = []
         self.label_list: Set[int] = set()
         self.s = slice(0, self.labels.shape[2])
         self.divide_subregion_slice = None
-        self.labels_path = labels_path
+        self.labels_path = labels_npy
         self.vis = VisualizeAll(self, raw, cell_region, mask)
         self.cache_bbox = CacheBbox(self)
         self.cache = CacheSubArray(self)

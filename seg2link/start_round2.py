@@ -59,8 +59,8 @@ def start_r2(
         images = load_image_lazy(path_raw)
         mask_dilated = load_mask(mask_value, path_mask, file_cached=_npy_name(path_mask)) if enable_mask else None
         path_labels = seg_dir if load_seg_dir else path_result
-        segmentation = load_segmentation(path_labels)
-        Seg2LinkR2(images, cells, mask_dilated, segmentation, path_labels)
+        segmentation, path_npy = load_segmentation(path_labels)
+        Seg2LinkR2(images, cells, mask_dilated, segmentation, path_npy)
         start_r2.close()
         return None
 
@@ -118,18 +118,19 @@ def load_segmentation(path_seg: Path):
     if path_seg.is_dir():
         print("Caching segmentation... Please wait")
         segmentation = load_image_pil(path_seg)
-        np.save(path_seg.parent / "seg_from_img_sequence.npy", segmentation)
-        start_r2.path_result.value = path_seg.parent / "seg_from_img_sequence.npy"
+        start_r2.path_result.value = path_seg.parent / (path_seg.stem + "_from_dir.npy")
+        np.save(start_r2.path_result.value, segmentation)
+        path_npy = start_r2.path_result.value
         _on_save_para_changed()
     else:
         segmentation = np.load(str(path_seg))
+        path_npy = path_seg
 
     if segmentation.dtype != parameters.pars.dtype_r2:
         warnings.warn(f"segmentation should has dtype {parameters.pars.dtype_r2}. Transforming...")
         segmentation = segmentation.astype(parameters.pars.dtype_r2, copy=False)
-    label_shape = segmentation.shape
-    print("Segmentation shape:", label_shape, "dtype:", segmentation.dtype)
-    return segmentation
+    print("Segmentation shape:", segmentation.shape, "dtype:", segmentation.dtype)
+    return segmentation, path_npy
 
 
 @start_r2.enable_mask.changed.connect

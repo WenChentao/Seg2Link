@@ -31,9 +31,10 @@ class CacheBbox:
             last_modi_time_bbox = os.path.getmtime(str(bbox_path))
             if last_modi_time_bbox > last_modi_time_labels:
                 self.load_bbox(bbox_path)
-        else:
-            self.refresh_bboxes()
-            self._save_bbox(bbox_path)
+                return
+        self.refresh_bboxes()
+        self._save_bbox(bbox_path)
+        return
 
     def load_bbox(self, bbox_path: Path):
         with open(bbox_path, 'rb') as f:
