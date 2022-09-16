@@ -49,8 +49,8 @@ def start_r2(
         path_mask=CURRENT_DIR,
         path_result=CURRENT_DIR,
         seg_dir=CURRENT_DIR,
-        cell_value=2,
-        mask_value=2,
+        cell_value=1,
+        mask_value=1,
         error_info="",
 ):
     """Run some computation."""
