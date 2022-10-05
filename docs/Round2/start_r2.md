@@ -6,7 +6,7 @@
 
 2. Launch the main window of 3D correction ([Panel descriptions](./panel_description.md))
    
-    ![open_round2](./pictures/round2.png)
+    ![open_round2](../pics/round2_screenshot.png)
 
 3. Perform inspections and corrections with following operations:
 

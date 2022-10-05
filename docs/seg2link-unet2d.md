@@ -4,12 +4,12 @@ We will show you how to predict cell/non-cell using free software/programs. Howe
 
 ### 1. Prepare raw images
 
-![Raw-image](./pics/raw_0020.png){: style="width:350px"}
+![Raw-image](./pics/raw_public.png){: style="width:350px"}
 
 You should prepare an image stack saved as 2D images of tiff format.
 Please note that currently our training program only supports ***grayscale*** image.
 
-Download the [Demo data]().
+Download a [demo dataset](https://osf.io/wngty/).
 
 ### 2. Annotate cells
 Here we describe the annotations with [Fiji](https://imagej.net/software/fiji/), 
@@ -17,35 +17,33 @@ but you can use any other tools you prefer for the annotation.
 
 1. Drag and drop one slice of the raw image into Fiji.
 
-    ![raw](./pics/annotation_1.png){: style="width:350px"}
+    ![raw](./pics/annotation_raw.png){: style="width:350px"}
 
-2. Select a small subregion and crop:
+2. You can select a small subregion and crop it (We don't do it here):
 
-    ![raw](./pics/annotation_2_crop.png){: style="width:350px"}
+3. Save the 2D image as *train_image0000.tif*, under the directory *train_image*
 
-3. Save the cropped image as *train_image0000.tif*, under the directory *train_image*
-
-    ![raw](./pics/annotation_save_crop.png){: style="width:350px"}
+    ![raw](./pics/annotation_save_raw.png){: style="width:350px"}
 
 4. Double-click the paintbrush tool, and check the *Paint on overlay*
 
-    ![raw](./pics/annotation_3_paintbrush.png){: style="width:350px"}
+    ![raw](./pics/annotation_paintbrush.png){: style="width:350px"}
 
 5. Paint the non-cell regions
 
-    ![raw](./pics/annotation_4_paint.png){: style="width:350px"}
+    ![raw](./pics/annotation_paint.png){: style="width:350px"}
 
 6. After the painting is done, create a mask image from the overlay:
 
-    ![raw](./pics/annotation_5_creatmask.png){: style="width:350px"}  
+    ![raw](./pics/annotation_create_mask.png){: style="width:350px"}  
     
-    ![raw](./pics/annotation_5_mask.png){: style="width:160px"}
+    ![raw](./pics/annotation_mask.png){: style="width:300px"}
 
 7. Invert the mask image so that non-cell regions have a value of 0:
    
-    ![raw](./pics/annotation_5_invertmask.png){: style="width:350px"}  
+    ![raw](./pics/annotation_invert.png){: style="width:350px"}  
     
-    ![raw](./pics/annotation_5_invertedmask.png){: style="width:160px"}
+    ![raw](./pics/annotation_inverted.png){: style="width:300px"}
 
 8. Save the mask image as *train_cells0000.tif*, under the directory *train_label*
 
@@ -72,7 +70,7 @@ $ conda activate unet2d
 Please select one of the two methods listed below based on the environment you are working in.
 
 #### 1) Launch the notebook in your local PC
-- Right click to download the notebook ([link](https://github.com/WenChentao/seg2link_unet2d/raw/master/Examples/Train%20and%20predict%20with%202D%20U-Net%20(clear).ipynb))
+- Right click to download the notebook ([link](https://github.com/WenChentao/seg2link_unet2d/raw/master/Examples/Train_and_predict_local.ipynb))
     - If the file is saved with .txt extension, change it to .ipynb.
 - Move to the directory containing the notebook. (replace C:/xxx/xxx/ with the real path)
 ```console
@@ -110,7 +108,7 @@ C:/xxx/xxx
 - Open the notebook and proceed to step 5 below for training.
 
 #### 2) Launch the notebook in Google Colab
-- Right click to download the notebook ([link](https://github.com/WenChentao/seg2link_unet2d/raw/master/Examples/Train%20and%20predict%20with%202D%20U-Net%20(clear).ipynb))
+- Right click to download the notebook ([link](https://github.com/WenChentao/seg2link_unet2d/raw/master/Examples/Train_and_predict_Google_Colab.ipynb))
     - If the file is saved with .txt extension, change it to .ipynb.
 - Launch [Google Colab](https://research.google.com/colaboratory/) and upload the downloaded notebook
 - Enable GPUs in Google Colab:
@@ -174,13 +172,14 @@ The steps in 5 and 6 apply to both local PCs and Google Colab.
     ![jupyter](./pics/division_augmentation.png){: style="width:450px"}  
 
 - Start training
-    - By default, you will apply 10 iterations x 3 times of training. But you can change the parameter *iteration* and apply more or less times of training.
+    - By default, you will apply 100 iterations x 1 times of training. But you can change the parameter *iteration* and apply more or less times of training.
     - Everytime the accuracy is improved, the model will be saved, and the prediction will be updated and displayed.
-    - *Results (Epochs 1-2)*
+    - You can force the U-Net to improve its accuracy in cell regions or non-cell regions by modifying the weights_cell_bg parameter.
+    - *Results (Epochs 1)*
   
         ![jupyter](./pics/train_1.png){: style="width:450px"}  
   
-    - *Results (Epochs 25-30)*
+    - *Results (Epochs 92-100)*
   
         ![jupyter](./pics/train_2.png){: style="width:450px"}  
   

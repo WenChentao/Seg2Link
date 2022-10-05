@@ -6,7 +6,7 @@
 
 2. Launch the main window of Seg2D+Link ([Panel descriptions](./panel_description.md))
    
-    ![open_round1](pictures/round1.png)
+    ![open_round1](../pics/round1_screenshot.png)
 
 3. Perform semi-automatic segmentations with following procedures:
 
