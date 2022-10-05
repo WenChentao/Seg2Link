@@ -153,11 +153,11 @@ class Seg2LinkR2:
             print(f"Cleaned the label list: {self.label_list}")
             self.update_info()
 
-        @viewer_seg.bind_key('Shift-t')
+        # @viewer_seg.bind_key('Shift-t')
         def test_search_time(viewer_seg):
             times_list = []
             for i, label in enumerate(self.cache_bbox.bbox):
-                if np.mod(i, 10) == 1:
+                if np.mod(i, 50) == 1:
                     print(f"locate label {label}", end="\r")
                     t1 = time.time()
                     try:
@@ -173,7 +173,6 @@ class Seg2LinkR2:
             print(f"mean time:{np.mean(times_list)}, std: {np.std(times_list)}")
             np.save("D:/EMSEG/public_data/time_list.npy", np.array(times_list))
             print(f"95 per:{np.percentile(times_list, 95)}, 5 per: {np.percentile(times_list, 5)}")
-
 
 
         @viewer_seg.bind_key(parameters.pars.key_merge)
