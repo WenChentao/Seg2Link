@@ -3,7 +3,7 @@
 **Seg2Link** is a software designed to semi-automatically segment cells in 3D image stacks, especially for the brain 
 images obtained by electron microscopy. 
 
-Read the documentation at [Seg2Link.io]().
+Read the documentation at [Seg2Link.io](https://wenchentao.github.io/Seg2Link/).
 
 ## Features
 - **Utilize deep learning predictions** -- Seg2Link assist users to create to accurate segmentation results of individual cells from inaccurate cell/non-cell predictions .
@@ -30,6 +30,9 @@ Read the documentation at [Seg2Link.io]().
 ```
 
 ## Install
+- During preparation
+
+<!---
 - Install [Anaconda](https://www.anaconda.com/products/individual) 
   or [Miniconda](https://conda.io/miniconda.html)
 - Create a new conda environment and activate it by:
@@ -55,3 +58,4 @@ $ conda activate seg2link-env
 ```console
 $ seg2link
 ```
+-->
