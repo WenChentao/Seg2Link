@@ -279,7 +279,7 @@ class Seg2LinkR1:
 
         @viewer_seg.bind_key(parameters.pars.key_online_help)
         def help(viewer_seg):
-            html_path = "https://github.com/WenChentao/Seg2Link/blob/master/Doc/help1.md"
+            html_path = "https://wenchentao.github.io/Seg2Link/Round1/start_r1.html"
             print(html_path)
             webbrowser.open(html_path)
 
