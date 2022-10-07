@@ -1,3 +1,5 @@
+[![PyPI](https://img.shields.io/pypi/v/seg2link)](https://pypi.org/project/seg2link/) [![GitHub](https://img.shields.io/github/license/WenChentao/3DeeCellTracker)](https://github.com/WenChentao/3DeeCellTracker/blob/master/LICENSE)
+
 # ![icon](docs/pics/icon.svg)
 
 **Seg2Link** is a software designed to semi-automatically segment cells in 3D image stacks, especially for the brain 
@@ -30,9 +32,6 @@ Read the documentation at [Seg2Link.io](https://wenchentao.github.io/Seg2Link/).
 ```
 
 ## Install
-- During preparation
-
-<!---
 - Install [Anaconda](https://www.anaconda.com/products/individual) 
   or [Miniconda](https://conda.io/miniconda.html)
 - Create a new conda environment and activate it by:
@@ -58,4 +57,3 @@ $ conda activate seg2link-env
 ```console
 $ seg2link
 ```
--->
