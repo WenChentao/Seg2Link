@@ -2,10 +2,11 @@
 
 # ![icon](docs/pics/icon.svg)
 
-**Seg2Link** is a software designed to semi-automatically segment cells in 3D image stacks, especially for the brain 
+**Seg2Link** is a [napari](https://napari.org
+)-based software program, designed to semi-automatically segment cells in 3D image stacks, especially for the brain 
 images obtained by electron microscopy. 
 
-Read the documentation at [Seg2Link.io](https://wenchentao.github.io/Seg2Link/).
+You can read the [documentation](https://wenchentao.github.io/Seg2Link/) to learn how to use it.
 
 ## Features
 - **Utilize deep learning predictions** -- Seg2Link assist users to create to accurate segmentation results of individual cells from inaccurate cell/non-cell predictions .
