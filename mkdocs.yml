@@ -1,6 +1,7 @@
-site_name: Seg2Link
-site_url: https://example.com/
+site_name: Seg2Link Documentation
+site_url: https://wenchentao.github.io/Seg2Link/index.html
 repo_url: https://github.com/WenChentao/Seg2Link
+site_author: Chentao Wen
 theme: readthedocs
 markdown_extensions:
   - pymdownx.arithmatex:
