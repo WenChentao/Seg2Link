@@ -8,6 +8,8 @@ images obtained by electron microscopy.
 
 You can read the [documentation](https://wenchentao.github.io/Seg2Link/) to learn how to use it.
 
+Seg2Link requires predictions of cell/non-cell regions as inputs, which can be created with [Seg2linkUnet2d](https://github.com/WenChentao/seg2link_unet2d) ([Documentation](https://wenchentao.github.io/Seg2Link/seg2link-unet2d.html))
+
 ## Features
 - **Utilize deep learning predictions** -- Seg2Link assist users to create to accurate segmentation results of individual cells from inaccurate cell/non-cell predictions .
 - **Simplicity** -- Seg2Link generates segmentation automatically and allows for easy inspection and manual corrections.
