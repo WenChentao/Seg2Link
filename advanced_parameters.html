@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="None" /><link rel="canonical" href="https://example.com/index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/advanced_parameters.html" />
       <link rel="shortcut icon" href="img/favicon.ico" />
-    <title>Seg2Link</title>
+    <title>Advanced parameters - Seg2Link</title>
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Home";
-        var mkdocs_page_input_path = "index.md";
-        var mkdocs_page_url = "/index.html";
+        var mkdocs_page_name = "Advanced parameters";
+        var mkdocs_page_input_path = "advanced_parameters.md";
+        var mkdocs_page_url = "/advanced_parameters.html";
       </script>
     
     <script src="js/jquery-3.6.0.min.js" defer></script>
@@ -40,10 +40,8 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="index.html">Home</a>
-    <ul class="current">
-    </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a>
                 </li>
               </ul>
               <ul>
@@ -62,8 +60,8 @@
                 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a>
                 </li>
               </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="advanced_parameters.html">Advanced parameters</a>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="advanced_parameters.html">Advanced parameters</a>
                 </li>
               </ul>
               <p class="caption"><span class="caption-text">Round1 - Seg2D+Link</span></p>
@@ -125,9 +123,9 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Home</li>
+    <li><a href="index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Advanced parameters</li>
     <li class="wy-breadcrumbs-aside">
-        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/index.md"
+        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/advanced_parameters.md"
           class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
@@ -137,29 +135,89 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="welcome-to-seg2link">Welcome to Seg2Link</h1>
-<p><img alt="icon" src="pics/icon.svg" /></p>
-<ul>
-<li>Seg2Link is a program designed to semi-automatically segment cells in 3D image stacks. 
-It takes an inaccurate deep learning cell/non-cell prediction as input 
-and assists users in quickly transforming the prediction into accurate cell segmentation. </li>
+                <p>The config.ini file stores the parameters set in the GUIs in round 1 or round 2, and also the advanced parameters 
+controlling the details. In most cases, these advanced parameters do not need modifications.</p>
+<p><img alt="config_screenshot" src="pics/config_notepad.png" /></p>
+<p>To modify these advanced parameters, open the saved config.ini file with a text editor, edit them, and save the results.
+The modified parameters will be applied after loading the modified config.ini in 
+<a href="Round1/parameter_setting.html#3-saveload-the-pathsparameters">round 1</a> or 
+<a href="Round2/parameter_setting.html#1-saveload-the-configurations">round 2</a>.</p>
+<p>Here are the explanations of these advanced parameters:</p>
+<ol>
+<li>cache_length_r1 = 10</li>
 <li>
-<p>To go along with it, we also provide Seg2Link-unet2d, a program for training deep neural networks to predict cellular/non-cellular regions.</p>
+<p>cache_length_r2 = 5</p>
+<p>The maximal number of steps of cached actions. The default values for round 1 and 2 are 10 and 5, respectively.
+Users could set it to a larger value, but keep in mind that this will take up more RAM, especially in round 2.</p>
 </li>
 <li>
-<p>This user guide applies to <a href=""><em>Seg2Link 0.1.2</em></a> and <a href="https://pypi.org/project/seg2link-unet2d/"><em>Seg2Link-unet2d 0.2.0</em></a></p>
+<p>raw_bit = 8</p>
+<p>The bit depth of the raw image. Used to set the contrast. By default 8 bit.</p>
 </li>
-</ul>
-<p><a href="overview.html">Overview</a></p>
-<p><a href="seg2link-unet2d.html">Data preparation</a></p>
-<p><a href="quick_start.html">Install and use Seg2Link</a></p>
-<p><a href="FAQ.html">Frequently asked questions</a></p>
-<p><a href="https://github.com/WenChentao/Seg2Link">Repository in GitHub</a></p>
+<li>
+<p>seg_bit_r2 = 16</p>
+<p>The bit depth to store the segmentation results as numpy array file. By default 16. Set it to 32 will allow users to
+analyze more cells than 65536, whereas this will also occupy double space of RAM. Set it to other values is illegal. </p>
+</li>
+<li>
+<p>upper_limit_labels_r2 = 64000</p>
+<p>The limitation of the allowed largest cell ID. When a new operation leads to ever large ID. The program will show a
+warning message to ask users to delete unnecessary cells. By default 64000. Set it to a vallue &lt; 65535 if set_bit_r2 = 16,
+or set it to a value &lt; 65535^2 -1 if set_bit_r2 =32.</p>
+</li>
+<li>
+<p>max_draw_layers_r1 = 100</p>
+<p>The maximal number of slices that can displayed on the screen in round 1. By default 100. Increase this value will 
+slow down the updating of the segmentation results after each operation.</p>
+</li>
+<li>
+<p>scale_xyz = (1, 1, 10)</p>
+<p>The scaling factors used when displaying the image stack in 3D view, corresponding to x, y, and z direction. By default (1, 1, 10),
+which indicates a much lower (1/10) resolution between slices than in the x-y plane. If you don't use the 3D view, you don't need to change it.</p>
+</li>
+<li>
+<p>h_watershed = 5</p>
+<p>Used to inhibit over-segmentation. A larger value will lead to a autosegmentation with less cells. By default 5. 
+Must be an integer &gt;= 1.</p>
+</li>
+<li>
+<p>add_boundary_mode = 2D</p>
+<p>Currently unused.</p>
+</li>
+<li>
+<p>labels_dilate_kernel_r2 = (3, 3, 1)</p>
+<p>Currently unused.</p>
+</li>
+<li>
+<p>mask_dilate_kernel = (25, 25, 7)</p>
+<p>Used to fill "gaps" region in the mask image, corresponding to x, y, and z direction. By default (25, 25, 7).
+A larger value will fill larger "gaps". If you don't use mask image, you don't need to change it. </p>
+</li>
+<li>
+<p>key_add = a</p>
+</li>
+<li>key_clean = c</li>
+<li>key_merge = m </li>
+<li>key_delete = d </li>
+<li>key_undo = u </li>
+<li>key_redo = f </li>
+<li>key_next_r1 = Shift-n </li>
+<li>key_separate_link = r </li>
+<li>key_separate = k </li>
+<li>key_insert = i </li>
+<li>key_switch_one_label_all_labels = q </li>
+<li>
+<p>key_online_help = h</p>
+<p>The hot-keys used for each operation. could be a single letter or a letter combined with Control, Alt, and Shift. 
+Take care not to conflict with each other, and not overwrite the required hotkeys supplied by napari (such as E: eraser and L: pick mode).</p>
+</li>
+</ol>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="overview.html" class="btn btn-neutral float-right" title="Overview">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="FAQ.html" class="btn btn-neutral float-left" title="FAQ"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="Round1/start_r1.html" class="btn btn-neutral float-right" title="Workflow">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -186,8 +244,10 @@ and assists users in quickly transforming the prediction into accurate cell segm
         </span>
     
     
+      <span><a href="FAQ.html" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-      <span><a href="overview.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+      <span><a href="Round1/start_r1.html" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
@@ -206,8 +266,3 @@ and assists users in quickly transforming the prediction into accurate cell segm
 
 </body>
 </html>
-
-<!--
-MkDocs version : 1.3.0
-Build Date UTC : 2022-10-07 05:30:13.591027+00:00
--->

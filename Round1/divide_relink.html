@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/Round1/divide_relink.html" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Divide + Relink - Seg2Link</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Divide + Relink";
+        var mkdocs_page_input_path = "Round1\\divide_relink.md";
+        var mkdocs_page_url = "/Round1/divide_relink.html";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../index.html" class="icon icon-home"> Seg2Link
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../seg2link-unet2d.html">Data preparation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Use Seg2Link</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../FAQ.html">FAQ</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced_parameters.html">Advanced parameters</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round1 - Seg2D+Link</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="start_r1.html">Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="parameter_setting.html">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="panel_description.html">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="divide.html">Divide a cell</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="divide_relink.html">Divide + Relink</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="next.html">Next slice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="export.html">Export as 3D array</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round2 - 3D correction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/start_r2.html">Start round 2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/parameter_setting.html">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/panel_description.html">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/localize.html">Localize a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/divide.html">Divide / Division-Relink (2D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/divide_3d.html">Divide a cell (3D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/insert.html">Insert a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/sort_remove.html">Sort and remove tiny cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/save_load_export.html">Save/Load/Export</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Seg2Link</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Round1 - Seg2D+Link &raquo;</li><li>Divide + Relink</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/Round1/divide_relink.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h3 id="divisionrelink">Division+Relink</h3>
+<p>When a label is correctly segmented in slice i but not in slice i+1, you can use <a href=""><strong>Division+Relink</strong></a> to divide and link cells automatically, which is much more efficient than <a href="divide.html"><strong>Division</strong></a> + manual linking.</p>
+<ol>
+<li>
+<p>Before operation:</p>
+<p>Slice 1:
+<img alt="select" src="pictures/division_relink_preslice.png" /></p>
+<p>Slice 2:
+<img alt="select" src="pictures/division_1_annotation.png" /></p>
+</li>
+<li>
+<p>Correct the cell boundary in slice 2 (See procedures 2 and 3 in <a href="divide.html"><strong>Division</strong></a>). </p>
+<p><img alt="edit" src="pictures/division_3_annotation.png" /></p>
+</li>
+<li>
+<p>Switch to the <strong>Picker Mode</strong> by pressing <strong>L</strong>. Click the cell to be divided and then press <strong>R</strong>.</p>
+<p><img alt="divide" src="pictures/division_relink_annotation.png" /></p>
+<p><strong><em>Now the cell in slice 2 has been divided and correctly linked to the cells in slice 1!</em></strong></p>
+</li>
+</ol>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="divide.html" class="btn btn-neutral float-left" title="Divide a cell"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="next.html" class="btn btn-neutral float-right" title="Next slice">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/WenChentao/Seg2Link" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="divide.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="next.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../javascripts/mathjax.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

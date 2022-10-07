@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="None" /><link rel="canonical" href="https://example.com/index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/quick_start.html" />
       <link rel="shortcut icon" href="img/favicon.ico" />
-    <title>Seg2Link</title>
+    <title>Use Seg2Link - Seg2Link</title>
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Home";
-        var mkdocs_page_input_path = "index.md";
-        var mkdocs_page_url = "/index.html";
+        var mkdocs_page_name = "Use Seg2Link";
+        var mkdocs_page_input_path = "quick_start.md";
+        var mkdocs_page_url = "/quick_start.html";
       </script>
     
     <script src="js/jquery-3.6.0.min.js" defer></script>
@@ -40,10 +40,8 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="index.html">Home</a>
-    <ul class="current">
-    </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a>
                 </li>
               </ul>
               <ul>
@@ -54,8 +52,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="seg2link-unet2d.html">Data preparation</a>
                 </li>
               </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="quick_start.html">Use Seg2Link</a>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="quick_start.html">Use Seg2Link</a>
+    <ul class="current">
+    </ul>
                 </li>
               </ul>
               <ul>
@@ -125,9 +125,9 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Home</li>
+    <li><a href="index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Use Seg2Link</li>
     <li class="wy-breadcrumbs-aside">
-        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/index.md"
+        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/quick_start.md"
           class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
@@ -137,29 +137,57 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="welcome-to-seg2link">Welcome to Seg2Link</h1>
-<p><img alt="icon" src="pics/icon.svg" /></p>
+                <h2 id="install-seg2link">Install Seg2Link</h2>
 <ul>
-<li>Seg2Link is a program designed to semi-automatically segment cells in 3D image stacks. 
-It takes an inaccurate deep learning cell/non-cell prediction as input 
-and assists users in quickly transforming the prediction into accurate cell segmentation. </li>
+<li>Install <a href="https://www.anaconda.com/products/individual">Anaconda</a> 
+  or <a href="https://conda.io/miniconda.html">Miniconda</a></li>
+<li>Launch the Anaconda PowerShell Prompt in Windows or the terminal in macOS/Linux. Create a new conda environment with a custom name, such as seg2link-env, and activate it by running following commands:</li>
+</ul>
+<pre><code class="language-console">$ conda create -n seg2link-env python=3.8 pip
+$ conda activate seg2link-env
+</code></pre>
+<ul>
+<li>Install Seg2Link:</li>
+</ul>
+<pre><code class="language-console">(seg2link-env) $ pip install seg2link
+</code></pre>
+<h2 id="use-seg2link">Use Seg2Link</h2>
+<h3 id="data-preparation">Data preparation</h3>
+<p>Before performing segmentation, you must have at least the following data:</p>
+<ol>
+<li>A 3D cell image saved in a folder as a set of 2D Tiff images.</li>
+<li>A cellular/non-cellular prediction based on 1, saved in a different folder as 2D Tiff images.</li>
+</ol>
+<h3 id="launch-seg2link">Launch Seg2Link</h3>
+<ul>
+<li>Activate the created environment and launch Seg2link:</li>
+</ul>
+<pre><code class="language-console">$ conda activate seg2link-env
+(seg2link-env) $ seg2link
+</code></pre>
+<ul>
 <li>
-<p>To go along with it, we also provide Seg2Link-unet2d, a program for training deep neural networks to predict cellular/non-cellular regions.</p>
-</li>
-<li>
-<p>This user guide applies to <a href=""><em>Seg2Link 0.1.2</em></a> and <a href="https://pypi.org/project/seg2link-unet2d/"><em>Seg2Link-unet2d 0.2.0</em></a></p>
+<p>Screenshots</p>
+<p><img alt="start_seg2link" src="Round1/pictures/launch.png" /></p>
+<p>Note I used an environment name <em>seg2link</em> rather than <em>seg2link-env</em>.</p>
+<p><img alt="choose_round" src="Round1/pictures/select_round.png" style="width:350px" /></p>
+<p>An initial interface is displayed.</p>
 </li>
 </ul>
-<p><a href="overview.html">Overview</a></p>
-<p><a href="seg2link-unet2d.html">Data preparation</a></p>
-<p><a href="quick_start.html">Install and use Seg2Link</a></p>
-<p><a href="FAQ.html">Frequently asked questions</a></p>
-<p><a href="https://github.com/WenChentao/Seg2Link">Repository in GitHub</a></p>
+<h3 id="choose-a-module">Choose a module</h3>
+<ul>
+<li>Choose a proper module from the initial interface to perform:<ul>
+<li>the semi-automatic segmentation (in Module <a href="Round1/start_r1.html">Seg2D+Link</a>)</li>
+<li>or the comprehensive 3D inspection and corrections (in Module <a href="Round2/start_r2.html">3D correction</a>)</li>
+</ul>
+</li>
+</ul>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="overview.html" class="btn btn-neutral float-right" title="Overview">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="seg2link-unet2d.html" class="btn btn-neutral float-left" title="Data preparation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="FAQ.html" class="btn btn-neutral float-right" title="FAQ">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -186,8 +214,10 @@ and assists users in quickly transforming the prediction into accurate cell segm
         </span>
     
     
+      <span><a href="seg2link-unet2d.html" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-      <span><a href="overview.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+      <span><a href="FAQ.html" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
@@ -206,8 +236,3 @@ and assists users in quickly transforming the prediction into accurate cell segm
 
 </body>
 </html>
-
-<!--
-MkDocs version : 1.3.0
-Build Date UTC : 2022-10-07 05:30:13.591027+00:00
--->

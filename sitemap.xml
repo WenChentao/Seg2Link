@@ -1,128 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://example.com/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/index.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/FAQ/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/FAQ.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/overview/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/advanced_parameters.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/quick_start/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/overview.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/seg2link-unet2d/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/quick_start.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/delete/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/seg2link-unet2d.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/divide/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/delete.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/divide_relink/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/divide.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/export/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/divide_relink.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/merge/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/export.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/next/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/merge.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/panel_description/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/next.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/parameter_setting/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/panel_description.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round1/start_r1/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/parameter_setting.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/delete/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round1/start_r1.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/divide/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/delete.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/divide_3d/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/divide.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/insert/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/divide_3d.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/localize/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/insert.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/merge/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/localize.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/panel_description/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/merge.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/parameter_setting/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/panel_description.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/save_load_export/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/parameter_setting.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/sort_remove/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/save_load_export.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/Round2/start_r2/</loc>
-         <lastmod>2022-06-24</lastmod>
+         <loc>https://example.com/Round2/sort_remove.html</loc>
+         <lastmod>2022-10-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://example.com/Round2/start_r2.html</loc>
+         <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

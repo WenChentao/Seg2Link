@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/Round1/panel_description.html" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Panel description - Seg2Link</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Panel description";
+        var mkdocs_page_input_path = "Round1\\panel_description.md";
+        var mkdocs_page_url = "/Round1/panel_description.html";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../index.html" class="icon icon-home"> Seg2Link
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../seg2link-unet2d.html">Data preparation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Use Seg2Link</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../FAQ.html">FAQ</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced_parameters.html">Advanced parameters</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round1 - Seg2D+Link</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="start_r1.html">Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="parameter_setting.html">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="panel_description.html">Panel description</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#panels">Panels</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-layer-controls">1. Layer controls</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-layer-list">2. Layer list</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-tools-for-change-the-view-point">3. Tools for change the view point</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-current-layercursor-positionselected-label">4. Current layer/cursor position/selected label</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-canvas-segmentation-results">5. Canvas (Segmentation results)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-states">6. States</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-hotkeys-information">7. Hotkeys information</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-export">8. Export</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9-state-info">9. State info</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="divide.html">Divide a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="divide_relink.html">Divide + Relink</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="next.html">Next slice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="export.html">Export as 3D array</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round2 - 3D correction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/start_r2.html">Start round 2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/parameter_setting.html">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/panel_description.html">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/localize.html">Localize a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/divide.html">Divide / Division-Relink (2D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/divide_3d.html">Divide a cell (3D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/insert.html">Insert a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/sort_remove.html">Sort and remove tiny cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round2/save_load_export.html">Save/Load/Export</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Seg2Link</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Round1 - Seg2D+Link &raquo;</li><li>Panel description</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/Round1/panel_description.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="panels-description">Panels description</h2>
+<h3 id="panels">Panels</h3>
+<p><img alt="para_panels" src="pictures/round1_panel_description.png" /></p>
+<h3 id="1-layer-controls">1. Layer controls</h3>
+<p>This is a default panel in napari viewer for viewing/editing a label layer (segmentation layer).</p>
+<p>Here are some key features:</p>
+<ul>
+<li>Picker mode: You can select a label by clicking it with mouse. Press L to change to this mode.<ul>
+<li>Pan/Zoom: You can hold space key and use left button/wheel of mouse to pan/zoom the image in Picker mode.</li>
+</ul>
+</li>
+<li>Eraser: You can set a pixel as non-cell region (set the value to 0) with the eraser tool. Press E to change to this tool.</li>
+<li>Paint brush: You can paint a region with a specific label. Press P to change to this tool.</li>
+<li>Shuffle colors: Two neighboring cells can occasionally be assigned the same color. To shuffle the colors, press this button (top leftmost).</li>
+</ul>
+<h3 id="2-layer-list">2. Layer list</h3>
+<p>You can select a layer from segmentation, cell/non-cell image, raw image, etc., and can hide or change the opacity of them.</p>
+<h3 id="3-tools-for-change-the-view-point">3. Tools for change the view point</h3>
+<p>The most import function here is the "home" function (rightmost), which allows you to resize the image to see the entire image.</p>
+<h3 id="4-current-layercursor-positionselected-label">4. Current layer/cursor position/selected label</h3>
+<p>This panel is not used in this module, but it is useful in Module 3D correction.</p>
+<h3 id="5-canvas-segmentation-results">5. Canvas (Segmentation results)</h3>
+<p>The segmentation results and other reference images are shown here.</p>
+<ul>
+<li>
+<p>The slice number of the currently displayed one can be easily calculated using the information surrounding the slide bar.</p>
+<p>E.g, "Slice(1-50)" together with "12|49" indicate current slice number = 1 + 12 = 13.</p>
+</li>
+</ul>
+<h3 id="6-states">6. States</h3>
+<p>Three types of information are shown here:</p>
+<ol>
+<li>The size of the 3D image.</li>
+<li>The largest cell ID in current segmentation result.</li>
+<li>The cached states that can be retrieved using undo/redo (By default, 10 steps in maximum).</li>
+</ol>
+<h3 id="7-hotkeys-information">7. Hotkeys information</h3>
+<p>The (default) hotkeys used in Seg2D+Link module.</p>
+<h3 id="8-export">8. Export</h3>
+<p>Export the 3D segmentation result.</p>
+<h3 id="9-state-info">9. State info</h3>
+<p>Show information of current state such like:</p>
+<ul>
+<li>Performing operation xxx...;</li>
+<li>Operation xxx was done;</li>
+<li>Warning message: xxx;</li>
+<li>etc.</li>
+</ul>
+<p><strong><em>IMPORTANT</em></strong>: 
+To avoid software crashes, always ensure that the previous operation is finished before starting the next.d</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="parameter_setting.html" class="btn btn-neutral float-left" title="Parameters description"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="merge.html" class="btn btn-neutral float-right" title="Merge cells">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/WenChentao/Seg2Link" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="parameter_setting.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="merge.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../javascripts/mathjax.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

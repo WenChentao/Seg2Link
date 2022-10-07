@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/Round2/divide_3d.html" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Divide a cell (3D) - Seg2Link</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Divide a cell (3D)";
+        var mkdocs_page_input_path = "Round2\\divide_3d.md";
+        var mkdocs_page_url = "/Round2/divide_3d.html";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../index.html" class="icon icon-home"> Seg2Link
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../seg2link-unet2d.html">Data preparation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Use Seg2Link</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../FAQ.html">FAQ</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced_parameters.html">Advanced parameters</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round1 - Seg2D+Link</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/start_r1.html">Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/parameter_setting.html">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/panel_description.html">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/divide.html">Divide a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/divide_relink.html">Divide + Relink</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/next.html">Next slice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/export.html">Export as 3D array</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round2 - 3D correction</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="start_r2.html">Start round 2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="parameter_setting.html">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="panel_description.html">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="localize.html">Localize a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="divide.html">Divide / Division-Relink (2D)</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="divide_3d.html">Divide a cell (3D)</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#divide-incorrect-merged-cells-that-are-spatially-separated">Divide incorrect merged cells that are spatially separated</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#divide-two-cells-connected-along-z-axis">Divide two cells connected along z-axis</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="insert.html">Insert a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="sort_remove.html">Sort and remove tiny cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="save_load_export.html">Save/Load/Export</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Seg2Link</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Round2 - 3D correction &raquo;</li><li>Divide a cell (3D)</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/Round2/divide_3d.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h3 id="division-3d">Division (3D)</h3>
+<p>Divide a cell based on 3D connectivity. It should be used in following two cases:</p>
+<h4 id="divide-incorrect-merged-cells-that-are-spatially-separated">Divide incorrect merged cells that are spatially separated</h4>
+<ol>
+<li>
+<p>The label 2 should be divided into two cells due to the careless incorrect merge operation by the user.</p>
+<p><img alt="slice1" src="pictures/division_3d_1_annotation.png" /></p>
+</li>
+<li>
+<p>Choose <strong>3D mode</strong>. Click the label 2 in <strong>Picker Mode</strong>. Then press <strong>K</strong> to divide it. 
+    <img alt="slice1" src="pictures/division_3d_2_annotation.png" /></p>
+<ul>
+<li><em>The label was correctly divided into two cells.</em></li>
+</ul>
+</li>
+</ol>
+<h4 id="divide-two-cells-connected-along-z-axis">Divide two cells connected along z-axis</h4>
+<ol>
+<li>
+<p>Here are three slices of label 36. Suppose we need to divide it into two cells, with slice 10 as the boundary.</p>
+<p>Slice 9
+<img alt="slice1" src="pictures/division_3d_s9_annotation.png" />
+Slice 10
+<img alt="slice1" src="pictures/division_3d_s10_annotation.png" />
+Slice 11
+<img alt="slice1" src="pictures/division_3d_s11_annotation.png" /></p>
+</li>
+<li>
+<p>Move to slice 10. Use bucket tool to fill the cell region with label 0 (i.e. as boundary)</p>
+<p><img alt="slice1" src="pictures/division_3d_s10_clean_annotation.png" /></p>
+</li>
+<li>
+<p>Go back to slice 9. Click label 36. Press K in 3D mode.</p>
+<p>Slice 9
+<img alt="slice1" src="pictures/division_3d_s9_2.png" />
+Slice 10
+<img alt="slice1" src="pictures/division_3d_s10_clean.png" />
+Slice 11
+<img alt="slice1" src="pictures/division_3d_s11_2.png" /></p>
+<p><em>The label 36 has been divided into two cells along z-axis!</em></p>
+</li>
+</ol>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="divide.html" class="btn btn-neutral float-left" title="Divide / Division-Relink (2D)"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="insert.html" class="btn btn-neutral float-right" title="Insert a cell">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/WenChentao/Seg2Link" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="divide.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="insert.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../javascripts/mathjax.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

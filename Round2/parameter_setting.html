@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/Round2/parameter_setting.html" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Parameters description - Seg2Link</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Parameters description";
+        var mkdocs_page_input_path = "Round2\\parameter_setting.md";
+        var mkdocs_page_url = "/Round2/parameter_setting.html";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../index.html" class="icon icon-home"> Seg2Link
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../seg2link-unet2d.html">Data preparation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Use Seg2Link</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../FAQ.html">FAQ</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced_parameters.html">Advanced parameters</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round1 - Seg2D+Link</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/start_r1.html">Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/parameter_setting.html">Parameters description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/panel_description.html">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/divide.html">Divide a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/divide_relink.html">Divide + Relink</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/next.html">Next slice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Round1/export.html">Export as 3D array</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Round2 - 3D correction</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="start_r2.html">Start round 2</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="parameter_setting.html">Parameters description</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#parameter-panels">Parameter panels</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-saveload-the-configurations">1. Save/Load the configurations</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-use-xxx-images">2. Use xxx images</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-paths-of-images-segmentation-results">3. Paths of images / segmentation results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-parameters-warning">4. Parameters &amp; Warning</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-start-the-3d-correction-module">5. Start the 3D correction Module</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="panel_description.html">Panel description</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="localize.html">Localize a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="merge.html">Merge cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="delete.html">Delete cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="divide.html">Divide / Division-Relink (2D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="divide_3d.html">Divide a cell (3D)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="insert.html">Insert a cell</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="sort_remove.html">Sort and remove tiny cells</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="save_load_export.html">Save/Load/Export</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Seg2Link</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Round2 - 3D correction &raquo;</li><li>Parameters description</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/WenChentao/Seg2Link/edit/master/docs/Round2/parameter_setting.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="specify-imagesparameters-in-3d-correction">Specify images/parameters in 3D correction</h2>
+<h3 id="parameter-panels">Parameter panels</h3>
+<p><img alt="para_panels" src="pictures/round2_set_para_annotation.png" /></p>
+<h3 id="1-saveload-the-configurations">1. Save/Load the configurations</h3>
+<ul>
+<li>Users can save the specified parameters in a configuration (.ini) file and reload it later to avoid having to set them every time the software is launched.</li>
+<li>Users can load the same configuration file used in the Seg2D+Link module to reuse the shared parameters. </li>
+<li>Users can modify other advanced parameters (e.g. the maximal number of steps of cached actions) in the saved .ini files (<a href="../advanced_parameters.html">Explanations</a>).</li>
+</ul>
+<h3 id="2-use-xxx-images">2. Use xxx images</h3>
+<p>There are three options:</p>
+<ol>
+<li>Use the Mask images<ul>
+<li>Check it if you want to display the mask image.</li>
+<li>If the configuration file is loaded from Round 1 that does not use mask images, this option becomes invisible.</li>
+</ul>
+</li>
+<li>Use the Cell-region images<ul>
+<li>Check it if you want to display the predictions of the cell/non-cell regions.</li>
+</ul>
+</li>
+<li>Use image sequence as segmentation<ul>
+<li>Check it if you want to use 3D segmentation which is generated from other software and is saved as 2D TIFF images.</li>
+<li>Do not check it if you have used Seg2D+Link module and saved the 3D segmentation result in npy format.</li>
+</ul>
+</li>
+</ol>
+<h3 id="3-paths-of-images-segmentation-results">3. Paths of images / segmentation results</h3>
+<p>Users should specify following paths:</p>
+<ol>
+<li>The folder containing the cell/non-cell prediction images (2D TIFF images);</li>
+<li>The folder containing the raw images (2D TIFF images);</li>
+<li>The path to the previously created segmentation results file.<ul>
+<li>Uncheck the box in <em>2-3</em> to use the segmentation result in npy format.</li>
+<li>Check the box in <em>2-3</em> to use the segmentation result saved as 2D TIFF images.</li>
+</ul>
+</li>
+<li>The folder containing the mask images (2D TIFF images).<ul>
+<li>This option is only available if you checked the box in <em>2-1</em>.</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-parameters-warning">4. Parameters &amp; Warning</h3>
+<p>The parameter (value of cell region) and warning here are similar to the ones in <a href="../Round1/parameter_setting.html#2-parameters">Parameters</a> and <a href="../Round1/parameter_setting.html#5-warning-information">Warning</a> in Round 1.</p>
+<h3 id="5-start-the-3d-correction-module">5. Start the 3D correction Module</h3>
+<p>Press this button to launch the 3D correction module.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="start_r2.html" class="btn btn-neutral float-left" title="Start round 2"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="panel_description.html" class="btn btn-neutral float-right" title="Panel description">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/WenChentao/Seg2Link" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="start_r2.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="panel_description.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../javascripts/mathjax.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
