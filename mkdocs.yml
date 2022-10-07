@@ -22,7 +22,7 @@ nav:
     - FAQ: 'FAQ.md'
     - Advanced parameters: 'advanced_parameters.md'
     - Round1 - Seg2D+Link:
-      - Workflow: 'Round1/start_r1.md'
+      - Start round 1: 'Round1/start_r1.md'
       - Parameters description: 'Round1/parameter_setting.md'
       - Panel description: 'Round1/panel_description.md'
       - Merge cells: 'Round1/merge.md'
