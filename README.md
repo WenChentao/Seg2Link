@@ -48,7 +48,7 @@ $ pip install seg2link
 ```
 - Update to the latest version:
 ```console
-$ pip install --update seg2link
+$ pip install --upgrade seg2link
 ```
 
 ## Use the software
