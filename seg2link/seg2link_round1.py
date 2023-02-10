@@ -102,6 +102,9 @@ class Seg2LinkR1:
 
     def next_slice(self):
         """Save label until current slice and then segment and link to the next slice"""
+        if self.current_slice == self.layer_num:
+            return True
+
         self.current_slice += 1
         self.vis.widgets.show_state_info(f"Segmenting slice {self.current_slice} by watershed... Please wait")
         self.seg.watershed(self.current_slice)
@@ -114,6 +117,7 @@ class Seg2LinkR1:
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
         self.link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")
+        return False
 
     def relink(self, modified_label: ndarray):
         self.labels.relink_or_append_labels()
@@ -144,7 +148,10 @@ class Seg2LinkR1:
         def _next_slice(viewer_seg):
             """To the next slice"""
             self.vis.widgets.show_state_info(f"Segmenting and linking... Please wait")
-            self.next_slice()
+            is_last_slice = self.next_slice()
+            if is_last_slice:
+                self.vis.widgets.show_state_info(f"This is the last slice!!!")
+                return
             self.save_and_refresh(f"Next slice ({self.current_slice})")
             self.vis.widgets.show_state_info(f"Segmenting and linking were done")
 
