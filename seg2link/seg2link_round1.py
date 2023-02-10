@@ -95,8 +95,8 @@ class Seg2LinkR1:
     def link_and_relabel(self):
         @test_link_r1(self)
         def link_relabel():
-            self.labels.link_or_append_labels()
-            if self.current_slice >= 2:
+            should_relabel = self.labels.link_or_append_labels()
+            if should_relabel:
                 self.labels.relabel()
         link_relabel()
 
@@ -105,8 +105,12 @@ class Seg2LinkR1:
         self.current_slice += 1
         self.vis.widgets.show_state_info(f"Segmenting slice {self.current_slice} by watershed... Please wait")
         self.seg.watershed(self.current_slice)
-        if self.current_slice == 1 and self.seg.current_seg.max() == 0:
-            raise ValueError("No cell was found in slice #1")
+        if self.seg.current_seg.max() == 0:
+            self.vis.widgets.show_state_info(f"Warning: no cell was detected in slice{self.current_slice+1}!")
+            self.labels.append_labels(self.seg)
+            self.archive.archive_labels_and_seg2d()
+            self.next_slice()
+            return
         self.vis.widgets.show_state_info(f"Linking with previous slice {self.current_slice}... Please wait")
         self.link_and_relabel()
         self.vis.widgets.show_state_info(f"Linking was done")

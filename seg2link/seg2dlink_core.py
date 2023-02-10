@@ -98,8 +98,10 @@ class Labels:
     def max_label(self) -> int:
         if len(self._labels) == 0:
             return 0
-        else:
-            return max([item for sublist in self._labels for item in sublist])
+        label_lists = [item for sublist in self._labels for item in sublist]
+        if not label_lists:
+            return 0
+        return max(label_lists)
 
     def append_labels(self, initial_seg: Segmentation):
         _labels = np.unique(initial_seg.current_seg)
@@ -123,7 +125,8 @@ class Labels:
         labels_pre_1d = np.asarray(labels1d)
 
         seg_post = self.emseg1.seg.current_seg.copy()
-        seg_post[seg_post != 0] += max(labels1d)
+        if labels1d:
+            seg_post[seg_post != 0] += max(labels1d)
 
         labels_post = np.unique(seg_post)
         labels_post = labels_post[labels_post != 0]
@@ -145,12 +148,17 @@ class Labels:
     def link_or_append_labels(self):
         if self.emseg1.current_slice == 1:
             self.append_labels(self.emseg1.seg)
-            return
+            return False
 
         seg_pre, seg_post, list_post, list_pre_1d = self.get_seg_and_labels_tolink()
+        if np.max(seg_pre) == 0:
+            max_label = np.max(list_pre_1d) if list_pre_1d else 0
+            self._labels.append((list_post + max_label).tolist())
+            return False
         list_pre_1d_linked, list_post_linked = link_previous_slices_round1(
             seg_pre, seg_post, list_pre_1d, list_post, self.ratio_overlap)
         self._labels = self._to_labels2d(list_pre_1d_linked, self._label_nums) + [list_post_linked]
+        return True
 
     def relink_or_append_labels(self):
         labels_pre_now, labels_s2_now, labels_pre_past, seg_s1_past, seg_s2_now = \
