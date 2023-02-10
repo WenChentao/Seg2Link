@@ -107,10 +107,10 @@ def link_a_divided_label_round1(labels_pre_now: List[int], labels_s2_now: List[i
         original_and_transformed_labels_s1[label_i_in_s1] = target_new
         original_and_transformed_labels_s2[label_in_s2] = target_new
 
-    targets_s1 = np.arange(np.max(seg_s1) + 1)
+    targets_s1 = np.arange(np.max(labels_pre) + 1)
     for label, target in original_and_transformed_labels_s1.items():
         targets_s1[label] = target
-    targets_s2 = np.arange(np.max(seg_s2) + 1)
+    targets_s2 = np.arange(np.max(labels_s2) + 1)
     for label, target in original_and_transformed_labels_s2.items():
         targets_s2[label] = target
 
