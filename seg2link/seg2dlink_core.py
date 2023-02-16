@@ -152,7 +152,7 @@ class Labels:
 
         seg_pre, seg_post, list_post, list_pre_1d = self.get_seg_and_labels_tolink()
         if np.max(seg_pre) == 0:
-            max_label = np.max(list_pre_1d) if list_pre_1d else 0
+            max_label = np.max(list_pre_1d) if list_pre_1d.tolist() else 0
             self._labels.append((list_post + max_label).tolist())
             return False
         list_pre_1d_linked, list_post_linked = link_previous_slices_round1(
