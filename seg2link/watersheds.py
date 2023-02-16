@@ -18,6 +18,7 @@ def dist_watershed(cell_img2d: ndarray, h: int) -> ndarray:
     distance_map: ndarray = ndi.distance_transform_edt(cell_img2d)
     # Without this gaussian filtering, the h_maxima will generate multiple neighbouring maximum with the same distance,
     # leading to over-segmentation
+    # But this gaussian filtering could sometimes cause problems at the image edge regions. No general solution.
     distance_map_smooth = gaussian(distance_map, 1, preserve_range=True)
     h_maxima_of_distance_map: ndarray = h_maxima(distance_map_smooth, h=h)
     labels_by_connectivity: ndarray = measure.label(cell_img2d, connectivity=1)
