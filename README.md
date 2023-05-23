@@ -64,4 +64,4 @@ $ seg2link
 ## Citation
 If you used this package in your research please cite it:
 
-- Wen, C., Matsumoto, M., Sawada, M. et al. Seg2Link: an efficient and versatile solution for semi-automatic cell segmentation in 3D image stacks. Sci Rep 13, 7109 (2023). https://doi.org/10.1038/s41598-023-34232-6
+- Wen, C., Matsumoto, M., Sawada, M. et al. Seg2Link: an efficient and versatile solution for semi-automatic cell segmentation in 3D image stacks. _Sci Rep_ **13**, 7109 (2023). https://doi.org/10.1038/s41598-023-34232-6
