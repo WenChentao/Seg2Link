@@ -6,7 +6,7 @@
 )-based software program, designed to semi-automatically segment cells in 3D image stacks, especially for the brain 
 images obtained by electron microscopy. 
 
-You can read the [documentation](https://wenchentao.github.io/Seg2Link/) to learn how to use it and our [paper](https://doi.org/10.1101/2022.10.10.511670) for more details.
+You can read the [documentation](https://wenchentao.github.io/Seg2Link/) to learn how to use it and our [paper](https://doi.org/10.1038/s41598-023-34232-6) for more details.
 
 Seg2Link requires predictions of cell/non-cell regions as inputs, which can be created with [Seg2linkUnet2d](https://github.com/WenChentao/seg2link_unet2d) ([Documentation](https://wenchentao.github.io/Seg2Link/seg2link-unet2d.html))
 
