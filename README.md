@@ -19,24 +19,8 @@ Seg2Link requires predictions of cell/non-cell regions as inputs, which can be c
 - **Simplicity** -- Seg2Link generates segmentation automatically and allows for easy inspection and manual corrections.
 - **Efficient** -- Seg2Link is designed for the fast processing of medium-sized 3D images with billions of voxels.
   
-## Workflow
-```mermaid
-  flowchart TB
-  A[Raw Image]-->|DNN prediction|B[Cell/NonCell]
-
-  subgraph ide1 [Round #1: Seg2D+Link]
-    B-->|Segment+Link|C[Linked 2D SEG. in layer i]
-    C-->|Manual correction + <br> Seg+Link next layer|C
-    C-->D[Linked 2D SEG. in All layers]
-  end
-
-  subgraph ide2 [Round #2: 3D correction]
-    D-->|Export/Import|E[3D SEG.]
-    E-->|Manual <br/> correction|F[Completed SEG]
-    F-->|Export|G[TIFF image sequence]
-  end
-  A-->|Other software|E
-```
+## Introduction
+![Introduction](docs/pics/Introduction.png)
 
 ## Install
 - Install [Anaconda](https://www.anaconda.com/products/individual) 

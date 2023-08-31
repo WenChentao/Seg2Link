@@ -13,24 +13,9 @@ Seg2Link 需要细胞/非细胞区域的预测作为输入，这些可以通过 
 - **简单性** -- Seg2Link 自动生成分割，并允许轻松检查和手动更正。
 - **高效性** -- Seg2Link 专为快速处理包含数十亿体素的中等大小的3D图像而设计。
 
-## 工作流
-```mermaid
-  flowchart TB
-  A[原始图像]-->|DNN预测|B[细胞/非细胞]
+## 简介
+![简介](docs/pics/Introduction.png)
 
-  subgraph ide1 [第一轮:Seg2D+Link]
-    B-->|分割+链接|C[在第 i 层中链接的2D SEG]
-    C-->|手动更正 + <br> 分割+链接下一层|C
-    C-->D[在所有层中链接的2D SEG]
-  end
-
-  subgraph ide2 [第二轮:3D更正]
-    D-->|导出/导入|E[3D SEG]
-    E-->|手动<br/>更正|F[完成的 SEG]
-    F-->|导出|G[TIFF图像序列]
-  end
-  A-->|其他软件|E
-```
 
 ## 安装
 - 安装 [Anaconda](https://www.anaconda.com/products/individual) 或 [Miniconda](https://conda.io/miniconda.html)
