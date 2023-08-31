@@ -18,13 +18,13 @@ Seg2Link 需要细胞/非细胞区域的预测作为输入，这些可以通过 
   flowchart TB
   A[原始图像]-->|DNN预测|B[细胞/非细胞]
 
-  subgraph ide1 [第一轮：Seg2D+Link]
+  subgraph ide1 [第一轮:Seg2D+Link]
     B-->|分割+链接|C[在第 i 层中链接的2D SEG]
     C-->|手动更正 + <br> 分割+链接下一层|C
     C-->D[在所有层中链接的2D SEG]
   end
 
-  subgraph ide2 [第二轮：3D更正]
+  subgraph ide2 [第二轮:3D更正]
     D-->|导出/导入|E[3D SEG]
     E-->|手动<br/>更正|F[完成的 SEG]
     F-->|导出|G[TIFF图像序列]
