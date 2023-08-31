@@ -7,19 +7,22 @@
 # ![icon](docs/pics/icon.svg)
 
 **Seg2Link** is a [napari](https://napari.org
-)-based software program, designed to semi-automatically segment cells in 3D image stacks, especially for the brain 
-images obtained by electron microscopy. 
+)-based software specifically designed for scientific research. The software aims to tackle a focused problem: providing an efficient toolbox for auto-correcting segmentation in large-scale 3D cellular images, particularly useful for brain images obtained through electron microscopy.
 
-You can read the [documentation](https://wenchentao.github.io/Seg2Link/) to learn how to use it and our [paper](https://doi.org/10.1038/s41598-023-34232-6) for more details.
+Our extensive [documentation](https://wenchentao.github.io/Seg2Link/) 
+offers step-by-step tutorials, and our [academic paper](https://doi.org/10.1038/s41598-023-34232-6) delves into the scientific methodology and validation behind the software.
 
-Seg2Link requires predictions of cell/non-cell regions as inputs, which can be created with [Seg2linkUnet2d](https://github.com/WenChentao/seg2link_unet2d) ([Documentation](https://wenchentao.github.io/Seg2Link/seg2link-unet2d.html))
+Unlike other segmentation solutions, Seg2Link requires pre-processed predictions of cell/non-cell regions as inputs. 
+These predictions can conveniently be generated using [Seg2linkUnet2d](https://github.com/WenChentao/seg2link_unet2d) ([Documentation](https://wenchentao.github.io/Seg2Link/seg2link-unet2d.html)). This integrated approach makes the segmentation process both accurate and efficient.
 
 ## Features
-- **Utilize deep learning predictions** -- Seg2Link assist users to create to accurate segmentation results of individual cells from inaccurate cell/non-cell predictions .
-- **Simplicity** -- Seg2Link generates segmentation automatically and allows for easy inspection and manual corrections.
-- **Efficient** -- Seg2Link is designed for the fast processing of medium-sized 3D images with billions of voxels.
+- **Utilizing Deep Learning Predictions** -- Seg2Link takes deep learning predictions as input and refines initial inaccurate predictions into highly accurate results through semi-automatic user operations.
   
-## Introduction
+- **User-Friendly** -- Seg2Link not only auto-generates segmentation results but also allows for easy inspection and manual corrections through minimal mouse and keyboard interactions. It supports features like cell ordering, multiple-step undo and redo.
+
+- **Efficiency** -- Seg2Link is engineered for the rapid processing of large 3D images with billions of voxels.
+  
+## Graphic Overview
 ![Introduction](docs/pics/Introduction.png)
 
 ## Install

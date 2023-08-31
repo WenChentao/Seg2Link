@@ -6,19 +6,23 @@
 
 # ![icon](docs/pics/icon.svg)
 
-**Seg2Link** は [napari](https://napari.org) ベースのソフトウェアプログラムであり、特に電子顕微鏡で取得した脳組織の画像に対して、3Dイメージスタック内の細胞を半自動的にセグメントするように設計されています。
+**Seg2Link**は、[napari](https://napari.org) ベースのソフトウェアであり、科学研究のために特別に設計されています。このソフトウェアは、特に電子顕微鏡で取得された脳画像に有用な、大規模な3D細胞画像の自動セグメンテーション修正ツールボックスを提供することを目的としています。
 
-[ドキュメント](https://wenchentao.github.io/Seg2Link/) で使い方を学ぶことができ、また、[論文](https://doi.org/10.1038/s41598-023-34232-6) で詳細を読むことができます。
+私たちの詳細な [ドキュメント](https://wenchentao.github.io/Seg2Link/) では、段階的なチュートリアルが提供されており、
+[学術論文](https://doi.org/10.1038/s41598-023-34232-6) ではソフトウェア背後の科学的方法論と検証について詳しく説明しています。
 
-Seg2Link は、細胞/非細胞領域の予測を入力として必要とし、それらは [Seg2linkUnet2d](https://github.com/WenChentao/seg2link_unet2d) （[ドキュメント](https://wenchentao.github.io/Seg2Link/seg2link-unet2d.html)) で作成できます。
+他のセグメンテーションソリューションとは異なり、Seg2Linkは、入力として細胞/非細胞領域の事前処理された予測が必要です。これらの予測は、
+[Seg2linkUnet2d](https://github.com/WenChentao/seg2link_unet2d) （[ドキュメント](https://wenchentao.github.io/Seg2Link/seg2link-unet2d.html)) を使用して簡単に生成できます。この統合されたアプローチにより、セグメンテーションプロセスは正確かつ効率的になります。
 
-## 特徴
-- **ディープラーニングの予測を利用する** -- Seg2Link は、不正確な細胞/非細胞の予測から個々の細胞の正確なセグメンテーション結果を作成するためにユーザーを支援します。
-- **シンプル** -- Seg2Link は、セグメンテーションを自動的に生成し、簡単な検査と手動の修正を可能にします。
-- **効率的** -- Seg2Link は、数十億のボクセルを持つ中規模な3D画像を高速に処理するように設計されています。
+#### 特長
+- **深層学習の予測を利用** -- Seg2Linkは、深層学習の予測を入力として受け取り、半自動的なユーザー操作を通じて初期の不正確な予測を非常に正確な結果に洗練します。
+  
+- **ユーザーフレンドリー** -- Seg2Linkは、セグメンテーションの結果を自動生成するだけでなく、最小限のマウスとキーボードの操作で簡単に検査および手動修正が可能です。細胞の並べ替え、多段階の元に戻す・やり直しなどの機能がサポートされています。
 
-## 紹介
-![紹介](docs/pics/Introduction.png)
+- **効率** -- Seg2Linkは、数十億のボクセルを持つ大規模な3D画像を迅速に処理するように設計されています。
+
+## 画像での紹介
+![画像での紹介](docs/pics/Introduction.png)
 
 ## インストール
 - [Anaconda](https://www.anaconda.com/products/individual) または [Miniconda](https://conda.io/miniconda.html) をインストールします。
