@@ -7,7 +7,8 @@
 # ![icon](docs/pics/icon.svg)
 
 **Seg2Link** is a [napari](https://napari.org
-)-based software specifically designed for scientific research. The software aims to tackle a focused problem: providing an efficient toolbox for auto-correcting segmentation in large-scale 3D cellular images, particularly useful for brain images obtained through electron microscopy.
+)-based software specifically designed for scientific research. 
+The software aims to tackle a focused problem: offering an efficient toolbox for quick manual refinement of automated segmentation in large-scale 3D cellular images, particularly useful for brain images obtained through electron microscopy."
 
 Our extensive [documentation](https://wenchentao.github.io/Seg2Link/) 
 offers step-by-step tutorials, and our [academic paper](https://doi.org/10.1038/s41598-023-34232-6) delves into the scientific methodology and validation behind the software.
