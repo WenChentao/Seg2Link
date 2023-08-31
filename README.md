@@ -1,5 +1,9 @@
 [![PyPI](https://img.shields.io/pypi/v/seg2link)](https://pypi.org/project/seg2link/) [![GitHub](https://img.shields.io/github/license/WenChentao/3DeeCellTracker)](https://github.com/WenChentao/3DeeCellTracker/blob/master/LICENSE)
 
+## Language
+
+- [English](README.md) | [中文](README_zh.md)
+
 # ![icon](docs/pics/icon.svg)
 
 **Seg2Link** is a [napari](https://napari.org
