@@ -1,5 +1,9 @@
 [![PyPI](https://img.shields.io/pypi/v/seg2link)](https://pypi.org/project/seg2link/) [![GitHub](https://img.shields.io/github/license/WenChentao/3DeeCellTracker)](https://github.com/WenChentao/3DeeCellTracker/blob/master/LICENSE)
 
+## 语言
+
+- [English](README.md) | [中文](README_zh.md) | [日本語](README_jp.md)
+
 # ![图标](docs/pics/icon.svg)
 
 **Seg2Link** 是一个基于 [napari](https://napari.org) 的软件程序，设计用于在3D图像堆栈中半自动地分割细胞，特别适用于通过电子显微镜获得的脑组织图像。
